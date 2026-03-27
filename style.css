@@ -324,7 +324,7 @@ body {
     }
 
     .logo img {
-        height: 14px;
+        height: 60px;
         width: auto;
         object-fit: contain;
     }
@@ -334,7 +334,7 @@ body {
         place-items: center;
         gap: var(--size-3);
         text-align: center;
-        margin-top: 5px;
+        margin-top: 10px;
     }
 
     .headline-1 {
@@ -345,14 +345,15 @@ body {
     }
 
     .subheading {
-        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-size: clamp(3rem, 6vw, 5rem);
         font-family: 'Tajawal', sans-serif;
         font-weight: 900;
-        max-width: 700px;
+        max-width: 900px;
         color: #ec135b;
         text-transform: uppercase;
-        letter-spacing: 3px;
+        letter-spacing: 4px;
         line-height: 1.2;
+        margin: 0;
     }
 
     .cta-group {
@@ -423,12 +424,12 @@ body {
     .visual {
         background-image: var(--gradient-15);
         border-radius: 12px;
-        block-size: 170px;
+        block-size: 220px;
         overflow: clip;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 10px;
+        padding: 15px;
         transition: all 0.4s ease;
     }
 
