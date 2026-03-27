@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Elforat Pharma - العناية الفاخرة</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet" />
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: '#ec135b', secondary: '#fce7ee', neutral: { 50: '#fafafa', 900: '#111111' } },
+                    fontFamily: { sans: ['Tajawal', 'sans-serif'] },
+                    borderRadius: { 'custom': '8px' }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50 font-sans text-gray-900 antialiased overflow-x-hidden">
+
+    <nav class="bg-white/90 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 md:px-8 py-5 flex items-center justify-between">
+            <div class="flex-shrink-0 cursor-pointer flex items-center gap-4" onclick="app.navigate('home')">
+                <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/logo.png" 
+                     alt="Elforat Pharma" 
+                     class="h-12 md:h-16 w-auto object-contain transition-transform hover:scale-105">
+                
+                <div dir="ltr" class="flex items-baseline gap-1.5">
+                    <span class="text-3xl md:text-4xl font-black tracking-tighter text-primary">ELFORAT</span>
+                    <span class="text-sm md:text-base uppercase tracking-widest text-gray-400 font-bold hidden sm:inline-block">Pharma</span>
+                </div>
+            </div>
+            
+            <div id="nav-container" class="hidden md:flex space-x-8 space-x-reverse font-bold text-base tracking-widest uppercase relative">
+                <a href="javascript:void(0)" onclick="app.navigate('home')" data-target="home" class="nav-link transition-colors duration-300">الرئيسية</a>
+                <a href="javascript:void(0)" onclick="app.navigate('catalog')" data-target="catalog" class="nav-link transition-colors duration-300">المنتجات</a>
+                <a href="javascript:void(0)" onclick="app.navigate('about')" data-target="about" class="nav-link transition-colors duration-300">عن الشركة</a>
+            </div>
+
+            <div class="flex items-center space-x-6 space-x-reverse">
+                <button onclick="app.navigate('cart')" class="text-gray-500 hover:text-primary relative transition-colors p-2 bg-gray-50 rounded-full">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    <span id="cart-badge" class="absolute -top-1 -end-1 bg-primary text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-lg shadow-primary/20">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="app-container">
+        <div id="view-main" class="view-section active">
+            <section id="home" class="relative bg-gradient-to-l from-[#fdfbfb] to-[#f4f4f4] overflow-hidden pt-12 md:pt-0">
+                <div class="max-w-7xl mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center min-h-[85vh]">
+                    <div class="w-full md:w-1/2 space-y-6 py-12 relative z-50 text-center md:text-right">
+                        <div id="promo-badge" class="inline-flex flex-wrap justify-center md:justify-start items-center gap-3 bg-white/70 backdrop-blur-md border border-primary/20 px-5 py-2 rounded-full shadow-sm mb-2">
+                            <span class="text-gray-800 text-sm font-bold">🔥 عروض حصرية تنتهي خلال:</span>
+                            <div id="countdown" dir="ltr" class="text-primary font-black tracking-widest text-sm bg-primary/10 px-3 py-1 rounded-full">
+                                <span id="hours">24</span>:<span id="minutes">00</span>:<span id="seconds">00</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-right">
+                            <span class="text-primary font-bold tracking-widest uppercase text-sm block">مجموعة العناية الفاخرة</span>
+                            <h1 class="text-5xl md:text-7xl font-bold leading-tight text-gray-900 text-right">اكتشفي إشراقتك <br /><span class="text-primary italic">الطبيعية</span></h1>
+                        </div>
+                        <p class="text-lg text-gray-600 max-w-md mx-auto md:mr-0 text-right font-medium">مزيج من العلم والرفاهية العضوية مع مجموعتنا المتخصصة للعناية بالشعر والبشرة.</p>
+                        <div class="pt-4 text-right">
+                            <button onclick="app.navigate('catalog')" class="bg-primary text-white px-10 py-4 rounded-custom font-semibold text-lg hover:bg-neutral-900 transition-all shadow-xl shadow-primary/30">تسوقي الآن</button>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/2 relative h-[500px] md:h-[700px] flex justify-center items-center z-20 mt-8 md:mt-0">
+    <div class="absolute w-72 h-72 bg-primary/5 rounded-full blur-[100px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+    
+    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/body_lotion.png" 
+         class="absolute w-[35%] max-h-[55%] object-contain drop-shadow-2xl z-10 hover:z-40 hover:-translate-y-4 transition-all duration-500 right-[5%] bottom-[20%] mix-blend-multiply opacity-90 hover:opacity-100 cursor-pointer" 
+         alt="Body Lotion" onclick="app.navigate('product', 'ELFORAT-1773929789662')">
+    
+    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/guzel_gold.png" 
+         class="absolute w-[52%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 hover:-translate-y-6 transition-all duration-700 left-1/2 -translate-x-1/2 bottom-[5%] mix-blend-multiply cursor-pointer" 
+         alt="Guzel Gold" onclick="app.navigate('product', 'ELFORAT-1773926599633')">
+    
+    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/cleanser.png" 
+         class="absolute w-[32%] max-h-[45%] object-contain drop-shadow-2xl z-10 hover:z-40 hover:-translate-y-4 transition-all duration-500 left-[5%] bottom-[15%] mix-blend-multiply opacity-90 hover:opacity-100 cursor-pointer" 
+         alt="Facial Cleanser" onclick="app.navigate('product', 'ELFORAT-1773929625881')">
+</div>
+                </div>
+            </section>
+
+            <section class="py-24 bg-white border-t border-gray-50 overflow-hidden">
+                <div class="max-w-7xl mx-auto px-4 text-center">
+                    <div class="mb-20">
+                        <h2 class="text-4xl md:text-5xl font-black tracking-tight text-gray-900">تسوقي حسب الفئة</h2>
+                        <p class="text-gray-400 mt-4 font-medium uppercase tracking-[0.2em] text-sm">اختاري روتينك الخاص</p>
+                        <div class="h-1.5 w-20 bg-primary mx-auto mt-6 rounded-full shadow-[0_0_15px_rgba(236,19,91,0.4)]"></div>
+                    </div>
+                    
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+    <div onclick="app.navigate('catalog', 'العناية بالشعر')" class="category-card group cursor-pointer">
+        <div class="category-content">
+            <div class="category-circle transition-all duration-500 group-hover:bg-primary/10 group-hover:border-primary/20">
+                <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/guzel_gold.png" 
+                     alt="Hair Care Category" 
+                     class="category-img transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6">
+            </div>
+            <div class="category-info">
+                <h3 class="category-title text-right">العناية بالشعر</h3>
+                <p class="category-desc text-right">تغذية عميقة ولمعان لا يقاوم</p>
+                <span class="category-btn">اكتشفي الآن</span>
+            </div>
+        </div>
+    </div>
+
+    <div onclick="app.navigate('catalog', 'العناية بالبشرة')" class="category-card group cursor-pointer">
+        <div class="category-content">
+            <div class="category-circle transition-all duration-500 group-hover:bg-primary/10 group-hover:border-primary/20">
+                <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/body_lotion.png" 
+                     alt="Skin Care Category" 
+                     class="category-img transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
+            </div>
+            <div class="category-info">
+                <h3 class="category-title text-right">العناية بالبشرة</h3>
+                <p class="category-desc text-right">بشرة ناعمة كالحرير يومياً</p>
+                <span class="category-btn">تسوقي المجموعة</span>
+            </div>
+        </div>
+    </div>
+
+    <div onclick="app.navigate('catalog', 'مجموعات متكاملة')" class="category-card group cursor-pointer">
+        <div class="category-content">
+            <div class="category-circle transition-all duration-500 group-hover:bg-primary/10 group-hover:border-primary/20">
+                <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/group2.png" 
+                     alt="Bundles" 
+                     class="category-img transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
+            </div>
+            <div class="category-info">
+                <h3 class="category-title text-right">مجموعات كاملة</h3>
+                <p class="category-desc text-right">أفضل النتائج بأفضل توفير</p>
+                <span class="category-btn">عرض العروض</span>
+            </div>
+        </div>
+    </div>
+</div>
+            </section>
+
+            <section id="catalog" class="max-w-7xl mx-auto px-4 md:px-8 py-20 border-t border-gray-100">
+                <div class="mb-10 text-right flex justify-between items-center">
+                    <h1 class="text-3xl font-bold tracking-tight text-gray-900">منتجاتنا المتميزة</h1>
+                </div>
+                <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 text-right">
+                    </div>
+            </section>
+        </div>
+
+        <div id="view-product" class="view-section hidden max-w-7xl mx-auto px-4 py-12">
+            <div id="product-details-container"></div>
+        </div>
+        
+        <div id="view-cart" class="view-section hidden max-w-6xl mx-auto px-4 py-12 text-right">
+            <h1 class="text-3xl font-bold mb-8">حقيبة التسوق</h1>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div id="cart-items-container" class="lg:col-span-2 space-y-4"></div>
+                <aside class="p-6 bg-white border border-gray-100 rounded-custom h-fit">
+                    <h2 class="font-bold mb-6 border-b pb-4">ملخص الطلب</h2>
+                    <div id="cart-summary-totals" class="mb-6 space-y-2"></div>
+                    <form id="checkout-form" class="space-y-4">
+                        <input type="text" id="cust-name" placeholder="الاسم" required class="w-full p-3 border rounded-custom text-right">
+                        <input type="tel" id="cust-phone" placeholder="رقم الهاتف" required class="w-full p-3 border rounded-custom text-right" dir="ltr">
+                        <textarea id="cust-address" placeholder="العنوان بالتفصيل" required class="w-full p-3 border rounded-custom text-right h-24"></textarea>
+                        <select id="cust-payment" required class="w-full p-3 border rounded-custom text-right bg-white">
+                            <option value="" disabled selected>اختر طريقة الدفع</option>
+                            <option value="الدفع عند الاستلام">الدفع عند الاستلام</option>
+                            <option value="فودافون كاش">فودافون كاش</option>
+                            <option value="انستا باي">انستا باي</option>
+                        </select>
+                        <button type="submit" class="w-full py-4 bg-primary text-white rounded-custom font-bold hover:bg-neutral-900 transition-colors">تأكيد الطلب</button>
+                    </form>
+                </aside>
+            </div>
+        </div>
+    </div>
+
+<footer id="about" class="bg-white border-t pt-16 pb-8 text-right">
+    <div class="max-w-7xl mx-auto px-4 md:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+            <div class="space-y-4 flex flex-col items-start">
+                <div class="flex items-center gap-3">
+                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/logo.png" 
+                         alt="Elforat Pharma Logo" 
+                         class="h-10 md:h-12 w-auto object-contain">
+                    
+                    <div dir="ltr" class="flex items-baseline gap-1">
+                        <span class="text-3xl font-bold text-primary">ELFORAT</span>
+                        <span class="text-sm text-gray-400 font-bold uppercase tracking-widest">PHARMA</span>
+                    </div>
+                </div>
+                <p class="text-gray-500 text-sm leading-relaxed max-w-sm">
+                    رفيقتك في رحلة العناية بجمالك. نقدم لكِ أفضل منتجات العناية بالبشرة والشعر بتركيبات آمنة وفعالة تبرز إشراقتك الطبيعية.
+                </p>
+            </div>
+                <div class="space-y-4">
+    <h3 class="text-lg font-bold text-gray-900 relative inline-block">
+        تواصل معنا
+        <span class="absolute -bottom-1 right-0 w-1/2 h-0.5 bg-primary rounded-full"></span>
+    </h3>
+    <ul class="space-y-3 text-sm text-gray-600 mt-4">
+        <li>
+            <a href="https://wa.me/201146809133" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-[#25D366] transition-colors duration-300">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="w-5 h-5" />
+                
+                <span dir="ltr" class="font-medium">+20 114 680 9133</span>
+            </a>
+        </li>
+    </ul>
+</div>
+
+                <div class="space-y-4">
+                    <h3 class="text-lg font-bold text-gray-900 relative inline-block">
+                        تابعونا على
+                        <span class="absolute -bottom-1 right-0 w-1/2 h-0.5 bg-primary rounded-full"></span>
+                    </h3>
+                    <div class="flex gap-3 mt-4">
+                        <a href="https://www.facebook.com/profile.php?id=61574765620560" target="_blank" class="w-11 h-11 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 border border-gray-100 hover:bg-[#1877F2] hover:text-white transition-all shadow-sm">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" /></svg>
+                        </a>
+                        <a href="https://www.instagram.com/elforat_pharma_dr__asmaa_salem" target="_blank" class="w-11 h-11 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 border border-gray-100 hover:bg-gradient-to-tr hover:from-[#f09433] hover:via-[#dc2743] hover:to-[#bc1888] hover:text-white transition-all shadow-sm">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd" /></svg>
+                        </a>
+                        <a href="https://wa.me/201146809133" target="_blank" class="w-11 h-11 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 border border-gray-100 hover:bg-[#25D366] hover:text-white transition-all shadow-sm">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-xs md:text-sm text-gray-500 font-medium">© 2026 Elforat Pharma. جميع الحقوق محفوظة.</p>
+                <div class="flex gap-6 text-xs md:text-sm text-gray-400 font-medium">
+                    <a href="#" class="hover:text-primary transition-colors">سياسة الخصوصية</a>
+                    <a href="#" class="hover:text-primary transition-colors">الشروط والأحكام</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="analysis.js"></script>
+</body>
+</html>

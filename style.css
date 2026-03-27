@@ -1,0 +1,159 @@
+/* --- الإعدادات العامة --- */
+body {
+    font-family: 'Tajawal', sans-serif;
+    scroll-behavior: smooth;
+    background-color: #ffffff;
+    color: #111111;
+    overflow-x: hidden;
+}
+
+/* نظام التنقل SPA */
+.view-section {
+    display: none;
+    animation: fadeUp 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+.view-section.active { display: block; }
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- [1] ستايل كروت الفئات (المطور الجديد) --- */
+.category-card {
+    position: relative;
+    background: #ffffff;
+    border-radius: 40px;
+    padding: 40px 30px;
+    cursor: pointer;
+    border: 1px solid #f3f4f6;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    overflow: hidden;
+}
+
+.category-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.category-circle {
+    width: 180px;
+    height: 180px;
+    background: #fdf2f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
+}
+
+.category-circle::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 2px dashed #ec135b;
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(1.1) rotate(0deg);
+    transition: all 0.6s ease;
+}
+
+.category-img {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+    transition: transform 0.6s ease;
+}
+
+.category-title { font-size: 1.5rem; font-weight: 800; color: #111; margin-bottom: 8px; }
+.category-desc { color: #9ca3af; font-size: 0.9rem; margin-bottom: 25px; }
+.category-btn {
+    display: inline-block; padding: 10px 25px; background: #111; color: #fff;
+    font-size: 11px; font-weight: 800; border-radius: 50px; text-transform: uppercase;
+    transition: all 0.4s ease;
+}
+
+.category-card:hover { transform: translateY(-15px); box-shadow: 0 30px 60px rgba(236, 19, 91, 0.12); }
+.category-card:hover .category-circle { background: #ec135b; transform: scale(0.9); }
+.category-card:hover .category-circle::after { opacity: 0.3; transform: scale(1.2) rotate(45deg); }
+.category-card:hover .category-img { transform: scale(1.2) rotate(-5deg); }
+.category-card:hover .category-btn { background: #ec135b; box-shadow: 0 10px 20px rgba(236, 19, 91, 0.3); }
+
+/* --- [2] ستايل كروت المنتجات (القديم الفاخر) --- */
+.product-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1rem;
+    border-radius: 24px;
+    border: 1px solid transparent;
+    transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.product-image-bg {
+    background-color: #f9f9f9;
+    aspect-ratio: 4/5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    border-radius: 18px;
+    transition: background-color 0.4s ease;
+}
+
+.product-image-bg img {
+    transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+    mix-blend-mode: multiply;
+}
+
+.product-card:hover {
+    border-color: #fce7ee;
+    background-color: #ffffff;
+    box-shadow: 0 15px 35px rgba(236, 19, 91, 0.08);
+}
+
+.product-card:hover .product-image-bg { background-color: #fce7ee; }
+.product-card:hover .product-image-bg img { transform: scale(1.08); }
+
+/* البادجات والأزرار للمنتجات */
+.badge-premium {
+    background: linear-gradient(135deg, #ec135b 0%, #c70d4c 100%);
+    color: #ffffff;
+    padding: 6px 14px;
+    font-size: 10px;
+    font-weight: 800;
+    border-radius: 30px;
+    box-shadow: 0 5px 15px rgba(236, 19, 91, 0.25);
+}
+
+.btn-pill {
+    padding: 12px 10px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+}
+
+.btn-add-cart-minimal { border: 1.5px solid #ec135b; color: #ec135b; background: transparent; }
+.btn-add-cart-minimal:hover { background: #ec135b; color: #fff; }
+
+.btn-buy-now-premium { background: #111; color: #fff; border: 1.5px solid #111; }
+.btn-buy-now-premium:hover { background: #ec135b; border-color: #ec135b; }
+
+.nav-link { color: #9ca3af; transition: color 0.3s; position: relative; font-weight: 600; }
+.nav-link.text-primary { color: #ec135b; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: #ec135b; }
