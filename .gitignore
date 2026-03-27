@@ -1,1 +1,1 @@
-(card-carousel.html is a source file, so no need to add anything to .gitignore)
+(cards.html is just a source file, no build artifacts, dependencies, or temp files in the changes)
