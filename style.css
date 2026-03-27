@@ -359,7 +359,7 @@ body {
   position: relative;
   width: var(--card-width);
   aspect-ratio:4/6;
-  margin: 40px auto 0;
+  margin: 120px auto 0;
   order: 2;
   
   & > div {
