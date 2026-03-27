@@ -1,7 +1,14 @@
-```gitignore
 # Compiled and build artifacts
 *.pyc
 __pycache__/
+*.o
+*.obj
+*.class
+*.exe
+*.dll
+*.so
+*.a
+*.out
 
 # Dependencies
 node_modules/
@@ -11,14 +18,15 @@ venv/
 .env.local
 .env.*
 
-# Editors
-.vscode/
-.idea/
-
 # Logs and temp files
 *.log
 *.tmp
 *.swp
+*.swo
+
+# Editors
+.vscode/
+.idea/
 
 # System files
 .DS_Store
@@ -33,4 +41,8 @@ htmlcov/
 dist/
 build/
 target/
-```
+.gradle/
+
+# Python caches
+.mypy_cache/
+.pytest_cache/
