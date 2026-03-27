@@ -317,10 +317,13 @@ body {
     .logo {
         font-size: var(--font-size-4);
         font-weight: var(--font-weight-7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .logo img {
-        height: 60px;
+        height: 40px;
         width: auto;
         object-fit: contain;
     }
