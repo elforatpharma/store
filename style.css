@@ -320,7 +320,7 @@ body {
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-bottom: 0px;
+        margin-bottom: -10px;
     }
 
     .logo img {
@@ -334,7 +334,7 @@ body {
         place-items: center;
         gap: var(--size-3);
         text-align: center;
-        margin-top: 0px;
+        margin-top: -10px;
     }
 
     .wrapper {
