@@ -7,6 +7,19 @@ body {
     overflow-x: hidden;
 }
 
+/* --- شريط تقدم السكرول --- */
+.scroll-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ec135b, #ff4d8e);
+    width: 0%;
+    z-index: 100;
+    transition: width 0.1s ease-out;
+    box-shadow: 0 0 10px rgba(236, 19, 91, 0.5);
+}
+
 /* نظام التنقل SPA */
 .view-section {
     display: none;
@@ -17,6 +30,46 @@ body {
 @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- تأثيرات الظهور عند السكرول --- */
+.scroll-reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.scroll-reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* تأخير متدرج للعناصر المتتالية */
+.scroll-reveal.delay-100 { transition-delay: 0.1s; }
+.scroll-reveal.delay-200 { transition-delay: 0.2s; }
+.scroll-reveal.delay-300 { transition-delay: 0.3s; }
+.scroll-reveal.delay-400 { transition-delay: 0.4s; }
+
+/* تأثيرات خاصة للعناصر المختلفة */
+.scroll-reveal.scale-up {
+    transform: scale(0.9);
+}
+
+.scroll-reveal.scale-up.revealed {
+    transform: scale(1);
+}
+
+.scroll-reveal.slide-right {
+    transform: translateX(-50px);
+}
+
+.scroll-reveal.slide-left {
+    transform: translateX(50px);
+}
+
+.scroll-reveal.slide-right.revealed,
+.scroll-reveal.slide-left.revealed {
+    transform: translateX(0);
 }
 
 /* --- [1] ستايل كروت الفئات (المطور الجديد) --- */
@@ -95,6 +148,17 @@ body {
     border-radius: 24px;
     border: 1px solid transparent;
     transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* دمج تأثيرات السكرول مع كروت المنتجات */
+.product-card.scroll-reveal {
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.product-card.scroll-reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .product-image-bg {

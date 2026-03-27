@@ -369,8 +369,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const grid = document.getElementById('catalog-grid');
         let products = filter ? productsDB.filter(p => p.category === filter && !p.isGift) : productsDB.filter(p => !p.isGift);
         if (grid) {
-            grid.innerHTML = products.map(p => `
-                <article class="product-card text-right group" onclick="app.navigate('product', '${p.id}')">
+            grid.innerHTML = products.map((p, index) => `
+                <article class="product-card text-right group scroll-reveal" style="transition-delay: ${index * 0.05}s" onclick="app.navigate('product', '${p.id}')">
                     <div class="product-image-bg relative mb-6 overflow-hidden">
                         <img src="${p.img}" class="max-h-full transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
                         ${p.badge ? `<div class="absolute top-4 left-4 z-10"><span class="badge-premium">${p.badge}</span></div>` : ''}
@@ -389,6 +389,11 @@ document.addEventListener("DOMContentLoaded", () => {
                         <button onclick="event.stopPropagation(); app.buyNow('${p.id}')" class="flex-1 btn-pill btn-buy-now-premium py-3">اشتري الآن</button>
                     </div>
                 </article>`).join('');
+            
+            // إعادة تهيئة تأثيرات السكرول بعد عرض المنتجات
+            setTimeout(() => {
+                if (typeof initScrollReveal === 'function') initScrollReveal();
+            }, 100);
         }
     }
 
