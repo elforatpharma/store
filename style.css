@@ -306,12 +306,14 @@ body {
         display: grid;
         place-items: center;
         gap: var(--size-5);
+        padding-top: 20px;
     }
 
     .section-header {
         display: grid;
         place-items: center;
         gap: var(--size-3);
+        margin-top: 20px;
     }
 
     .logo {
@@ -343,10 +345,10 @@ body {
   
   
   --card-border-radius: 10px;
-  --card-width: 20vmin;
-  --radius: 50vmin; 
+  --card-width: 24vmin;
+  --radius: 75vmin; 
   --cards: 7;
-  --arc-size: 0.25;
+  --arc-size: 0.30;
   --arc-center: 0.75;
   --arc-start: calc(var(--arc-center) - var(--arc-size) / 2);
   --arc-shift: 0;
@@ -355,7 +357,7 @@ body {
   position: relative;
   width: var(--card-width);
   aspect-ratio:4/6;
-  margin: 40px auto 0;
+  margin: 60px auto 0;
   
   & > div {
    --card-i: 0;
