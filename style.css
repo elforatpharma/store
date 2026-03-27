@@ -405,13 +405,17 @@ body {
         border-radius: 10px;
         block-size: 175px;
         overflow: clip;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
     }
 
     .img {
         display: block;
         inline-size: 100%;
         block-size: 100%;
-        object-fit: cover;
+        object-fit: contain;
     }
 
     .figcaption {
