@@ -27,6 +27,9 @@
 
 <body class="bg-gray-50 font-sans text-gray-900 antialiased overflow-x-hidden">
 
+    <!-- شريط تقدم السكرول -->
+    <div id="scroll-progress" class="scroll-progress-bar"></div>
+
     <nav class="bg-white/90 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 md:px-8 py-5 flex items-center justify-between">
             <div class="flex-shrink-0 cursor-pointer flex items-center gap-4" onclick="app.navigate('home')">
@@ -95,14 +98,14 @@
 
             <section class="py-24 bg-white border-t border-gray-50 overflow-hidden">
                 <div class="max-w-7xl mx-auto px-4 text-center">
-                    <div class="mb-20">
+                    <div class="mb-20 scroll-reveal">
                         <h2 class="text-4xl md:text-5xl font-black tracking-tight text-gray-900">تسوقي حسب الفئة</h2>
                         <p class="text-gray-400 mt-4 font-medium uppercase tracking-[0.2em] text-sm">اختاري روتينك الخاص</p>
                         <div class="h-1.5 w-20 bg-primary mx-auto mt-6 rounded-full shadow-[0_0_15px_rgba(236,19,91,0.4)]"></div>
                     </div>
                     
 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-    <div onclick="app.navigate('catalog', 'العناية بالشعر')" class="category-card group cursor-pointer">
+    <div onclick="app.navigate('catalog', 'العناية بالشعر')" class="category-card group cursor-pointer scroll-reveal delay-100">
         <div class="category-content">
             <div class="category-circle transition-all duration-500 group-hover:bg-primary/10 group-hover:border-primary/20">
                 <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/guzel_gold.png" 
@@ -117,7 +120,7 @@
         </div>
     </div>
 
-    <div onclick="app.navigate('catalog', 'العناية بالبشرة')" class="category-card group cursor-pointer">
+    <div onclick="app.navigate('catalog', 'العناية بالبشرة')" class="category-card group cursor-pointer scroll-reveal delay-200">
         <div class="category-content">
             <div class="category-circle transition-all duration-500 group-hover:bg-primary/10 group-hover:border-primary/20">
                 <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/body_lotion.png" 
@@ -132,7 +135,7 @@
         </div>
     </div>
 
-    <div onclick="app.navigate('catalog', 'مجموعات متكاملة')" class="category-card group cursor-pointer">
+    <div onclick="app.navigate('catalog', 'مجموعات متكاملة')" class="category-card group cursor-pointer scroll-reveal delay-300">
         <div class="category-content">
             <div class="category-circle transition-all duration-500 group-hover:bg-primary/10 group-hover:border-primary/20">
                 <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/group2.png" 
@@ -250,5 +253,46 @@
     </footer>
 
     <script src="analysis.js"></script>
+    
+    <!-- سكريبت تأثيرات السكرول -->
+    <script>
+        // شريط تقدم السكرول
+        window.addEventListener('scroll', function() {
+            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrollPercentage = (scrollTop / scrollHeight) * 100;
+            document.getElementById('scroll-progress').style.width = scrollPercentage + '%';
+        });
+
+        // تأثير الظهور عند السكرول
+        function initScrollReveal() {
+            const revealElements = document.querySelectorAll('.scroll-reveal');
+            
+            const revealOnScroll = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            revealElements.forEach(el => revealOnScroll.observe(el));
+        }
+
+        // تشغيل التأثيرات بعد تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', initScrollReveal);
+        
+        // إعادة التهيئة عند التنقل في التطبيق
+        if (typeof app !== 'undefined' && app.navigate) {
+            const originalNavigate = app.navigate;
+            app.navigate = function(page, data) {
+                originalNavigate.call(this, page, data);
+                setTimeout(initScrollReveal, 100);
+            };
+        }
+    </script>
 </body>
 </html>
