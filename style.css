@@ -324,7 +324,7 @@ body {
     }
 
     .logo img {
-        height: 60px;
+        height: 45px;
         width: auto;
         object-fit: contain;
     }
@@ -334,7 +334,7 @@ body {
         place-items: center;
         gap: var(--size-3);
         text-align: center;
-        margin-top: 10px;
+        margin-top: 5px;
     }
 
     .headline-1 {
@@ -356,24 +356,12 @@ body {
         margin: 0;
     }
 
-    .cta-group {
-        display: grid;
-        gap: 12px;
-        grid-template-columns: 1fr;
-
-        /* sm-n-above */
-        @media (width >=560px) {
-            grid-auto-flow: column;
-            grid-template-columns: 1fr 1fr;
-        }
-    }
-
     .section-cards {
         display: grid;
         padding: 0;
         list-style: none;
         gap: 16px;
-        margin-top: 25px;
+        margin-top: 15px;
 
         @media (width >=460px) {
             grid-template-columns: 1fr 1fr;
@@ -404,7 +392,7 @@ body {
         text-align: start;
         cursor: pointer;
         inline-size: 100%;
-        min-height: 290px;
+        min-height: 340px;
         transition: all 0.4s ease;
     }
 
@@ -424,12 +412,12 @@ body {
     .visual {
         background-image: var(--gradient-15);
         border-radius: 12px;
-        block-size: 220px;
+        block-size: 260px;
         overflow: clip;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 15px;
+        padding: 20px;
         transition: all 0.4s ease;
     }
 
@@ -605,11 +593,6 @@ body {
 
         &:is(:active, :disabled, :focus-within) {
             --_state-layer-op: 12%;
-        }
-
-        &.filled {
-            background-color: var(--gray-12);
-            color: white;
         }
 
         &.primary {
