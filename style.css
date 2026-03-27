@@ -314,7 +314,7 @@ body {
         display: grid;
         place-items: center;
         gap: var(--size-3);
-        margin-top: 20px;
+        margin-top: 0px;
         order: 1;
     }
 
@@ -324,7 +324,7 @@ body {
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-bottom: -10px;
+        margin-bottom: 0px;
     }
 
     .logo img {
@@ -338,7 +338,7 @@ body {
         place-items: center;
         gap: var(--size-3);
         text-align: center;
-        margin-top: -10px;
+        margin-top: 0px;
     }
 
     .wrapper {
@@ -359,7 +359,7 @@ body {
   position: relative;
   width: var(--card-width);
   aspect-ratio:4/6;
-  margin: 0 auto 0;
+  margin: 40px auto 0;
   order: 2;
   
   & > div {
