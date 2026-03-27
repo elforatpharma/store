@@ -60,41 +60,170 @@
 
     <div id="app-container">
         <div id="view-main" class="view-section active">
-            <section id="home" class="relative bg-gradient-to-l from-[#fdfbfb] to-[#f4f4f4] overflow-hidden pt-12 md:pt-0">
-                <div class="max-w-7xl mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center min-h-[85vh]">
-                    <div class="w-full md:w-1/2 space-y-6 py-12 relative z-50 text-center md:text-right">
-                        <div id="promo-badge" class="inline-flex flex-wrap justify-center md:justify-start items-center gap-3 bg-white/70 backdrop-blur-md border border-primary/20 px-5 py-2 rounded-full shadow-sm mb-2">
-                            <span class="text-gray-800 text-sm font-bold">🔥 عروض حصرية تنتهي خلال:</span>
-                            <div id="countdown" dir="ltr" class="text-primary font-black tracking-widest text-sm bg-primary/10 px-3 py-1 rounded-full">
-                                <span id="hours">24</span>:<span id="minutes">00</span>:<span id="seconds">00</span>
+            <!-- Hero Section الجديد -->
+            <section class="section">
+                <div class="section-container">
+                    <div class="section-wrapper">
+                        <header class="section-header">
+                            <div class="logo">
+                                <img
+                                    src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/logo.png"
+                                    alt="Elforat Pharma logo"
+                                />
                             </div>
-                        </div>
-                        <div class="space-y-2 text-right">
-                            <span class="text-primary font-bold tracking-widest uppercase text-sm block">مجموعة العناية الفاخرة</span>
-                            <h1 class="text-5xl md:text-7xl font-bold leading-tight text-gray-900 text-right">اكتشفي إشراقتك <br /><span class="text-primary italic">الطبيعية</span></h1>
-                        </div>
-                        <p class="text-lg text-gray-600 max-w-md mx-auto md:mr-0 text-right font-medium">مزيج من العلم والرفاهية العضوية مع مجموعتنا المتخصصة للعناية بالشعر والبشرة.</p>
-                        <div class="pt-4 text-right">
-                            <button onclick="app.navigate('catalog')" class="bg-primary text-white px-10 py-4 rounded-custom font-semibold text-lg hover:bg-neutral-900 transition-all shadow-xl shadow-primary/30">تسوقي الآن</button>
-                        </div>
+                            <hgroup class="hgroup">
+                                <h1 class="headline-1">Elforat Pharma</h1>
+                                <p class="subheading">
+                                    Create Your Own Beauty
+                                </p>
+                            </hgroup>
+                            <div class="cta-group">
+                                <a href="javascript:void(0)" onclick="app.navigate('catalog')" class="btn filled primary"
+                                    ><span class="state-layer">اطلب الآن</span></a
+                                >
+                                <a href="javascript:void(0)" onclick="app.navigate('catalog')" class="btn filled secondary">
+                                    <span class="state-layer">تصفح المنتجات</span>
+                                </a>
+                            </div>
+                        </header>
+
+                        <ul class="section-cards">
+                            <li class="card">
+                                <button popovertarget="chat-popover" class="card-wrap">
+                                    <figure class="figure">
+                                        <div class="visual">
+                                            <img
+                                                class="img"
+                                                width="222"
+                                                height="175"
+                                                src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1773786142124.png"
+                                                alt="منتج العناية بالبشرة"
+                                            />
+                                        </div>
+                                        <div class="figcaption">العناية الفائقة بالبشرة</div>
+                                    </figure>
+                                </button>
+                            </li>
+                            <li class="card">
+                                <button popovertarget="chat-popover" class="card-wrap">
+                                    <figure class="figure">
+                                        <div class="visual">
+                                            <img
+                                                class="img"
+                                                width="222"
+                                                height="175"
+                                                src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774329893100-foot_cream.png"
+                                                alt="كريم القدمين"
+                                            />
+                                        </div>
+                                        <div class="figcaption">ترطيب عميق للقدمين</div>
+                                    </figure>
+                                </button>
+                            </li>
+                            <li class="card">
+                                <button popovertarget="chat-popover" class="card-wrap">
+                                    <figure class="figure">
+                                        <div class="visual">
+                                            <img
+                                                class="img"
+                                                width="222"
+                                                height="175"
+                                                src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774329927460-1773777377248-body_scrub.png"
+                                                alt="مقشر الجسم"
+                                            />
+                                        </div>
+                                        <div class="figcaption">تقشير وإشراقة للجسم</div>
+                                    </figure>
+                                </button>
+                            </li>
+                            <li class="card">
+                                <button popovertarget="chat-popover" class="card-wrap">
+                                    <figure class="figure">
+                                        <div class="visual">
+                                            <img
+                                                class="img"
+                                                width="222"
+                                                height="175"
+                                                src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774330114789-download%20(3).png"
+                                                alt="منتجات العناية"
+                                            />
+                                        </div>
+                                        <div class="figcaption">مجموعة العناية المتكاملة</div>
+                                    </figure>
+                                </button>
+                            </li>
+                        </ul>
                     </div>
-                    <div class="w-full md:w-1/2 relative h-[500px] md:h-[700px] flex justify-center items-center z-20 mt-8 md:mt-0">
-    <div class="absolute w-72 h-72 bg-primary/5 rounded-full blur-[100px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
-    
-    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/body_lotion.png" 
-         class="absolute w-[35%] max-h-[55%] object-contain drop-shadow-2xl z-10 hover:z-40 hover:-translate-y-4 transition-all duration-500 right-[5%] bottom-[20%] mix-blend-multiply opacity-90 hover:opacity-100 cursor-pointer" 
-         alt="Body Lotion" onclick="app.navigate('product', 'ELFORAT-1773929789662')">
-    
-    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/guzel_gold.png" 
-         class="absolute w-[52%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 hover:-translate-y-6 transition-all duration-700 left-1/2 -translate-x-1/2 bottom-[5%] mix-blend-multiply cursor-pointer" 
-         alt="Guzel Gold" onclick="app.navigate('product', 'ELFORAT-1773926599633')">
-    
-    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/cleanser.png" 
-         class="absolute w-[32%] max-h-[45%] object-contain drop-shadow-2xl z-10 hover:z-40 hover:-translate-y-4 transition-all duration-500 left-[5%] bottom-[15%] mix-blend-multiply opacity-90 hover:opacity-100 cursor-pointer" 
-         alt="Facial Cleanser" onclick="app.navigate('product', 'ELFORAT-1773929625881')">
-</div>
+                </div>
+
+                <div popover id="chat-popover" class="chat">
+                    <div class="chat-content-wrapper">
+                        <header class="chat-header">
+                            <button
+                                popovertarget="chat-popover"
+                                popovertargetaction="hide"
+                                class="chat-popover-close-btn"
+                                aria-label="إغلاق الدردشة"
+                                title="إغلاق الدردشة"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    width="24"
+                                    height="24"
+                                    fill="currentColor"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        d="M11.9997 10.5865L16.9495 5.63672L18.3637 7.05093L13.4139 12.0007L18.3637 16.9504L16.9495 18.3646L11.9997 13.4149L7.04996 18.3646L5.63574 16.9504L10.5855 12.0007L5.63574 7.05093L7.04996 5.63672L11.9997 10.5865Z"
+                                    ></path>
+                                </svg>
+                            </button>
+                        </header>
+
+                        <section class="chat-section">
+                            <div class="result"></div>
+                            <form action="">
+                                <div class="chat-input-container">
+                                    <textarea
+                                        autofocus
+                                        class="chat-textarea"
+                                        placeholder="اسألينا عن أي منتج..."
+                                        type="text"
+                                    ></textarea>
+                                    <button
+                                        type="submit"
+                                        class="chat-submit-btn"
+                                        aria-label="إرسال"
+                                        title="إرسال"
+                                    >
+                                        <svg
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            aria-hidden="true"
+                                        >
+                                            <g clip-path="url(#clip0_208_691)">
+                                                <path
+                                                    d="M2.5664 3.26059C2.32007 2.76794 2.51587 2.5663 3.02256 2.81964L21.0172 11.8169C21.5155 12.0661 21.5206 12.4896 21.0494 12.7513L3.69739 22.3914C3.21698 22.6582 2.98859 22.4559 3.18594 21.9427L6.36304 13.6822L16.2625 12.268L6.36306 10.8538L2.5664 3.26059Z"
+                                                />
+                                            </g>
+                                            <defs>
+                                                <clipPath id="clip0_208_691">
+                                                    <rect width="24" height="24" fill="white" />
+                                                </clipPath>
+                                            </defs>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </form>
+                        </section>
+                    </div>
                 </div>
             </section>
+            <!-- نهاية Hero Section الجديد -->
 
             <section class="py-24 bg-white border-t border-gray-50 overflow-hidden">
                 <div class="max-w-7xl mx-auto px-4 text-center">
