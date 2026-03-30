@@ -262,7 +262,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function saveCart() {
+        // حفظ السلة لمدة 60 يوم
         localStorage.setItem('elforat_cart', JSON.stringify(cart));
+        localStorage.setItem('elforat_cart_expiry', Date.now() + (60 * 24 * 60 * 60 * 1000));
+    }
+    
+    // التحقق من انتهاء صلاحية السلة
+    function checkCartExpiry() {
+        const expiry = localStorage.getItem('elforat_cart_expiry');
+        if (expiry && Date.now() > parseInt(expiry)) {
+            localStorage.removeItem('elforat_cart');
+            localStorage.removeItem('elforat_cart_expiry');
+            cart = [];
+        }
     }
 
     // دالة إصلاح المسارات لضمان ظهور الصور من فولدر uploads
@@ -572,6 +584,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (desktopInput && desktopInput !== event.target) desktopInput.value = query;
             if (mobileInput && mobileInput !== event.target) mobileInput.value = query;
             
+            // إظهار/إخفاء قائمة الاقتراحات
+            this.showSearchSuggestions(query);
+            
             // إذا كنا في صفحة الكتالوج، أعد العرض مع الفلتر
             if (document.getElementById('catalog')) {
                 renderCatalog(null, this.searchTerm);
@@ -579,6 +594,67 @@ document.addEventListener("DOMContentLoaded", () => {
                 // إذا لم نكن في الكتالوج، اذهب للكتالوج مع البحث
                 this.navigate('catalog');
             }
+        },
+        
+        // دالة إظهار اقتراحات البحث التلقائية
+        showSearchSuggestions: function(query) {
+            const desktopContainer = document.getElementById('search-suggestions-desktop');
+            const mobileContainer = document.getElementById('search-suggestions-mobile');
+            
+            if (!query || query.length < 2) {
+                if (desktopContainer) desktopContainer.classList.add('hidden');
+                if (mobileContainer) mobileContainer.classList.add('hidden');
+                return;
+            }
+            
+            // تصفية المنتجات المطابقة
+            const suggestions = productsDB.filter(p => 
+                p.name.toLowerCase().includes(query) ||
+                p.category.toLowerCase().includes(query)
+            ).slice(0, 5); // عرض أول 5 نتائج فقط
+            
+            if (suggestions.length === 0) {
+                if (desktopContainer) desktopContainer.classList.add('hidden');
+                if (mobileContainer) mobileContainer.classList.add('hidden');
+                return;
+            }
+            
+            const suggestionsHTML = `
+                <div class="py-2">
+                    ${suggestions.map(p => `
+                        <div onclick="app.navigate('product', '${p.id}'); app.hideSearchSuggestions();" 
+                             class="flex items-center gap-3 px-4 py-3 hover:bg-primary/5 cursor-pointer transition-colors group">
+                            <img src="${p.img}" loading="lazy" class="w-10 h-10 object-contain rounded-lg bg-gray-50 group-hover:scale-110 transition-transform">
+                            <div class="flex-1 text-right">
+                                <p class="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">${p.name}</p>
+                                <p class="text-xs text-gray-500">${p.category}</p>
+                            </div>
+                            <span class="text-xs font-bold text-primary">${p.price} ج.م</span>
+                        </div>
+                    `).join('')}
+                    <div onclick="app.navigate('catalog'); app.hideSearchSuggestions();" 
+                         class="border-t border-gray-100 mt-2 pt-3 px-4 text-center text-sm font-bold text-primary hover:bg-primary/5 cursor-pointer transition-colors">
+                        عرض كل النتائج →
+                    </div>
+                </div>
+            `;
+            
+            if (desktopContainer) {
+                desktopContainer.innerHTML = suggestionsHTML;
+                desktopContainer.classList.remove('hidden');
+            }
+            if (mobileContainer) {
+                mobileContainer.innerHTML = suggestionsHTML;
+                mobileContainer.classList.remove('hidden');
+            }
+        },
+        
+        // إخفاء قائمة الاقتراحات
+        hideSearchSuggestions: function() {
+            const desktopContainer = document.getElementById('search-suggestions-desktop');
+            const mobileContainer = document.getElementById('search-suggestions-mobile');
+            if (desktopContainer) desktopContainer.classList.add('hidden');
+            if (mobileContainer) mobileContainer.classList.add('hidden');
         },
         addToCart: function (id, qty = 1, silent = false) {
             const product = productsDB.find(p => p.id === id);
@@ -690,7 +766,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return `
                 <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${p.id}')">
                     <div class="product-image-bg relative mb-6 overflow-hidden">
-                        <img src="${p.img}" class="max-h-full transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
+                        <img src="${p.img}" loading="lazy" class="max-h-full transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
                         ${p.badge ? `<div class="absolute top-4 left-4 z-10"><span class="badge-premium">${p.badge}</span></div>` : ''}
                         <button onclick="event.stopPropagation();" data-favorite-btn="${p.id}" class="favorite-btn absolute top-3 right-3 z-20 w-6 h-6 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${isFavorite ? 'favorite-active' : ''}" title="${isFavorite ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
                             ${isFavorite 
@@ -733,8 +809,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const container = document.getElementById('product-details-container');
         if (!container || !p) return;
         
-        // إنشاء معرض صور (صورة رئيسية + صور إضافية وهمية للتوضيح)
-        const images = [p.img, p.img, p.img]; // يمكن توسيعها لاحقاً لصور متعددة حقيقية
+        // إنشاء معرض صور متعدد (يمكن تعديله لصور حقيقية من قاعدة البيانات)
+        const images = [p.img, p.img, p.img]; // في المستقبل يمكن جلب صور متعددة من سوبابيز
         
         let currentImageIndex = 0;
         
@@ -743,7 +819,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <!-- معرض الصور -->
                 <div class="space-y-4">
                     <div class="product-image-bg aspect-square flex items-center justify-center p-8 bg-[#f9f9f9] rounded-3xl overflow-hidden group relative">
-                        <img id="main-product-img" src="${p.img}" class="max-h-full mix-blend-multiply transition-all duration-700 hover:scale-110 cursor-zoom-in" onerror="this.src='logo.png'">
+                        <img id="main-product-img" src="${p.img}" loading="lazy" class="max-h-full mix-blend-multiply transition-all duration-700 hover:scale-110 cursor-zoom-in" onerror="this.src='logo.png'" onclick="openImageZoom('${p.img}')">
                         <!-- أزرار التنقل للمعرض -->
                         <button onclick="changeProductImage(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
@@ -751,13 +827,17 @@ document.addEventListener("DOMContentLoaded", () => {
                         <button onclick="changeProductImage(1)" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         </button>
+                        <!-- زر التكبير -->
+                        <button onclick="openImageZoom('${p.img}')" class="absolute bottom-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white" title="تكبير الصورة">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path></svg>
+                        </button>
                     </div>
                     <div class="flex gap-3 justify-center">
                         ${images.map((img, idx) => `
                             <button onclick="changeProductImage(${idx})" 
                                     class="thumbnail-btn w-20 h-20 bg-[#f9f9f9] rounded-xl p-2 border-2 ${idx === 0 ? 'border-primary' : 'border-transparent'} hover:border-primary/50 transition-all overflow-hidden"
                                     data-index="${idx}">
-                                <img src="${img}" class="w-full h-full object-contain mix-blend-multiply thumbnail-img">
+                                <img src="${img}" loading="lazy" class="w-full h-full object-contain mix-blend-multiply thumbnail-img">
                             </button>
                         `).join('')}
                     </div>
@@ -858,9 +938,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             </div>
             
+            <!-- نافذة تكبير الصور (Modal) -->
+            <div id="image-zoom-modal" class="fixed inset-0 bg-black/95 z-[9999] hidden items-center justify-center" onclick="closeImageZoom()">
+                <button onclick="closeImageZoom()" class="absolute top-6 right-6 text-white hover:text-primary transition-colors">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <button onclick="changeZoomImage(-1)" class="absolute left-6 top-1/2 -translate-y-1/2 text-white hover:text-primary transition-colors">
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <button onclick="changeZoomImage(1)" class="absolute right-6 top-1/2 -translate-y-1/2 text-white hover:text-primary transition-colors">
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+                <img id="zoomed-image" src="" class="max-w-[90vw] max-h-[90vh] object-contain" onclick="event.stopPropagation()">
+                <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-4 py-2 rounded-full">
+                    <span id="zoom-counter">1 / 3</span>
+                </div>
+            </div>
+            
             <script>
                 window.currentImageIndex = 0;
                 window.productImages = ${JSON.stringify(images)};
+                window.zoomImageIndex = 0;
                 
                 function changeProductImage(direction) {
                     if (typeof direction === 'number') {
@@ -892,6 +990,60 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     });
                 }
+                
+                function openImageZoom(imgSrc) {
+                    const modal = document.getElementById('image-zoom-modal');
+                    const zoomedImg = document.getElementById('zoomed-image');
+                    const counter = document.getElementById('zoom-counter');
+                    
+                    // البحث عن индекс الصورة الحالية
+                    window.zoomImageIndex = window.productImages.indexOf(imgSrc);
+                    if (window.zoomImageIndex === -1) window.zoomImageIndex = 0;
+                    
+                    zoomedImg.src = window.productImages[window.zoomImageIndex];
+                    counter.textContent = (window.zoomImageIndex + 1) + ' / ' + window.productImages.length;
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.style.overflow = 'hidden';
+                }
+                
+                function closeImageZoom() {
+                    const modal = document.getElementById('image-zoom-modal');
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    document.body.style.overflow = '';
+                }
+                
+                function changeZoomImage(direction) {
+                    const zoomedImg = document.getElementById('zoomed-image');
+                    const counter = document.getElementById('zoom-counter');
+                    
+                    if (direction === -1) {
+                        window.zoomImageIndex = (window.zoomImageIndex - 1 + window.productImages.length) % window.productImages.length;
+                    } else {
+                        window.zoomImageIndex = (window.zoomImageIndex + 1) % window.productImages.length;
+                    }
+                    
+                    zoomedImg.style.opacity = '0';
+                    zoomedImg.style.transform = 'scale(0.95)';
+                    
+                    setTimeout(() => {
+                        zoomedImg.src = window.productImages[window.zoomImageIndex];
+                        zoomedImg.style.opacity = '1';
+                        zoomedImg.style.transform = 'scale(1)';
+                        counter.textContent = (window.zoomImageIndex + 1) + ' / ' + window.productImages.length;
+                    }, 150);
+                }
+                
+                // دعم لوحة المفاتيح للتنقل في المعرض المكبر
+                document.addEventListener('keydown', function(e) {
+                    const modal = document.getElementById('image-zoom-modal');
+                    if (!modal || modal.classList.contains('hidden')) return;
+                    
+                    if (e.key === 'ArrowLeft') changeZoomImage(1);
+                    if (e.key === 'ArrowRight') changeZoomImage(-1);
+                    if (e.key === 'Escape') closeImageZoom();
+                });
                 
                 function switchTab(tabName) {
                     // إخفاء كل المحتوى
@@ -1218,6 +1370,7 @@ document.addEventListener("DOMContentLoaded", () => {
     trackVisitor();
 
     // [جديد] استرجاع السلة وتحديث الرقم في الناف بار فوراً
+    checkCartExpiry(); // التحقق من انتهاء صلاحية السلة
     loadCart();
     updateBadge();
 
