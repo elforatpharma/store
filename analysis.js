@@ -155,10 +155,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const index = this.favorites.indexOf(productId);
             if (index > -1) {
                 this.favorites.splice(index, 1);
-                NotificationManager.showSuccess('تمت الإزالة من المفضلة');
+                NotificationManager.showSuccess('تمت الإزالة من المفضلة'); updateBadge();
             } else {
                 this.favorites.push(productId);
-                NotificationManager.showSuccess('تمت الإضافة للمفضلة ❤️');
+                NotificationManager.showSuccess('تمت الإضافة للمفضلة ❤️'); updateBadge();
             }
             this.save();
             this.updateUI(productId);
@@ -661,7 +661,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="product-image-bg relative mb-6 overflow-hidden">
                         <img src="${p.img}" class="max-h-full transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
                         ${p.badge ? `<div class="absolute top-4 left-4 z-10"><span class="badge-premium">${p.badge}</span></div>` : ''}
-                        <button onclick="event.stopPropagation();" data-favorite-btn="${p.id}" class="favorite-btn absolute top-3 left-3 z-20 w-6 h-6 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${isFavorite ? 'favorite-active' : ''}" title="${isFavorite ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
+                        <button onclick="event.stopPropagation();" data-favorite-btn="${p.id}" class="favorite-btn absolute top-3 right-3 z-20 w-6 h-6 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${isFavorite ? 'favorite-active' : ''}" title="${isFavorite ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
                             ${isFavorite 
                                 ? `<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
                                 : `<svg class="heart-icon w-3.5 h-3.5 text-gray-400 hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
@@ -959,7 +959,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return `
                 <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms">
                     <div class="relative overflow-hidden rounded-custom bg-white shadow-md hover:shadow-xl transition-all duration-300">
-                        <div class="absolute top-3 left-3 z-20">
+                        <div class="absolute top-3 right-3 z-20">
                             <button onclick="event.stopPropagation(); FavoritesManager.toggle('${p.id}'); updateBadge();" data-favorite-btn="${p.id}" class="favorite-btn p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:scale-110 transition-all ${isFav ? 'favorite-active' : ''}">
                                 ${isFav 
                                     ? '<svg class="heart-icon w-4 h-4 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
