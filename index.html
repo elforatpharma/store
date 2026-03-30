@@ -81,6 +81,14 @@
                     </svg>
                 </button>
                 
+                <!-- Favorites Button -->
+                <button onclick="app.navigate('favorites')" class="text-gray-500 hover:text-primary relative transition-colors p-2 bg-gray-50 rounded-full">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                    </svg>
+                    <span id="favorites-badge" class="absolute -top-1 -end-1 bg-primary text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-lg shadow-primary/20">0</span>
+                </button>
+                
                 <!-- Cart Button -->
                 <button onclick="app.navigate('cart')" class="text-gray-500 hover:text-primary relative transition-colors p-2 bg-gray-50 rounded-full">
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
@@ -118,6 +126,7 @@
                 <nav class="space-y-4">
                     <a href="javascript:void(0)" onclick="app.navigate('home'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">الرئيسية</a>
                     <a href="javascript:void(0)" onclick="app.navigate('catalog'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">المنتجات</a>
+                    <a href="javascript:void(0)" onclick="app.navigate('favorites'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">المفضلة</a>
                     <a href="javascript:void(0)" onclick="app.navigate('about'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">عن الشركة</a>
                 </nav>
             </div>
@@ -255,7 +264,27 @@
         </div>
     </div>
 
-<footer id="about" class="bg-white border-t pt-16 pb-8 text-right">
+    <!-- Favorites View -->
+    <div id="view-favorites" class="view-section hidden max-w-7xl mx-auto px-4 py-12">
+        <h1 class="text-3xl font-bold mb-8 text-right flex items-center gap-3">
+            <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+            </svg>
+            المنتجات المفضلة
+        </h1>
+        <div id="favorites-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 text-right">
+        </div>
+        <div id="favorites-empty" class="hidden text-center py-20">
+            <svg class="w-24 h-24 mx-auto text-gray-300 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+            </svg>
+            <h3 class="text-xl font-bold text-gray-500 mb-2">لا توجد منتجات مفضلة بعد</h3>
+            <p class="text-gray-400 mb-6">ابدأ بإضافة منتجاتك المفضلة لتظهر هنا</p>
+            <button onclick="app.navigate('catalog')" class="bg-primary text-white px-8 py-3 rounded-custom font-semibold hover:bg-neutral-900 transition-all shadow-lg shadow-primary/30">تصفح المنتجات</button>
+        </div>
+    </div>
+
+    <footer id="about" class="bg-white border-t pt-16 pb-8 text-right">
     <div class="max-w-7xl mx-auto px-4 md:px-8">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             <div class="space-y-4 flex flex-col items-start">
