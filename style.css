@@ -7,17 +7,27 @@ body {
     overflow-x: hidden;
 }
 
+/* أنيميشن ظهور العناصر */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.6s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
 /* نظام التنقل SPA */
 .view-section {
     display: none;
     animation: fadeUp 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
 }
 .view-section.active { display: block; }
-
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
 
 /* --- [1] ستايل كروت الفئات (المطور الجديد) --- */
 .category-card {
@@ -154,6 +164,12 @@ body {
 
 .nav-link { color: #9ca3af; transition: color 0.3s; position: relative; font-weight: 600; }
 .nav-link.text-primary { color: #ec135b; }
+
+/* تحسينات التجاوب مع الجوال */
+@media (max-width: 768px) {
+    .product-image-bg { padding: 1rem !important; }
+    .category-circle { width: 140px; height: 140px; }
+}
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-thumb { background: #ec135b; }

@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // الهدايا تُجلب ديناميكياً من سوبابيز عبر loadGifts()
             
-            renderCatalog();
+            renderCatalog(null, '');
         }
     }
 
@@ -261,6 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 4. نظام التنقل والسلة (App Logic)
     // ==========================================
   window.app = {
+        searchTerm: '',
         navigate: function (viewId, param = null, addToHistory = true) {
             const doNav = () => {
                 if (addToHistory) history.pushState({ viewId, param }, "", param ? `#${viewId}?item=${param}` : `#${viewId}`);
@@ -270,7 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (['home', 'catalog', 'about'].includes(viewId)) {
                     document.getElementById('view-main').classList.add('active');
-                    if (viewId === 'catalog') renderCatalog(param); else renderCatalog();
+                    if (viewId === 'catalog') renderCatalog(param, this.searchTerm); else renderCatalog(null, this.searchTerm);
                     const target = document.getElementById(viewId);
                     if (target) window.scrollTo({ top: target.offsetTop - 80, behavior: "smooth" });
                 } else {
@@ -285,6 +286,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.startViewTransition(() => doNav());
             } else {
                 doNav();
+            }
+        },
+        handleSearch: function(query) {
+            this.searchTerm = query.trim().toLowerCase();
+            // تحديث حقول البحث الأخرى لتتزامن
+            const desktopInput = document.getElementById('desktop-search-input');
+            const mobileInput = document.getElementById('mobile-search-input');
+            if (desktopInput && desktopInput !== event.target) desktopInput.value = query;
+            if (mobileInput && mobileInput !== event.target) mobileInput.value = query;
+            
+            // إذا كنا في صفحة الكتالوج، أعد العرض مع الفلتر
+            if (document.getElementById('catalog')) {
+                renderCatalog(null, this.searchTerm);
+            } else if (this.searchTerm.length > 0) {
+                // إذا لم نكن في الكتالوج، اذهب للكتالوج مع البحث
+                this.navigate('catalog');
             }
         },
         addToCart: function (id, qty = 1, silent = false) {
@@ -352,12 +369,32 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 6. دوال العرض والـ Rendering (بالشكل القديم)
     // ==========================================
-    function renderCatalog(filter = null) {
+    function renderCatalog(filter = null, searchTerm = '') {
         const grid = document.getElementById('catalog-grid');
-        let products = filter ? productsDB.filter(p => p.category === filter && !p.isGift) : productsDB.filter(p => !p.isGift);
+        let products = productsDB.filter(p => !p.isGift);
+        
+        // تطبيق فلتر الفئة
+        if (filter) {
+            products = products.filter(p => p.category === filter);
+        }
+        
+        // تطبيق البحث الفوري
+        if (searchTerm) {
+            products = products.filter(p => 
+                p.name.toLowerCase().includes(searchTerm) ||
+                p.category.toLowerCase().includes(searchTerm) ||
+                (p.desc && p.desc.toLowerCase().includes(searchTerm))
+            );
+        }
+        
         if (grid) {
-            grid.innerHTML = products.map(p => `
-                <article class="product-card text-right group" onclick="app.navigate('product', '${p.id}')">
+            if (products.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-20"><p class="text-gray-400 text-lg">لا توجد منتجات تطابق بحثك</p></div>`;
+                return;
+            }
+            
+            grid.innerHTML = products.map((p, index) => `
+                <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${p.id}')">
                     <div class="product-image-bg relative mb-6 overflow-hidden">
                         <img src="${p.img}" class="max-h-full transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
                         ${p.badge ? `<div class="absolute top-4 left-4 z-10"><span class="badge-premium">${p.badge}</span></div>` : ''}
@@ -383,21 +420,80 @@ document.addEventListener("DOMContentLoaded", () => {
         const p = productsDB.find(prod => prod.id == id);
         const container = document.getElementById('product-details-container');
         if (!container || !p) return;
+        
+        // إنشاء معرض صور (صورة رئيسية + صور إضافية وهمية للتوضيح)
+        const images = [p.img, p.img, p.img]; // يمكن توسيعها لاحقاً
+        
         container.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
-                <div class="product-image-bg aspect-square flex items-center justify-center p-16 bg-[#f9f9f9] rounded-3xl">
-                    <img src="${p.img}" class="max-h-full mix-blend-multiply transition-transform duration-1000 hover:scale-105" onerror="this.src='logo.png'">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                <!-- معرض الصور -->
+                <div class="space-y-4">
+                    <div class="product-image-bg aspect-square flex items-center justify-center p-8 bg-[#f9f9f9] rounded-3xl overflow-hidden group">
+                        <img id="main-product-img" src="${p.img}" class="max-h-full mix-blend-multiply transition-transform duration-700 hover:scale-110 cursor-zoom-in" onerror="this.src='logo.png'">
+                    </div>
+                    <div class="flex gap-3 justify-center">
+                        ${images.map((img, idx) => `
+                            <button onclick="document.getElementById('main-product-img').src='${img}'" 
+                                    class="w-20 h-20 bg-[#f9f9f9] rounded-xl p-2 border-2 ${idx === 0 ? 'border-primary' : 'border-transparent'} hover:border-primary/50 transition-all">
+                                <img src="${img}" class="w-full h-full object-contain mix-blend-multiply">
+                            </button>
+                        `).join('')}
+                    </div>
                 </div>
-                <div class="flex flex-col justify-center text-right space-y-8">
+                
+                <!-- معلومات المنتج مع تابات -->
+                <div class="flex flex-col text-right space-y-6">
                     <div class="space-y-3">
                         <p class="text-primary font-bold text-[10px] uppercase tracking-[0.3em]">${p.category}</p>
-                        <h1 class="text-5xl font-extrabold text-black leading-tight tracking-tight">${p.name}</h1>
-                        <div class="flex flex-row-reverse justify-end items-center gap-6 pt-4">
-                            <span class="text-3xl font-medium text-gray-900">${p.price} ج.م</span>
+                        <h1 class="text-4xl md:text-5xl font-extrabold text-black leading-tight tracking-tight">${p.name}</h1>
+                        <div class="flex items-center gap-4 pt-2">
+                            <span class="text-3xl font-bold text-primary">${p.price} ج.م</span>
+                            ${p.oldPrice ? `<span class="text-lg text-gray-400 line-through">${p.oldPrice} ج.م</span>` : ''}
+                            ${p.stock <= LOW_STOCK_THRESHOLD && p.stock > 0 ? `<span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-bold">متبقي ${p.stock} فقط</span>` : ''}
                         </div>
                     </div>
-                    <p class="text-gray-500 font-light leading-relaxed text-lg border-t border-gray-50 pt-6">${p.desc || 'أفضل منتجات العناية المختارة بعناية فائقة لضمان أفضل النتائج لبشرتك وشعرك.'}</p>
-                    <button onclick="app.buyNow('${p.id}')" class="w-full bg-primary text-white font-bold uppercase text-[11px] tracking-widest py-5 rounded-full hover:bg-black transition-all">أضيفي للحقيبة</button>
+                    
+                    <!-- نظام التابات -->
+                    <div class="border-b border-gray-200">
+                        <div class="flex gap-6">
+                            <button onclick="document.getElementById('tab-desc').classList.remove('hidden'); document.getElementById('tab-ingredients').classList.add('hidden'); this.classList.add('border-primary', 'text-primary'); this.classList.remove('border-transparent', 'text-gray-500');" 
+                                    class="pb-3 border-b-2 border-primary text-primary font-bold text-sm transition-colors">الوصف</button>
+                            <button onclick="document.getElementById('tab-desc').classList.add('hidden'); document.getElementById('tab-ingredients').classList.remove('hidden'); this.classList.add('border-primary', 'text-primary'); this.classList.remove('border-transparent', 'text-gray-500');" 
+                                    class="pb-3 border-b-2 border-transparent text-gray-500 font-bold text-sm transition-colors">المكونات</button>
+                            <button onclick="document.getElementById('tab-desc').classList.add('hidden'); document.getElementById('tab-ingredients').classList.add('hidden'); document.getElementById('tab-reviews').classList.remove('hidden'); this.classList.add('border-primary', 'text-primary'); this.classList.remove('border-transparent', 'text-gray-500');" 
+                                    class="pb-3 border-b-2 border-transparent text-gray-500 font-bold text-sm transition-colors">التقييمات</button>
+                        </div>
+                    </div>
+                    
+                    <div id="tab-desc" class="text-gray-600 leading-relaxed">
+                        <p>${p.desc || 'أفضل منتجات العناية المختارة بعناية فائقة لضمان أفضل النتائج لبشرتك وشعرك.'}</p>
+                        ${p.size ? `<p class="mt-4 text-sm"><strong>الحجم:</strong> ${p.size}</p>` : ''}
+                    </div>
+                    
+                    <div id="tab-ingredients" class="hidden text-gray-600 leading-relaxed">
+                        <p>${p.ingredients || 'مكونات طبيعية 100% بدون مواد حافظة أو كحول. مناسب لجميع أنواع البشرة والشعر.'}</p>
+                    </div>
+                    
+                    <div id="tab-reviews" class="hidden text-gray-600 leading-relaxed">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="flex text-yellow-400">★★★★★</div>
+                            <span class="text-sm font-bold">(4.9/5 من 127 تقييم)</span>
+                        </div>
+                        <p class="text-sm">كن أول من يضيف تقييمه لهذا المنتج!</p>
+                    </div>
+                    
+                    <!-- أزرار الإجراء -->
+                    <div class="space-y-3 pt-4 border-t border-gray-100">
+                        <div class="flex items-center gap-4">
+                            <div class="flex border-2 border-gray-200 rounded-full" dir="ltr">
+                                <button onclick="const qtyInput = document.getElementById('product-qty'); qtyInput.value = Math.max(1, parseInt(qtyInput.value) - 1);" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-l-full">-</button>
+                                <input id="product-qty" type="number" value="1" min="1" class="w-12 text-center font-bold border-x-2 border-gray-200 focus:outline-none" readonly>
+                                <button onclick="const qtyInput = document.getElementById('product-qty'); qtyInput.value = parseInt(qtyInput.value) + 1;" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-r-full">+</button>
+                            </div>
+                            <button onclick="app.addToCart('${p.id}', document.getElementById('product-qty').value)" class="flex-1 bg-primary text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:bg-black transition-all shadow-lg shadow-primary/30">أضف للحقيبة</button>
+                        </div>
+                        <button onclick="app.buyNow('${p.id}', document.getElementById('product-qty').value)" class="w-full bg-black text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:bg-primary transition-all">اشتري الآن</button>
+                    </div>
                 </div>
             </div>`;
     }
