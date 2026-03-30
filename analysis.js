@@ -56,7 +56,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 badge: p.badge || '',
                 desc: p.desc || '',
                 ingredients: p.ingredients || '',
-                size: p.size || ''
+                size: p.size || '',
+                stock: parseInt(p.stock) || 100 // إضافة المخزون
             }));
         } catch (err) {
             console.warn('تعذر الاتصال بالسيرفر، سيتم استخدام البيانات المحلية الاحتياطية.');
@@ -143,70 +144,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-  // ==========================================
-    // دوال الإشعارات والصوت (Custom Alert & Snackbar)
-    // ==========================================
-    function showCustomAlert(message, type = 'error') {
-        const overlay = document.createElement('div');
-        overlay.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center opacity-0 transition-opacity duration-300';
-        
-        const icon = type === 'error' 
-            ? `<div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></div>`
-            : `<div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>`;
-
-        const modal = document.createElement('div');
-        modal.className = 'bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-[90%] text-center transform scale-90 transition-transform duration-300';
-        modal.innerHTML = `
-            ${icon}
-            <h3 class="text-xl font-black text-gray-900 mb-2">${type === 'error' ? 'تنبيه!' : 'نجاح!'}</h3>
-            <p class="text-gray-600 text-sm mb-6 leading-relaxed">${message}</p>
-            <button class="w-full py-3 bg-primary text-white rounded-full font-bold hover:bg-black transition-colors" onclick="this.closest('.fixed').remove()">حسناً، فهمت</button>
-        `;
-        
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
-
-        requestAnimationFrame(() => {
-            overlay.classList.remove('opacity-0');
-            modal.classList.remove('scale-90');
-            modal.classList.add('scale-100');
-        });
-    }
-
-    // دالة إظهار الشريط السفلي (Snackbar)
-    function showCartPopup() {
-        let popup = document.getElementById('smart-cart-popup');
-        if (!popup) {
-            popup = document.createElement('div');
-            popup.id = 'smart-cart-popup';
-            popup.className = 'fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-full shadow-2xl flex items-center justify-between gap-6 z-[999] transition-all duration-300 translate-y-20 opacity-0 min-w-[300px] w-[90%] md:w-auto';
-            popup.innerHTML = `
-                <span class="font-bold text-sm">تم إضافة المنتج للحقيبة 🛍️</span>
-                <button onclick="app.navigate('cart'); document.getElementById('smart-cart-popup').classList.add('translate-y-20', 'opacity-0');" class="bg-primary text-white px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest hover:bg-white hover:text-black transition-colors">الذهاب للسلة</button>
-            `;
-            document.body.appendChild(popup);
-        }
-
-        requestAnimationFrame(() => {
-            popup.classList.remove('translate-y-20', 'opacity-0');
-        });
-
-        clearTimeout(window.cartPopupTimeout);
-        window.cartPopupTimeout = setTimeout(() => {
-            if (popup) popup.classList.add('translate-y-20', 'opacity-0');
-        }, 4000);
-    }
-
-    // دالة تشغيل الصوت
-    function playCartSound() {
-        try {
-            const audio = new Audio('https://actions.google.com/sounds/v1/water/pop.ogg');
-            audio.volume = 0.5;
-            audio.play().catch(e => console.log('سياسة المتصفح تمنع تشغيل الصوت تلقائياً قبل تفاعل المستخدم'));
-        } catch (err) {
-            console.error('خطأ في تشغيل الصوت:', err);
-        }
-    }
 
     // ==========================================
     // 2. إعداد الـ Morphing Magic Line للناف بار
@@ -256,6 +193,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3. نظام الهدايا الديناميكي من سوبابيز
     // ==========================================
     let activeGifts = []; // هيتملى من سوبابيز عند التحميل
+    const LOW_STOCK_THRESHOLD = 10; // الحد الأدنى للمخزون المنخفض
+
 
     async function loadGifts() {
         try {
@@ -269,6 +208,28 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+
+    // دالة التحقق من المخزون المنخفض وإظهار الإشعارات
+    function checkLowStock() {
+        const lowStockProducts = productsDB.filter(p => p.stock <= LOW_STOCK_THRESHOLD && p.stock > 0);
+        
+        if (lowStockProducts.length > 0) {
+            // إنشاء إشعار واحد لكل المنتجات منخفضة المخزون
+            const productNames = lowStockProducts.slice(0, 3).map(p => p.name).join('، ');
+            const moreCount = lowStockProducts.length - 3;
+            
+            let message = `⚠️ تنبيه: الكمية المتبقية قليلة لـ:\n${productNames}`;
+            if (moreCount > 0) {
+                message += ` و${moreCount} منتجات أخرى`;
+            }
+            
+            // عرض الإشعار مرة واحدة فقط في الجلسة
+            if (!sessionStorage.getItem('lowStockShown')) {
+                showCustomAlert(message, 'error');
+                sessionStorage.setItem('lowStockShown', 'true');
+            }
+        }
+    }
     function checkOffers() {
         // إزالة كل الهدايا الحالية من السلة أولاً
         cart = cart.filter(i => !i.isGift);
@@ -360,8 +321,34 @@ document.addEventListener("DOMContentLoaded", () => {
             saveCart(); // [جديد] حفظ التحديث
             renderCart(); 
             updateBadge(); 
+        },
+        toggleMobileMenu: function() {
+            const panel = document.getElementById('mobile-menu-panel');
+            const overlay = document.getElementById('mobile-menu-overlay');
+            if (!panel || !overlay) return;
+            
+            const isClosed = panel.classList.contains('translate-x-full');
+            if (isClosed) {
+                // فتح القائمة
+                panel.classList.remove('translate-x-full');
+                panel.classList.add('translate-x-0');
+                overlay.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } else {
+                // إغلاق القائمة
+                panel.classList.add('translate-x-full');
+                panel.classList.remove('translate-x-0');
+                overlay.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
         }
     };
+    
+    // إضافة مستمع لزر القائمة في الجوال
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => app.toggleMobileMenu());
+    }
     // ==========================================
     // 6. دوال العرض والـ Rendering (بالشكل القديم)
     // ==========================================
@@ -668,5 +655,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadGifts();
     fetchProducts();
+    checkLowStock();
     startCountdown();
 });
