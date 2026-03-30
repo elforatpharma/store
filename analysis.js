@@ -174,8 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const isFav = this.isFavorite(productId);
                 btn.classList.toggle('favorite-active', isFav);
                 btn.innerHTML = isFav 
-                    ? `<svg class="heart-icon w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
-                    : `<svg class="heart-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`;
+                    ? `<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+                    : `<svg class="heart-icon w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`;
             }
         },
         
@@ -523,6 +523,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     window.scrollTo({ top: 0, behavior: "smooth" });
                     if (viewId === 'product') renderProductDetails(param);
                     if (viewId === 'cart') renderCart();
+                    if (viewId === 'favorites') renderFavorites();
                 }
             };
 
@@ -660,10 +661,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="product-image-bg relative mb-6 overflow-hidden">
                         <img src="${p.img}" class="max-h-full transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
                         ${p.badge ? `<div class="absolute top-4 left-4 z-10"><span class="badge-premium">${p.badge}</span></div>` : ''}
-                        <button onclick="event.stopPropagation();" data-favorite-btn="${p.id}" class="favorite-btn absolute top-3 right-3 z-20 w-7 h-7 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${isFavorite ? 'favorite-active' : ''}" title="${isFavorite ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
+                        <button onclick="event.stopPropagation();" data-favorite-btn="${p.id}" class="favorite-btn absolute top-3 left-3 z-20 w-6 h-6 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${isFavorite ? 'favorite-active' : ''}" title="${isFavorite ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
                             ${isFavorite 
-                                ? `<svg class="heart-icon w-4 h-4 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
-                                : `<svg class="heart-icon w-4 h-4 text-gray-400 hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
+                                ? `<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+                                : `<svg class="heart-icon w-3.5 h-3.5 text-gray-400 hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
                             }
                         </button>
                         <button onclick="event.stopPropagation(); app.addToCart('${p.id}')" class="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-md py-4 text-[9px] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-black hover:text-white border border-gray-100">إضافة سريعة +</button>
@@ -745,8 +746,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div class="flex items-center gap-3 pt-2">
                             <button onclick="FavoritesManager.toggle('${p.id}')" data-favorite-btn="${p.id}" class="favorite-btn flex items-center gap-2 px-4 py-2 border-2 border-gray-200 rounded-full hover:border-primary transition-all ${FavoritesManager.isFavorite(p.id) ? 'favorite-active border-primary' : ''}">
                                 ${FavoritesManager.isFavorite(p.id) 
-                                    ? `<svg class="heart-icon w-4 h-4 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
-                                    : `<svg class="heart-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
+                                    ? `<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+                                    : `<svg class="heart-icon w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
                                 }
                                 <span class="text-sm font-bold">${FavoritesManager.isFavorite(p.id) ? 'في المفضلة' : 'أضف للمفضلة'}</span>
                             </button>
@@ -928,8 +929,64 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateBadge() { 
         const b = document.getElementById('cart-badge'); 
-        if (b) b.innerText = cart.reduce((s, i) => s + i.qty, 0); 
+        if (b) b.innerText = cart.reduce((s, i) => s + i.qty, 0);
+        
+        // تحديث شارة المفضلة
+        const favBadge = document.getElementById('favorites-badge');
+        if (favBadge) favBadge.innerText = FavoritesManager.getCount();
     }
+
+    // ==========================================
+    // عرض صفحة المفضلة
+    // ==========================================
+    function renderFavorites() {
+        const grid = document.getElementById('favorites-grid');
+        const emptyState = document.getElementById('favorites-empty');
+        
+        if (!grid) return;
+        
+        const favoriteProducts = productsDB.filter(p => FavoritesManager.isFavorite(p.id));
+        
+        if (favoriteProducts.length === 0) {
+            grid.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            return;
+        }
+        
+        emptyState.classList.add('hidden');
+        grid.innerHTML = favoriteProducts.map((p, index) => {
+            const isFav = FavoritesManager.isFavorite(p.id);
+            return `
+                <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms">
+                    <div class="relative overflow-hidden rounded-custom bg-white shadow-md hover:shadow-xl transition-all duration-300">
+                        <div class="absolute top-3 left-3 z-20">
+                            <button onclick="event.stopPropagation(); FavoritesManager.toggle('${p.id}'); updateBadge();" data-favorite-btn="${p.id}" class="favorite-btn p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:scale-110 transition-all ${isFav ? 'favorite-active' : ''}">
+                                ${isFav 
+                                    ? '<svg class="heart-icon w-4 h-4 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
+                                    : '<svg class="heart-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>'
+                                }
+                            </button>
+                        </div>
+                        
+                        ${p.stock <= 10 ? `<div class="absolute top-3 right-3 z-20 low-stock-alert flex items-center gap-1 bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg"><span>⚠️</span><span>متبقي ${p.stock} فقط</span></div>` : ''}
+                        
+                        <div class="h-64 overflow-hidden cursor-pointer" onclick="app.navigate('product', '${p.id}')">
+                            <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        </div>
+                        
+                        <div class="p-4 space-y-3">
+                            <h3 class="font-bold text-base text-gray-900 line-clamp-2 min-h-[2.5rem] cursor-pointer hover:text-primary transition-colors" onclick="app.navigate('product', '${p.id}')">${p.name}</h3>
+                            <div class="flex justify-between items-center pt-2">
+                                <span class="text-primary font-black text-lg">${p.price} ج.م</span>
+                                <button onclick="app.addToCart('${p.id}', 1)" class="bg-primary text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-neutral-900 transition-colors shadow-lg shadow-primary/30">أضف</button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }).join('');
+    }
+
 
      // ==========================================
     // 6. كود إرسال الطلب للسيرفر والتحويل الفوري للواتساب 🔥
@@ -1144,6 +1201,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadGifts();
     FavoritesManager.init(); // تهيئة نظام المفضلة
+    updateBadge(); // تحديث شارة المفضلة عند التحميل
     fetchProducts().then(() => {
         hideGlobalLoader();
     }).catch(() => {
