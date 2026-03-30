@@ -42,43 +42,107 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     
     // ==========================================
-    // نمط تصميم: Notification System موحد
+    // نمط تصميم: Notification System موحد (متطور)
     // ==========================================
-    const NotificationManager = {
-        show(message, type = 'info', duration = 4000) {
-            const toast = document.createElement('div');
-            const icons = {
-                success: '✓',
-                error: '✕',
-                warning: '⚠',
-                info: 'ℹ'
-            };
-            const colors = {
-                success: 'bg-green-500',
-                error: 'bg-red-500',
-                warning: 'bg-orange-500',
-                info: 'bg-blue-500'
-            };
-            
-            toast.className = `fixed top-4 left-1/2 transform -translate-x-1/2 ${colors[type]} text-white px-6 py-3 rounded-full shadow-2xl z-[9999] flex items-center gap-3 transition-all duration-300 translate-y-[-100px] opacity-0`;
-            toast.innerHTML = `<span class="font-bold">${icons[type]}</span><span class="text-sm font-medium">${message}</span>`;
-            
-            document.body.appendChild(toast);
-            
-            requestAnimationFrame(() => {
-                toast.classList.remove('translate-y-[-100px]', 'opacity-0');
-            });
-            
-            setTimeout(() => {
-                toast.classList.add('translate-y-[-100px]', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, duration);
+    const ToastManager = {
+        container: null,
+        toastQueue: [],
+        maxToasts: 4,
+        
+        init() {
+            if (!this.container) {
+                this.container = document.createElement('div');
+                this.container.className = 'toast-container';
+                document.body.appendChild(this.container);
+            }
         },
         
-        showError(message) { this.show(message, 'error'); },
-        showSuccess(message) { this.show(message, 'success'); },
-        showWarning(message) { this.show(message, 'warning'); }
+        show(message, type = 'info', duration = 4000, title = '') {
+            this.init();
+            
+            const icons = {
+                success: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>',
+                error: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>',
+                warning: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>',
+                info: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+            };
+            
+            const titles = {
+                success: 'نجاح!',
+                error: 'خطأ!',
+                warning: 'تنبيه!',
+                info: 'معلومة'
+            };
+            
+            const toast = document.createElement('div');
+            toast.className = `toast-notification toast-${type}`;
+            toast.innerHTML = `
+                <div class="toast-icon">${icons[type]}</div>
+                <div class="toast-content">
+                    <div class="toast-title">${title || titles[type]}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="ToastManager.dismiss(this.closest('.toast-notification'))">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <div class="toast-progress" style="animation-duration: ${duration}ms"></div>
+            `;
+            
+            this.container.appendChild(toast);
+            
+            requestAnimationFrame(() => {
+                toast.classList.add('slide-in');
+            });
+            
+            const timeoutId = setTimeout(() => {
+                this.dismiss(toast);
+            }, duration);
+            
+            toast.timeoutId = timeoutId;
+            
+            return toast;
+        },
+        
+        dismiss(toast) {
+            if (!toast || !toast.parentNode) return;
+            
+            if (toast.timeoutId) {
+                clearTimeout(toast.timeoutId);
+            }
+            
+            toast.classList.remove('slide-in');
+            toast.classList.add('slide-out');
+            
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 400);
+        },
+        
+        dismissAll() {
+            if (this.container) {
+                const toasts = this.container.querySelectorAll('.toast-notification');
+                toasts.forEach(toast => this.dismiss(toast));
+            }
+        },
+        
+        showError(message, duration = 4000, title = '') { 
+            return this.show(message, 'error', duration, title); 
+        },
+        showSuccess(message, duration = 4000, title = '') { 
+            return this.show(message, 'success', duration, title); 
+        },
+        showWarning(message, duration = 4000, title = '') { 
+            return this.show(message, 'warning', duration, title); 
+        },
+        showInfo(message, duration = 4000, title = '') { 
+            return this.show(message, 'info', duration, title); 
+        }
     };
+    
+    // Alias for backward compatibility
+    const NotificationManager = ToastManager;
     
     // ==========================================
     // نمط تصميم: Error Handler مركزي
@@ -100,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 userMessage = 'انتهت مهلة الاتصال. يرجى المحاولة مرة أخرى.';
             }
             
-            NotificationManager.showError(userMessage);
+            ToastManager.showError(userMessage, 5000);
             
             // تسجيل الخطأ للتحليل لاحقاً
             this.logError(error, context);
@@ -155,10 +219,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const index = this.favorites.indexOf(productId);
             if (index > -1) {
                 this.favorites.splice(index, 1);
-                NotificationManager.showSuccess('تمت الإزالة من المفضلة'); updateBadge();
+                ToastManager.showSuccess('تمت الإزالة من المفضلة', 3000); updateBadge();
             } else {
                 this.favorites.push(productId);
-                NotificationManager.showSuccess('تمت الإضافة للمفضلة ❤️'); updateBadge();
+                ToastManager.showSuccess('تمت الإضافة للمفضلة ❤️', 3000); updateBadge();
             }
             this.save();
             this.updateUI(productId);
@@ -292,54 +356,21 @@ document.addEventListener("DOMContentLoaded", () => {
     // دوال الإشعارات والصوت (Custom Alert & Snackbar)
     // ==========================================
     function showCustomAlert(message, type = 'error') {
-        const overlay = document.createElement('div');
-        overlay.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center opacity-0 transition-opacity duration-300';
-        
-        const icon = type === 'error' 
-            ? `<div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></div>`
-            : `<div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>`;
-
-        const modal = document.createElement('div');
-        modal.className = 'bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-[90%] text-center transform scale-90 transition-transform duration-300';
-        modal.innerHTML = `
-            ${icon}
-            <h3 class="text-xl font-black text-gray-900 mb-2">${type === 'error' ? 'تنبيه!' : 'نجاح!'}</h3>
-            <p class="text-gray-600 text-sm mb-6 leading-relaxed">${message}</p>
-            <button class="w-full py-3 bg-primary text-white rounded-full font-bold hover:bg-black transition-colors" onclick="this.closest('.fixed').remove()">حسناً، فهمت</button>
-        `;
-        
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
-
-        requestAnimationFrame(() => {
-            overlay.classList.remove('opacity-0');
-            modal.classList.remove('scale-90');
-            modal.classList.add('scale-100');
-        });
+        // استخدام نظام Toast الجديد بدلاً من المودال القديم
+        if (type === 'error') {
+            ToastManager.showError(message, 5000, 'تنبيه!');
+        } else {
+            ToastManager.showSuccess(message, 4000, 'نجاح!');
+        }
     }
 
-    // دالة إظهار الشريط السفلي (Snackbar)
+    // دالة إظهار الشريط السفلي (Snackbar) - تم التحديث لاستخدام Toast
     function showCartPopup() {
-        let popup = document.getElementById('smart-cart-popup');
-        if (!popup) {
-            popup = document.createElement('div');
-            popup.id = 'smart-cart-popup';
-            popup.className = 'fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-full shadow-2xl flex items-center justify-between gap-6 z-[999] transition-all duration-300 translate-y-20 opacity-0 min-w-[300px] w-[90%] md:w-auto';
-            popup.innerHTML = `
-                <span class="font-bold text-sm">تم إضافة المنتج للحقيبة 🛍️</span>
-                <button onclick="app.navigate('cart'); document.getElementById('smart-cart-popup').classList.add('translate-y-20', 'opacity-0');" class="bg-primary text-white px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest hover:bg-white hover:text-black transition-colors">الذهاب للسلة</button>
-            `;
-            document.body.appendChild(popup);
-        }
-
-        requestAnimationFrame(() => {
-            popup.classList.remove('translate-y-20', 'opacity-0');
-        });
-
-        clearTimeout(window.cartPopupTimeout);
-        window.cartPopupTimeout = setTimeout(() => {
-            if (popup) popup.classList.add('translate-y-20', 'opacity-0');
-        }, 4000);
+        // استخدام Toast Manager للإشعار
+        ToastManager.showSuccess('تم إضافة المنتج للحقيبة 🛍️', 3500);
+        
+        // تشغيل الصوت
+        playCartSound();
     }
 
     // دالة تشغيل الصوت
@@ -441,7 +472,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             
             if (!sessionStorage.getItem("lowStockShown")) {
-                NotificationManager.showWarning(message);
+                ToastManager.showWarning(message, 5000);
                 sessionStorage.setItem("lowStockShown", "true");
             }
         }
