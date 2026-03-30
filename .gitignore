@@ -1,0 +1,1 @@
+Nothing should be ignored in this case, as the modified files (analysis.js, index.html) are source code files and there are no build artifacts, dependencies, or temporary files in the changes.
