@@ -68,10 +68,13 @@
                 <div class="hidden md:flex relative">
                     <input type="text" id="desktop-search-input" placeholder="ابحث عن منتج..." 
                            class="w-64 px-4 py-2 pr-10 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
-                           oninput="app.handleSearch(this.value)">
+                           oninput="app.handleSearch(this.value)"
+                           autocomplete="off">
                     <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
+                    <!-- قائمة الاقتراحات -->
+                    <div id="search-suggestions-desktop" class="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 hidden z-50 overflow-hidden"></div>
                 </div>
                 
                 <!-- Mobile Menu Button -->
@@ -102,10 +105,13 @@
             <div class="relative">
                 <input type="text" id="mobile-search-input" placeholder="ابحث عن منتج..." 
                        class="w-full px-4 py-3 pr-10 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
-                       oninput="app.handleSearch(this.value)">
+                       oninput="app.handleSearch(this.value)"
+                       autocomplete="off">
                 <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
+                <!-- قائمة الاقتراحات للجوال -->
+                <div id="search-suggestions-mobile" class="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 hidden z-50 overflow-hidden"></div>
             </div>
         </div>
         
@@ -157,7 +163,7 @@
     <div class="absolute w-72 h-72 bg-primary/5 rounded-full blur-[100px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
     
     <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/body_lotion.png" 
-         class="absolute w-[35%] max-h-[55%] object-contain drop-shadow-2xl z-10 hover:z-40 hover:-translate-y-4 transition-all duration-500 right-[5%] bottom-[20%] mix-blend-multiply opacity-90 hover:opacity-100 cursor-pointer" 
+         class="absolute loading="lazy" w-[35%] max-h-[55%] object-contain drop-shadow-2xl z-10 hover:z-40 hover:-translate-y-4 transition-all duration-500 right-[5%] bottom-[20%] mix-blend-multiply opacity-90 hover:opacity-100 cursor-pointer" 
          alt="Body Lotion" onclick="app.navigate('product', 'ELFORAT-1773929789662')">
     
     <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/guzel_gold.png" 
@@ -185,7 +191,7 @@
             <div class="category-circle transition-all duration-500 group-hover:bg-primary/10 group-hover:border-primary/20">
                 <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/guzel_gold.png" 
                      alt="Hair Care Category" 
-                     class="category-img transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6">
+                     class="category-img loading="lazy" transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6">
             </div>
             <div class="category-info">
                 <h3 class="category-title text-right">العناية بالشعر</h3>
@@ -200,7 +206,7 @@
             <div class="category-circle transition-all duration-500 group-hover:bg-primary/10 group-hover:border-primary/20">
                 <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/body_lotion.png" 
                      alt="Skin Care Category" 
-                     class="category-img transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
+                     class="category-img loading="lazy" transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
             </div>
             <div class="category-info">
                 <h3 class="category-title text-right">العناية بالبشرة</h3>
@@ -215,7 +221,7 @@
             <div class="category-circle transition-all duration-500 group-hover:bg-primary/10 group-hover:border-primary/20">
                 <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/group2.png" 
                      alt="Bundles" 
-                     class="category-img transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
+                     class="category-img loading="lazy" transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
             </div>
             <div class="category-info">
                 <h3 class="category-title text-right">مجموعات كاملة</h3>
