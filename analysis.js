@@ -557,7 +557,23 @@ document.addEventListener("DOMContentLoaded", () => {
         
         if (grid) {
             if (products.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-20"><p class="text-gray-400 text-lg">لا توجد منتجات تطابق بحثك</p></div>`;
+                grid.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center py-32 text-center animate-fade-in-up">
+                        <div class="w-48 h-48 bg-gradient-to-br from-primary/10 to-secondary rounded-full flex items-center justify-center mb-8 shadow-inner">
+                            <svg class="w-24 h-24 text-primary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">لم يتم العثور على نتائج</h3>
+                        <p class="text-gray-500 text-lg mb-6 max-w-md">لا توجد منتجات تطابق بحثك "<span class="font-bold text-primary">${searchTerm}</span>"</p>
+                        <button onclick="app.handleSearch(''); document.getElementById('desktop-search-input').value=''; document.getElementById('mobile-search-input').value='';" 
+                                class="px-8 py-3 bg-primary text-white rounded-full font-bold hover:bg-neutral-900 transition-all shadow-lg shadow-primary/30 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                            </svg>
+                            عرض كل المنتجات
+                        </button>
+                    </div>`;
                 return;
             }
             
@@ -590,20 +606,30 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!container || !p) return;
         
         // إنشاء معرض صور (صورة رئيسية + صور إضافية وهمية للتوضيح)
-        const images = [p.img, p.img, p.img]; // يمكن توسيعها لاحقاً
+        const images = [p.img, p.img, p.img]; // يمكن توسيعها لاحقاً لصور متعددة حقيقية
+        
+        let currentImageIndex = 0;
         
         container.innerHTML = `
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                 <!-- معرض الصور -->
                 <div class="space-y-4">
-                    <div class="product-image-bg aspect-square flex items-center justify-center p-8 bg-[#f9f9f9] rounded-3xl overflow-hidden group">
-                        <img id="main-product-img" src="${p.img}" class="max-h-full mix-blend-multiply transition-transform duration-700 hover:scale-110 cursor-zoom-in" onerror="this.src='logo.png'">
+                    <div class="product-image-bg aspect-square flex items-center justify-center p-8 bg-[#f9f9f9] rounded-3xl overflow-hidden group relative">
+                        <img id="main-product-img" src="${p.img}" class="max-h-full mix-blend-multiply transition-all duration-700 hover:scale-110 cursor-zoom-in" onerror="this.src='logo.png'">
+                        <!-- أزرار التنقل للمعرض -->
+                        <button onclick="changeProductImage(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
+                        <button onclick="changeProductImage(1)" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
                     </div>
                     <div class="flex gap-3 justify-center">
                         ${images.map((img, idx) => `
-                            <button onclick="document.getElementById('main-product-img').src='${img}'" 
-                                    class="w-20 h-20 bg-[#f9f9f9] rounded-xl p-2 border-2 ${idx === 0 ? 'border-primary' : 'border-transparent'} hover:border-primary/50 transition-all">
-                                <img src="${img}" class="w-full h-full object-contain mix-blend-multiply">
+                            <button onclick="changeProductImage(${idx})" 
+                                    class="thumbnail-btn w-20 h-20 bg-[#f9f9f9] rounded-xl p-2 border-2 ${idx === 0 ? 'border-primary' : 'border-transparent'} hover:border-primary/50 transition-all overflow-hidden"
+                                    data-index="${idx}">
+                                <img src="${img}" class="w-full h-full object-contain mix-blend-multiply thumbnail-img">
                             </button>
                         `).join('')}
                     </div>
@@ -617,53 +643,138 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div class="flex items-center gap-4 pt-2">
                             <span class="text-3xl font-bold text-primary">${p.price} ج.م</span>
                             ${p.oldPrice ? `<span class="text-lg text-gray-400 line-through">${p.oldPrice} ج.م</span>` : ''}
-                            ${p.stock <= LOW_STOCK_THRESHOLD && p.stock > 0 ? `<span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-bold">متبقي ${p.stock} فقط</span>` : ''}
+                            ${p.stock <= LOW_STOCK_THRESHOLD && p.stock > 0 ? `<span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-bold animate-pulse">متبقي ${p.stock} فقط</span>` : ''}
+                            ${p.stock === 0 ? `<span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">نفذ من المخزون</span>` : ''}
                         </div>
                     </div>
                     
-                    <!-- نظام التابات -->
+                    <!-- نظام التابات المحسن -->
                     <div class="border-b border-gray-200">
-                        <div class="flex gap-6">
-                            <button onclick="document.getElementById('tab-desc').classList.remove('hidden'); document.getElementById('tab-ingredients').classList.add('hidden'); this.classList.add('border-primary', 'text-primary'); this.classList.remove('border-transparent', 'text-gray-500');" 
-                                    class="pb-3 border-b-2 border-primary text-primary font-bold text-sm transition-colors">الوصف</button>
-                            <button onclick="document.getElementById('tab-desc').classList.add('hidden'); document.getElementById('tab-ingredients').classList.remove('hidden'); this.classList.add('border-primary', 'text-primary'); this.classList.remove('border-transparent', 'text-gray-500');" 
-                                    class="pb-3 border-b-2 border-transparent text-gray-500 font-bold text-sm transition-colors">المكونات</button>
-                            <button onclick="document.getElementById('tab-desc').classList.add('hidden'); document.getElementById('tab-ingredients').classList.add('hidden'); document.getElementById('tab-reviews').classList.remove('hidden'); this.classList.add('border-primary', 'text-primary'); this.classList.remove('border-transparent', 'text-gray-500');" 
-                                    class="pb-3 border-b-2 border-transparent text-gray-500 font-bold text-sm transition-colors">التقييمات</button>
+                        <div class="flex gap-6" role="tablist">
+                            <button onclick="switchTab('desc')" 
+                                    id="tab-btn-desc"
+                                    class="tab-btn pb-3 border-b-2 border-primary text-primary font-bold text-sm transition-all relative"
+                                    role="tab"
+                                    aria-selected="true"
+                                    aria-controls="tab-desc">
+                                الوصف
+                                <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary transform scale-x-100 transition-transform"></span>
+                            </button>
+                            <button onclick="switchTab('ingredients')" 
+                                    id="tab-btn-ingredients"
+                                    class="tab-btn pb-3 border-b-2 border-transparent text-gray-500 font-bold text-sm transition-all hover:text-gray-700"
+                                    role="tab"
+                                    aria-selected="false"
+                                    aria-controls="tab-ingredients">
+                                المكونات
+                            </button>
+                            <button onclick="switchTab('reviews')" 
+                                    id="tab-btn-reviews"
+                                    class="tab-btn pb-3 border-b-2 border-transparent text-gray-500 font-bold text-sm transition-all hover:text-gray-700"
+                                    role="tab"
+                                    aria-selected="false"
+                                    aria-controls="tab-reviews">
+                                التقييمات
+                            </button>
                         </div>
                     </div>
                     
-                    <div id="tab-desc" class="text-gray-600 leading-relaxed">
+                    <div id="tab-desc" class="tab-content text-gray-600 leading-relaxed animate-fade-in-up">
                         <p>${p.desc || 'أفضل منتجات العناية المختارة بعناية فائقة لضمان أفضل النتائج لبشرتك وشعرك.'}</p>
                         ${p.size ? `<p class="mt-4 text-sm"><strong>الحجم:</strong> ${p.size}</p>` : ''}
                     </div>
                     
-                    <div id="tab-ingredients" class="hidden text-gray-600 leading-relaxed">
+                    <div id="tab-ingredients" class="tab-content hidden text-gray-600 leading-relaxed">
                         <p>${p.ingredients || 'مكونات طبيعية 100% بدون مواد حافظة أو كحول. مناسب لجميع أنواع البشرة والشعر.'}</p>
                     </div>
                     
-                    <div id="tab-reviews" class="hidden text-gray-600 leading-relaxed">
+                    <div id="tab-reviews" class="tab-content hidden text-gray-600 leading-relaxed">
                         <div class="flex items-center gap-2 mb-4">
-                            <div class="flex text-yellow-400">★★★★★</div>
+                            <div class="flex text-yellow-400 text-lg">★★★★★</div>
                             <span class="text-sm font-bold">(4.9/5 من 127 تقييم)</span>
                         </div>
-                        <p class="text-sm">كن أول من يضيف تقييمه لهذا المنتج!</p>
+                        <div class="space-y-4">
+                            <div class="bg-gray-50 p-4 rounded-2xl">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-xs">ن</div>
+                                    <span class="font-bold text-sm">نورة أحمد</span>
+                                    <div class="flex text-yellow-400 text-xs mr-auto">★★★★★</div>
+                                </div>
+                                <p class="text-sm text-gray-600">منتج رائع جداً! لاحظت الفرق من أول أسبوع. أنصح به بشدة 💕</p>
+                            </div>
+                        </div>
+                        <button class="mt-4 w-full py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-all text-sm">إضافة تقييمك</button>
                     </div>
                     
                     <!-- أزرار الإجراء -->
                     <div class="space-y-3 pt-4 border-t border-gray-100">
                         <div class="flex items-center gap-4">
                             <div class="flex border-2 border-gray-200 rounded-full" dir="ltr">
-                                <button onclick="const qtyInput = document.getElementById('product-qty'); qtyInput.value = Math.max(1, parseInt(qtyInput.value) - 1);" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-l-full">-</button>
-                                <input id="product-qty" type="number" value="1" min="1" class="w-12 text-center font-bold border-x-2 border-gray-200 focus:outline-none" readonly>
-                                <button onclick="const qtyInput = document.getElementById('product-qty'); qtyInput.value = parseInt(qtyInput.value) + 1;" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-r-full">+</button>
+                                <button onclick="const qtyInput = document.getElementById('product-qty'); const newVal = Math.max(1, parseInt(qtyInput.value) - 1); qtyInput.value = newVal;" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-l-full active:scale-95">-</button>
+                                <input id="product-qty" type="number" value="1" min="1" max="${p.stock}" class="w-12 text-center font-bold border-x-2 border-gray-200 focus:outline-none" readonly>
+                                <button onclick="const qtyInput = document.getElementById('product-qty'); const newVal = Math.min(${p.stock}, parseInt(qtyInput.value) + 1); qtyInput.value = newVal;" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-r-full active:scale-95">+</button>
                             </div>
-                            <button onclick="app.addToCart('${p.id}', document.getElementById('product-qty').value)" class="flex-1 bg-primary text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:bg-black transition-all shadow-lg shadow-primary/30">أضف للحقيبة</button>
+                            <button onclick="app.addToCart('${p.id}', document.getElementById('product-qty').value)" class="flex-1 bg-primary text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:bg-black transition-all shadow-lg shadow-primary/30 active:scale-95">أضف للحقيبة</button>
                         </div>
-                        <button onclick="app.buyNow('${p.id}', document.getElementById('product-qty').value)" class="w-full bg-black text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:bg-primary transition-all">اشتري الآن</button>
+                        <button onclick="app.buyNow('${p.id}', document.getElementById('product-qty').value)" class="w-full bg-black text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:bg-primary transition-all active:scale-95">اشتري الآن</button>
                     </div>
                 </div>
-            </div>`;
+            </div>
+            
+            <script>
+                window.currentImageIndex = 0;
+                window.productImages = ${JSON.stringify(images)};
+                
+                function changeProductImage(direction) {
+                    if (typeof direction === 'number') {
+                        if (direction >= 0) {
+                            window.currentImageIndex = direction;
+                        } else {
+                            window.currentImageIndex = (window.currentImageIndex - 1 + window.productImages.length) % window.productImages.length;
+                        }
+                    }
+                    
+                    const mainImg = document.getElementById('main-product-img');
+                    mainImg.style.opacity = '0';
+                    mainImg.style.transform = 'scale(0.95)';
+                    
+                    setTimeout(() => {
+                        mainImg.src = window.productImages[window.currentImageIndex];
+                        mainImg.style.opacity = '1';
+                        mainImg.style.transform = 'scale(1)';
+                    }, 200);
+                    
+                    // تحديث الثمبنيلز
+                    document.querySelectorAll('.thumbnail-btn').forEach((btn, idx) => {
+                        if (idx === window.currentImageIndex) {
+                            btn.classList.add('border-primary');
+                            btn.classList.remove('border-transparent');
+                        } else {
+                            btn.classList.remove('border-primary');
+                            btn.classList.add('border-transparent');
+                        }
+                    });
+                }
+                
+                function switchTab(tabName) {
+                    // إخفاء كل المحتوى
+                    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+                    // إظهار المحتوى المطلوب
+                    document.getElementById('tab-' + tabName).classList.remove('hidden');
+                    
+                    // تحديث حالة الأزرار
+                    document.querySelectorAll('.tab-btn').forEach(btn => {
+                        btn.classList.remove('border-primary', 'text-primary');
+                        btn.classList.add('border-transparent', 'text-gray-500');
+                        btn.setAttribute('aria-selected', 'false');
+                    });
+                    
+                    const activeBtn = document.getElementById('tab-btn-' + tabName);
+                    activeBtn.classList.remove('border-transparent', 'text-gray-500');
+                    activeBtn.classList.add('border-primary', 'text-primary');
+                    activeBtn.setAttribute('aria-selected', 'true');
+                }
+            <\/script>`;
     }
 
     function renderCart() {
@@ -917,8 +1028,25 @@ document.addEventListener("DOMContentLoaded", () => {
     loadCart();
     updateBadge();
 
+    // إخفاء شاشة التحميل العالمية عند اكتمال التحميل
+    function hideGlobalLoader() {
+        const loader = document.getElementById('global-loader');
+        if (loader) {
+            loader.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => loader.remove(), 500);
+        }
+    }
+
     loadGifts();
-    fetchProducts();
+    fetchProducts().then(() => {
+        hideGlobalLoader();
+    }).catch(() => {
+        hideGlobalLoader();
+    });
+    
+    // Timeout احتياطي لإخفاء اللودر حتى لو حدث خطأ
+    setTimeout(hideGlobalLoader, 5000);
+    
     checkLowStock();
     startCountdown();
     
