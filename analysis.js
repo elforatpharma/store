@@ -134,6 +134,56 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
+    // ==========================================
+    // نمط تصميم: Favorites Manager لإدارة المفضلة
+    // ==========================================
+    const FavoritesManager = {
+        favorites: [],
+        
+        init() {
+            const saved = localStorage.getItem('elforat_favorites');
+            if (saved) {
+                this.favorites = JSON.parse(saved);
+            }
+        },
+        
+        save() {
+            localStorage.setItem('elforat_favorites', JSON.stringify(this.favorites));
+        },
+        
+        toggle(productId) {
+            const index = this.favorites.indexOf(productId);
+            if (index > -1) {
+                this.favorites.splice(index, 1);
+                NotificationManager.showSuccess('تمت الإزالة من المفضلة');
+            } else {
+                this.favorites.push(productId);
+                NotificationManager.showSuccess('تمت الإضافة للمفضلة ❤️');
+            }
+            this.save();
+            this.updateUI(productId);
+        },
+        
+        isFavorite(productId) {
+            return this.favorites.includes(productId);
+        },
+        
+        updateUI(productId) {
+            const btn = document.querySelector(`[data-favorite-btn="${productId}"]`);
+            if (btn) {
+                const isFav = this.isFavorite(productId);
+                btn.classList.toggle('favorite-active', isFav);
+                btn.innerHTML = isFav 
+                    ? `<svg class="heart-icon w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+                    : `<svg class="heart-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`;
+            }
+        },
+        
+        getCount() {
+            return this.favorites.length;
+        }
+    };
+
   let productsDB = [];
     let cart = [];
 
@@ -161,6 +211,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function fetchProducts() {
         AppState.setState({ status: 'loading' });
+        
+        // عرض Skeleton Loading أثناء التحميل
+        renderSkeletonLoading();
         
         try {
             // [تعديل الترتيب]: جلب المنتجات مرتبة حسب الـ ID لضمان الترتيب القديم
@@ -210,6 +263,29 @@ document.addEventListener("DOMContentLoaded", () => {
             
             renderCatalog(null, '');
         }
+    }
+    
+    // دالة عرض Skeleton Loading
+    function renderSkeletonLoading() {
+        const grid = document.getElementById('catalog-grid');
+        if (!grid) return;
+        
+        grid.innerHTML = Array(8).fill(0).map((_, i) => `
+            <div class="product-card opacity-0 animate-fade-in-up" style="animation-delay: ${i * 50}ms">
+                <div class="product-image-bg mb-6 skeleton-img aspect-square"></div>
+                <div class="px-1 space-y-2">
+                    <div class="skeleton skeleton-text w-20 h-3"></div>
+                    <div class="skeleton skeleton-title"></div>
+                    <div class="flex gap-2 pt-2">
+                        <div class="skeleton skeleton-text w-24 h-5"></div>
+                    </div>
+                </div>
+                <div class="flex gap-2 mt-4">
+                    <div class="skeleton skeleton-text flex-1 h-12 rounded-full"></div>
+                    <div class="skeleton skeleton-text flex-1 h-12 rounded-full"></div>
+                </div>
+            </div>
+        `).join('');
     }
 
         // ==========================================
@@ -577,11 +653,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
             
-            grid.innerHTML = products.map((p, index) => `
+            grid.innerHTML = products.map((p, index) => {
+                const isFavorite = FavoritesManager.isFavorite(p.id);
+                return `
                 <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${p.id}')">
                     <div class="product-image-bg relative mb-6 overflow-hidden">
                         <img src="${p.img}" class="max-h-full transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
                         ${p.badge ? `<div class="absolute top-4 left-4 z-10"><span class="badge-premium">${p.badge}</span></div>` : ''}
+                        <button onclick="event.stopPropagation();" data-favorite-btn="${p.id}" class="favorite-btn absolute top-4 right-4 z-20 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${isFavorite ? 'favorite-active' : ''}" title="${isFavorite ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
+                            ${isFavorite 
+                                ? `<svg class="heart-icon w-6 h-6 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+                                : `<svg class="heart-icon w-6 h-6 text-gray-400 hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
+                            }
+                        </button>
                         <button onclick="event.stopPropagation(); app.addToCart('${p.id}')" class="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-md py-4 text-[9px] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-black hover:text-white border border-gray-100">إضافة سريعة +</button>
                     </div>
                     <div class="space-y-1 mb-6 px-1">
@@ -596,7 +680,19 @@ document.addEventListener("DOMContentLoaded", () => {
                         <button onclick="event.stopPropagation(); app.addToCart('${p.id}')" class="flex-1 btn-pill btn-add-cart-minimal py-3">أضف للسلة</button>
                         <button onclick="event.stopPropagation(); app.buyNow('${p.id}')" class="flex-1 btn-pill btn-buy-now-premium py-3">اشتري الآن</button>
                     </div>
-                </article>`).join('');
+                </article>`;
+            }).join('');
+            
+            // إضافة مستمعي الأحداث لأزرار المفضلة
+            setTimeout(() => {
+                document.querySelectorAll('.favorite-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const productId = btn.getAttribute('data-favorite-btn');
+                        FavoritesManager.toggle(productId);
+                    });
+                });
+            }, 0);
         }
     }
 
@@ -640,11 +736,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="space-y-3">
                         <p class="text-primary font-bold text-[10px] uppercase tracking-[0.3em]">${p.category}</p>
                         <h1 class="text-4xl md:text-5xl font-extrabold text-black leading-tight tracking-tight">${p.name}</h1>
-                        <div class="flex items-center gap-4 pt-2">
+                        <div class="flex items-center gap-4 pt-2 flex-wrap">
                             <span class="text-3xl font-bold text-primary">${p.price} ج.م</span>
                             ${p.oldPrice ? `<span class="text-lg text-gray-400 line-through">${p.oldPrice} ج.م</span>` : ''}
-                            ${p.stock <= LOW_STOCK_THRESHOLD && p.stock > 0 ? `<span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-bold animate-pulse">متبقي ${p.stock} فقط</span>` : ''}
-                            ${p.stock === 0 ? `<span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">نفذ من المخزون</span>` : ''}
+                            ${p.stock <= LOW_STOCK_THRESHOLD && p.stock > 0 ? `<span class="text-xs bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full font-bold low-stock-alert shadow-sm">⚠️ متبقي ${p.stock} فقط!</span>` : ''}
+                            ${p.stock === 0 ? `<span class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-full font-bold shadow-sm">❌ نفذ من المخزون</span>` : ''}
+                        </div>
+                        <div class="flex items-center gap-3 pt-2">
+                            <button onclick="FavoritesManager.toggle('${p.id}')" data-favorite-btn="${p.id}" class="favorite-btn flex items-center gap-2 px-4 py-2 border-2 border-gray-200 rounded-full hover:border-primary transition-all ${FavoritesManager.isFavorite(p.id) ? 'favorite-active border-primary' : ''}">
+                                ${FavoritesManager.isFavorite(p.id) 
+                                    ? `<svg class="heart-icon w-5 h-5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+                                    : `<svg class="heart-icon w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
+                                }
+                                <span class="text-sm font-bold">${FavoritesManager.isFavorite(p.id) ? 'في المفضلة' : 'أضف للمفضلة'}</span>
+                            </button>
                         </div>
                     </div>
                     
@@ -1038,6 +1143,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     loadGifts();
+    FavoritesManager.init(); // تهيئة نظام المفضلة
     fetchProducts().then(() => {
         hideGlobalLoader();
     }).catch(() => {
