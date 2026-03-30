@@ -10,6 +10,129 @@ document.addEventListener("DOMContentLoaded", () => {
     const supabaseUrl = 'https://sidtdxchiqiogfkwbdui.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZHRkeGNoaXFpb2dma3diZHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTEyMTAsImV4cCI6MjA4OTY4NzIxMH0.QF1-67Qu2HfWJt3ANSegM87fykOYQBwqC7ggLG8LTVU';
     const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    
+    // ==========================================
+    // نمط تصميم: State Manager لإدارة الحالات
+    // ==========================================
+    const AppState = {
+        status: 'idle', // idle, loading, success, error
+        error: null,
+        retryCount: 0,
+        maxRetries: 3,
+        listeners: [],
+        
+        setState(newState) {
+            this.status = newState.status ?? this.status;
+            this.error = newState.error ?? null;
+            this.retryCount = newState.retryCount ?? this.retryCount;
+            this.notifyListeners();
+        },
+        
+        subscribe(callback) {
+            this.listeners.push(callback);
+        },
+        
+        notifyListeners() {
+            this.listeners.forEach(cb => cb(this));
+        },
+        
+        reset() {
+            this.setState({ status: 'idle', error: null, retryCount: 0 });
+        }
+    };
+    
+    // ==========================================
+    // نمط تصميم: Notification System موحد
+    // ==========================================
+    const NotificationManager = {
+        show(message, type = 'info', duration = 4000) {
+            const toast = document.createElement('div');
+            const icons = {
+                success: '✓',
+                error: '✕',
+                warning: '⚠',
+                info: 'ℹ'
+            };
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-orange-500',
+                info: 'bg-blue-500'
+            };
+            
+            toast.className = `fixed top-4 left-1/2 transform -translate-x-1/2 ${colors[type]} text-white px-6 py-3 rounded-full shadow-2xl z-[9999] flex items-center gap-3 transition-all duration-300 translate-y-[-100px] opacity-0`;
+            toast.innerHTML = `<span class="font-bold">${icons[type]}</span><span class="text-sm font-medium">${message}</span>`;
+            
+            document.body.appendChild(toast);
+            
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-[-100px]', 'opacity-0');
+            });
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-[-100px]', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        },
+        
+        showError(message) { this.show(message, 'error'); },
+        showSuccess(message) { this.show(message, 'success'); },
+        showWarning(message) { this.show(message, 'warning'); }
+    };
+    
+    // ==========================================
+    // نمط تصميم: Error Handler مركزي
+    // ==========================================
+    const ErrorHandler = {
+        handle(error, context = '') {
+            console.error(`[Error in ${context}]:`, error);
+            
+            AppState.setState({ 
+                status: 'error', 
+                error: error.message || 'حدث خطأ غير متوقع'
+            });
+            
+            let userMessage = 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.';
+            
+            if (error.message?.includes('network')) {
+                userMessage = 'يبدو أنك غير متصل بالإنترنت. يرجى التحقق من اتصالك.';
+            } else if (error.message?.includes('timeout')) {
+                userMessage = 'انتهت مهلة الاتصال. يرجى المحاولة مرة أخرى.';
+            }
+            
+            NotificationManager.showError(userMessage);
+            
+            // تسجيل الخطأ للتحليل لاحقاً
+            this.logError(error, context);
+        },
+        
+        async logError(error, context) {
+            try {
+                await _supabase.from('error_logs').insert([{
+                    error_message: error.message,
+                    error_stack: error.stack,
+                    context: context,
+                    timestamp: new Date().toISOString(),
+                    user_agent: navigator.userAgent
+                }]);
+            } catch (e) {
+                console.warn('فشل تسجيل الخطأ:', e);
+            }
+        },
+        
+        retry(operation, maxRetries = 3) {
+            return async (...args) => {
+                for (let i = 0; i < maxRetries; i++) {
+                    try {
+                        return await operation(...args);
+                    } catch (error) {
+                        if (i === maxRetries - 1) throw error;
+                        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+                    }
+                }
+            };
+        }
+    };
 
   let productsDB = [];
     let cart = [];
@@ -37,14 +160,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function fetchProducts() {
+        AppState.setState({ status: 'loading' });
+        
         try {
             // [تعديل الترتيب]: جلب المنتجات مرتبة حسب الـ ID لضمان الترتيب القديم
-            const { data, error } = await _supabase
-                .from('products')
-                .select('*')
-                .order('priority', { ascending: false }); // الترتيب حسب الأولوية
+            const fetchWithRetry = ErrorHandler.retry(async () => {
+                const { data, error } = await _supabase
+                    .from('products')
+                    .select('*')
+                    .order('priority', { ascending: false });
+                
+                if (error) throw error;
+                return data;
+            }, AppState.maxRetries);
             
-            if (error) throw error;
+            const data = await fetchWithRetry();
 
             productsDB = data.map(p => ({
                 id: p.id,
@@ -59,7 +189,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 size: p.size || '',
                 stock: parseInt(p.stock) || 100 // إضافة المخزون
             }));
+            
+            AppState.setState({ status: 'success' });
         } catch (err) {
+            ErrorHandler.handle(err, 'fetchProducts');
             console.warn('تعذر الاتصال بالسيرفر، سيتم استخدام البيانات المحلية الاحتياطية.');
             productsDB = [
                 { id: 'p1', name: 'Guzel Gold Serum', category: 'العناية بالشعر', price: 250, oldPrice: 350, img: getFullImg('guzel_gold.png'), badge: 'خصم 28%' }
@@ -198,13 +331,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function loadGifts() {
         try {
-            const { data, error } = await _supabase
-                .from('gifts')
-                .select('*')
-                .eq('is_active', true);
-            if (!error && data) activeGifts = data;
+            const fetchGiftsWithRetry = ErrorHandler.retry(async () => {
+                const { data, error } = await _supabase
+                    .from("gifts")
+                    .select("*")
+                    .eq("is_active", true);
+                if (error) throw error;
+                return data;
+            }, 2);
+            
+            const data = await fetchGiftsWithRetry();
+            if (data) activeGifts = data;
+            
+            AppState.setState({ status: "success" });
         } catch (e) {
-            console.log('تعذر جلب الهدايا من سوبابيز');
+            ErrorHandler.handle(e, "loadGifts");
+            console.log("تعذر جلب الهدايا من سوبابيز");
         }
     }
 
@@ -214,20 +356,46 @@ document.addEventListener("DOMContentLoaded", () => {
         const lowStockProducts = productsDB.filter(p => p.stock <= LOW_STOCK_THRESHOLD && p.stock > 0);
         
         if (lowStockProducts.length > 0) {
-            // إنشاء إشعار واحد لكل المنتجات منخفضة المخزون
-            const productNames = lowStockProducts.slice(0, 3).map(p => p.name).join('، ');
+            const productNames = lowStockProducts.slice(0, 3).map(p => p.name).join("، ");
             const moreCount = lowStockProducts.length - 3;
             
-            let message = `⚠️ تنبيه: الكمية المتبقية قليلة لـ:\n${productNames}`;
+            let message = "⚠️ تنبيه: الكمية المتبقية قليلة لـ: " + productNames;
             if (moreCount > 0) {
-                message += ` و${moreCount} منتجات أخرى`;
+                message += " و" + moreCount + " منتجات أخرى";
             }
             
-            // عرض الإشعار مرة واحدة فقط في الجلسة
-            if (!sessionStorage.getItem('lowStockShown')) {
-                showCustomAlert(message, 'error');
-                sessionStorage.setItem('lowStockShown', 'true');
+            if (!sessionStorage.getItem("lowStockShown")) {
+                NotificationManager.showWarning(message);
+                sessionStorage.setItem("lowStockShown", "true");
             }
+        }
+    }
+    
+    // ==========================================
+    // شريط الإشعارات العلوي للعروض
+    // ==========================================
+    function showPromotionBanner() {
+        const existingBanner = document.getElementById("promo-banner");
+        if (existingBanner) existingBanner.remove();
+        
+        const banner = document.createElement("div");
+        banner.id = "promo-banner";
+        banner.className = "fixed top-0 left-0 right-0 bg-gradient-to-r from-primary via-pink-600 to-primary text-white py-3 px-4 z-[9998] flex items-center justify-center gap-4 overflow-hidden";
+        banner.innerHTML = `
+            <div class="animate-pulse">🎉</div>
+            <span class="font-bold text-sm md:text-base">توصيل مجاني للطلبات فوق 500 ج.م! | خصم 20% على المجموعات المتكاملة</span>
+            <button onclick="this.parentElement.remove()" class="hover:bg-white/20 rounded-full p-1 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        `;
+        
+        document.body.insertBefore(banner, document.body.firstChild);
+        
+        const nav = document.querySelector("nav");
+        if (nav) {
+            nav.style.top = "48px";
         }
     }
     function checkOffers() {
@@ -753,4 +921,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchProducts();
     checkLowStock();
     startCountdown();
+    
+    /* إظهار شريط العروض الترويجية */
+    showPromotionBanner();
 });
