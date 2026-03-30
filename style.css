@@ -69,7 +69,16 @@ body {
 }
 
 .heart-icon:hover {
-    transform: scale(1.2);
+    transform: scale(1.3);
+}
+
+/* زر المفضلة - تحسينات */
+.favorite-btn {
+    cursor: pointer;
+}
+
+.favorite-btn:hover {
+    transform: scale(1.1);
 }
 
 /* تعديل الهيدر عند وجود بانر العروض */
