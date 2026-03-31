@@ -196,14 +196,13 @@ body {
 }
 
 #favorites-grid .favorite-btn.favorite-active {
-    background: linear-gradient(135deg, #ec135b, #ff4d8d);
-    box-shadow: 0 6px 20px rgba(236, 19, 91, 0.5);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 #favorites-grid .favorite-btn.favorite-active:hover {
-    background: linear-gradient(135deg, #ff4d8d, #ec135b);
-    box-shadow: 0 10px 30px rgba(236, 19, 91, 0.6);
-    transform: scale(1.2) rotate(8deg);
+    background: linear-gradient(135deg, rgba(236, 19, 91, 0.1), rgba(255, 255, 255, 0.95));
+    box-shadow: 0 8px 25px rgba(236, 19, 91, 0.4);
 }
 
 /* تأثير الإطار الوردي المتوهج */
