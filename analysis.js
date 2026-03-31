@@ -503,7 +503,7 @@ document.addEventListener("DOMContentLoaded", () => {
         banner.innerHTML = `
             <div class="animate-pulse">🎉</div>
             <span class="font-bold text-sm md:text-base">احصل علي كريم صنفرة مجانا للطلبات فوق 500 ج.م! | خصم 20% على المجموعات المتكاملة</span>
-            <button onclick="this.parentElement.remove()" class="hover:bg-white/20 rounded-full p-1 transition-colors">
+            <button id="close-promo-btn" class="hover:bg-white/20 rounded-full p-1 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
@@ -515,7 +515,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const nav = document.querySelector("nav");
         if (nav) {
             nav.style.top = "48px";
+            nav.style.transition = "top 0.3s ease";
         }
+        
+        document.getElementById("close-promo-btn").addEventListener("click", function() {
+            banner.remove();
+            if (nav) {
+                nav.style.top = "0";
+            }
+        });
     }
     function checkOffers() {
         // إزالة كل الهدايا الحالية من السلة أولاً
