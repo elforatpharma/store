@@ -502,7 +502,7 @@ document.addEventListener("DOMContentLoaded", () => {
         banner.className = "fixed top-0 left-0 right-0 bg-gradient-to-r from-primary via-pink-600 to-primary text-white py-3 px-4 z-[9998] flex items-center justify-center gap-4 overflow-hidden";
         banner.innerHTML = `
             <div class="animate-pulse">🎉</div>
-            <span class="font-bold text-sm md:text-base">توصيل مجاني للطلبات فوق 500 ج.م! | خصم 20% على المجموعات المتكاملة</span>
+            <span class="font-bold text-sm md:text-base">احصل علي كريم صنفرة مجانا للطلبات فوق 500 ج.م! | خصم 20% على المجموعات المتكاملة</span>
             <button onclick="this.parentElement.remove()" class="hover:bg-white/20 rounded-full p-1 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
