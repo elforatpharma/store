@@ -1031,3 +1031,38 @@ button[onclick*="buyNow"]:hover::after {
     transform: translateY(-10px); /* التحريك للأعلى بمقدار 10 بكسل */
     box-shadow: 0 20px 25px -5px rgba(236, 19, 91, 0.1), 0 10px 10px -5px rgba(236, 19, 91, 0.04);
 }
+
+/* ==========================================
+   تأثير الخلفية الزجاجية لصور المنتجات
+   ========================================== */
+.product-visual-glass {
+    /* تدرج وردي ناعم شفاف */
+    background: linear-gradient(
+        135deg, 
+        rgba(255, 255, 255, 0.4) 0%, 
+        rgba(236, 19, 91, 0.05) 100%
+    );
+    
+    /* تأثير الضباب البرمجي لإخفاء تفاصيل الخلفية تحت الصورة */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px); /* لدعم متصفحات آيفون */
+    
+    /* حواف بيضاء خفيفة لتعزيز مظهر الزجاج */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    
+    /* جعل الزوايا دائرية لتناسب التصميم */
+    border-radius: 20px;
+    
+    /* تأكد من أن الصورة تتوسط هذه الخلفية */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+/* تأثير عند تمرير الماوس */
+.product-card:hover .product-visual-glass {
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(1.02);
+}

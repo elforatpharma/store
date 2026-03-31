@@ -1,1 +1,1 @@
-Nothing should be ignored based on the provided file changes. The only added file is 'ocean-hero-demo.html', which appears to be a source code file and should not be ignored.
+Nothing should be ignored based on the provided file changes, as they only include source files (.js, .css) without any build artifacts, dependencies, or temporary files.

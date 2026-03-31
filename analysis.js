@@ -357,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         grid.innerHTML = Array(8).fill(0).map((_, i) => `
             <div class="product-card opacity-0 animate-fade-in-up" style="animation-delay: ${i * 50}ms">
-                <div class="product-image-bg mb-6 skeleton-img aspect-square"></div>
+                <div class="product-visual-glass mb-6 skeleton-img aspect-square"></div>
                 <div class="px-1 space-y-2">
                     <div class="skeleton skeleton-text w-20 h-3"></div>
                     <div class="skeleton skeleton-title"></div>
@@ -916,8 +916,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const isFavorite = FavoritesManager.isFavorite(p.id);
                 return `
                 <article class="floating-card bg-white rounded-3xl p-4 text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
-                    <div class="product-image-bg relative mb-6 overflow-hidden rounded-2xl bg-gray-50 flex items-center justify-center p-6">
-                        <img src="${sanitize(p.img)}" loading="lazy" class="max-h-48 transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
+                    <div class="product-visual-glass relative mb-6 overflow-hidden rounded-2xl flex items-center justify-center p-6">
+                        <img src="${sanitize(p.img)}" loading="lazy" class="max-h-48 transition-transform duration-500 group-hover:scale-110 drop-shadow-xl" onerror="this.src='logo.png'">
                         ${p.badge ? `<div class="absolute top-4 left-4 z-10"><span class="badge-premium">${sanitize(p.badge)}</span></div>` : ''}
                         <button onclick="event.stopPropagation();" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn absolute top-3 right-3 z-20 w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-md">
                             ${isFavorite 
@@ -968,8 +968,8 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                 <!-- معرض الصور -->
                 <div class="space-y-4">
-                    <div class="product-image-bg aspect-square flex items-center justify-center p-8 bg-[#f9f9f9] rounded-3xl overflow-hidden group relative">
-                        <img id="main-product-img" src="${sanitize(p.img)}" loading="lazy" class="max-h-full mix-blend-multiply transition-all duration-700 hover:scale-110 cursor-zoom-in" onerror="this.src='logo.png'" onclick="openImageZoom('${sanitize(p.img)}')">
+                    <div class="product-visual-glass aspect-square flex items-center justify-center p-8 rounded-3xl overflow-hidden group relative">
+                        <img id="main-product-img" src="${sanitize(p.img)}" loading="lazy" class="max-h-full transition-all duration-700 hover:scale-110 cursor-zoom-in drop-shadow-xl" onerror="this.src='logo.png'" onclick="openImageZoom('${sanitize(p.img)}')">
                         <!-- أزرار التنقل للمعرض -->
                         <button onclick="changeProductImage(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
@@ -1384,8 +1384,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             return `
                 <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
-                    <div class="product-image-bg relative mb-6 overflow-hidden">
-                        <img src="${sanitize(p.img)}" loading="lazy" class="max-h-full transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
+                    <div class="product-visual-glass relative mb-6 overflow-hidden">
+                        <img src="${sanitize(p.img)}" loading="lazy" class="max-h-full transition-transform duration-500 group-hover:scale-110 drop-shadow-xl" onerror="this.src='logo.png'">
                         ${p.badge ? `<div class="absolute top-4 left-4 z-10"><span class="badge-premium">${sanitize(p.badge)}</span></div>` : ''}
                         <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn absolute top-3 right-3 z-20 w-6 h-6 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${isFav ? 'favorite-active' : ''}" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
                             ${isFav
