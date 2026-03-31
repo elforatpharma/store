@@ -625,3 +625,285 @@ nav {
         padding: 14px 16px;
     }
 }
+
+/* ==========================================
+   تحسينات صفحة المنتج الواحد
+   ========================================== */
+
+/* Breadcrumb Navigation */
+#breadcrumb-category {
+    transition: color 0.3s ease;
+}
+
+/* Tab Buttons Animation */
+.tab-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.tab-btn::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: #ec135b;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.tab-btn:hover::before {
+    width: 80%;
+}
+
+/* Tab Content Fade Animation */
+.tab-content {
+    animation: fadeInTab 0.4s ease forwards;
+}
+
+@keyframes fadeInTab {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Quantity Input Styling */
+#product-qty {
+    -moz-appearance: textfield;
+}
+
+#product-qty::-webkit-outer-spin-button,
+#product-qty::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Related Products Section */
+#related-products {
+    scroll-margin-top: 100px;
+}
+
+/* Product Image Zoom Effects */
+#main-product-img {
+    cursor: zoom-in;
+}
+
+.thumbnail-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.thumbnail-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(236, 19, 91, 0.1);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.thumbnail-btn:hover::after {
+    opacity: 1;
+}
+
+/* Low Stock Warning Enhancement */
+.low-stock-alert {
+    position: relative;
+}
+
+.low-stock-alert::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(45deg, #f97316, #fb923c, #f97316);
+    background-size: 200% 200%;
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0;
+    animation: lowStockGlow 2s ease infinite;
+}
+
+@keyframes lowStockGlow {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 0.5; }
+}
+
+/* Add to Cart Button Pulse */
+button[onclick*="addToCart"] {
+    position: relative;
+    overflow: hidden;
+}
+
+button[onclick*="addToCart"]::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+button[onclick*="addToCart"]:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Buy Now Button Shine Effect */
+button[onclick*="buyNow"] {
+    position: relative;
+    overflow: hidden;
+}
+
+button[onclick*="buyNow"]::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 70%
+    );
+    transform: rotate(45deg);
+    transition: transform 0.6s;
+}
+
+button[onclick*="buyNow"]:hover::after {
+    transform: rotate(45deg) translate(50%, 50%);
+}
+
+/* Reviews Stars Animation */
+#tab-reviews .text-yellow-400 {
+    display: inline-block;
+    animation: starShine 2s ease infinite;
+}
+
+@keyframes starShine {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.3); }
+}
+
+/* Review Card Hover */
+#tab-reviews .bg-gray-50 {
+    transition: all 0.3s ease;
+}
+
+#tab-reviews .bg-gray-50:hover {
+    transform: translateX(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* Image Zoom Modal Enhancements */
+#image-zoom-modal {
+    backdrop-filter: blur(10px);
+}
+
+#zoomed-image {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Responsive Improvements for Product Page */
+@media (max-width: 768px) {
+    #product-details-container .grid {
+        gap: 2rem;
+    }
+    
+    #product-details-container h1 {
+        font-size: 1.75rem;
+    }
+    
+    .thumbnail-btn {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+/* Sticky Add to Cart Bar on Mobile */
+@media (max-width: 640px) {
+    .mobile-sticky-cart {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 1rem;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+        z-index: 100;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+}
+
+/* Favorite Button in Product Details */
+[data-favorite-btn] {
+    transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+[data-favorite-btn]:hover {
+    transform: scale(1.1);
+}
+
+[data-favorite-btn].favorite-active {
+    background: linear-gradient(135deg, #ec135b, #ff4d8d);
+    border-color: #ec135b;
+    color: white;
+}
+
+/* Category Badge */
+#product-details-container .text-primary.font-bold.text-\[10px\] {
+    letter-spacing: 0.2em;
+    position: relative;
+    padding-left: 20px;
+}
+
+#product-details-container .text-primary.font-bold.text-\[10px\]::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 15px;
+    height: 2px;
+    background: #ec135b;
+    transform: translateY(-50%);
+}
+
+/* Price Tag Style */
+#product-details-container .text-3xl.font-bold.text-primary {
+    position: relative;
+    display: inline-block;
+}
+
+#product-details-container .text-3xl.font-bold.text-primary::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, #ec135b, transparent);
+    border-radius: 2px;
+}
+
+/* Tab Content Scroll Indicator */
+#product-details-container .border-b {
+    position: relative;
+}
+
+#product-details-container .border-b::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, #e5e7eb, #ec135b, #e5e7eb);
+    opacity: 0.5;
+}
