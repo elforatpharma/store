@@ -44,6 +44,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // نمط تصميم: Notification System موحد (متطور)
     // ==========================================
+    
+    // ==========================================
+    // دالة Sanitize للحماية من XSS
+    // ==========================================
+    function sanitize(str) {
+        const el = document.createElement('div');
+        el.textContent = str ?? '';
+        return el.innerHTML;
+    }
+    
     const ToastManager = {
         container: null,
         toastQueue: [],
@@ -897,11 +907,11 @@ document.addEventListener("DOMContentLoaded", () => {
             grid.innerHTML = products.map((p, index) => {
                 const isFavorite = FavoritesManager.isFavorite(p.id);
                 return `
-                <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${p.id}')">
+                <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
                     <div class="product-image-bg relative mb-6 overflow-hidden">
-                        <img src="${p.img}" loading="lazy" class="max-h-full transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
-                        ${p.badge ? `<div class="absolute top-4 left-4 z-10"><span class="badge-premium">${p.badge}</span></div>` : ''}
-                        <button onclick="event.stopPropagation();" data-favorite-btn="${p.id}" class="favorite-btn absolute top-3 right-3 z-20 w-6 h-6 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${isFavorite ? 'favorite-active' : ''}" title="${isFavorite ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
+                        <img src="${sanitize(p.img)}" loading="lazy" class="max-h-full transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
+                        ${p.badge ? `<div class="absolute top-4 left-4 z-10"><span class="badge-premium">${sanitize(p.badge)}</span></div>` : ''}
+                        <button onclick="event.stopPropagation();" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn absolute top-3 right-3 z-20 w-6 h-6 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${isFavorite ? 'favorite-active' : ''}" title="${isFavorite ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
                             ${isFavorite 
                                 ? `<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
                                 : `<svg class="heart-icon w-3.5 h-3.5 text-gray-400 hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
@@ -910,15 +920,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                     <div class="space-y-1 mb-6 px-1">
                         <p class="text-[9px] uppercase tracking-widest text-primary font-bold">Elforat Pharma</p>
-                        <h3 class="text-base font-extrabold text-black leading-tight">${p.name}</h3>
+                        <h3 class="text-base font-extrabold text-black leading-tight">${sanitize(p.name)}</h3>
                         <div class="flex flex-row-reverse justify-end items-center gap-3 pt-1">
-                            <span class="text-sm font-bold text-gray-900">${p.price} ج.م</span>
-                            ${p.oldPrice ? `<span class="text-xs text-gray-400 line-through decoration-gray-300">${p.oldPrice} ج.م</span>` : ''}
+                            <span class="text-sm font-bold text-gray-900">${sanitize(p.price)} ج.م</span>
+                            ${p.oldPrice ? `<span class="text-xs text-gray-400 line-through decoration-gray-300">${sanitize(p.oldPrice)} ج.م</span>` : ''}
                         </div>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="event.stopPropagation(); app.addToCart('${p.id}')" class="flex-1 btn-pill btn-add-cart-minimal py-3">أضف للسلة</button>
-                        <button onclick="event.stopPropagation(); app.buyNow('${p.id}')" class="flex-1 btn-pill btn-buy-now-premium py-3">اشتري الآن</button>
+                        <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}')" class="flex-1 btn-pill btn-add-cart-minimal py-3">أضف للسلة</button>
+                        <button onclick="event.stopPropagation(); app.buyNow('${sanitize(p.id)}')" class="flex-1 btn-pill btn-buy-now-premium py-3">اشتري الآن</button>
                     </div>
                 </article>`;
             }).join('');
@@ -951,7 +961,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <!-- معرض الصور -->
                 <div class="space-y-4">
                     <div class="product-image-bg aspect-square flex items-center justify-center p-8 bg-[#f9f9f9] rounded-3xl overflow-hidden group relative">
-                        <img id="main-product-img" src="${p.img}" loading="lazy" class="max-h-full mix-blend-multiply transition-all duration-700 hover:scale-110 cursor-zoom-in" onerror="this.src='logo.png'" onclick="openImageZoom('${p.img}')">
+                        <img id="main-product-img" src="${sanitize(p.img)}" loading="lazy" class="max-h-full mix-blend-multiply transition-all duration-700 hover:scale-110 cursor-zoom-in" onerror="this.src='logo.png'" onclick="openImageZoom('${sanitize(p.img)}')">
                         <!-- أزرار التنقل للمعرض -->
                         <button onclick="changeProductImage(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
@@ -960,7 +970,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         </button>
                         <!-- زر التكبير -->
-                        <button onclick="openImageZoom('${p.img}')" class="absolute bottom-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white" title="تكبير الصورة">
+                        <button onclick="openImageZoom('${sanitize(p.img)}')" class="absolute bottom-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white" title="تكبير الصورة">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path></svg>
                         </button>
                     </div>
@@ -969,7 +979,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <button onclick="changeProductImage(${idx})" 
                                     class="thumbnail-btn w-20 h-20 bg-[#f9f9f9] rounded-xl p-2 border-2 ${idx === 0 ? 'border-primary' : 'border-transparent'} hover:border-primary/50 transition-all overflow-hidden"
                                     data-index="${idx}">
-                                <img src="${img}" loading="lazy" class="w-full h-full object-contain mix-blend-multiply thumbnail-img">
+                                <img src="${sanitize(img)}" loading="lazy" class="w-full h-full object-contain mix-blend-multiply thumbnail-img">
                             </button>
                         `).join('')}
                     </div>
@@ -978,16 +988,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 <!-- معلومات المنتج مع تابات -->
                 <div class="flex flex-col text-right space-y-6">
                     <div class="space-y-3">
-                        <p class="text-primary font-bold text-[10px] uppercase tracking-[0.3em]">${p.category}</p>
-                        <h1 class="text-4xl md:text-5xl font-extrabold text-black leading-tight tracking-tight">${p.name}</h1>
+                        <p class="text-primary font-bold text-[10px] uppercase tracking-[0.3em]">${sanitize(p.category)}</p>
+                        <h1 class="text-4xl md:text-5xl font-extrabold text-black leading-tight tracking-tight">${sanitize(p.name)}</h1>
                         <div class="flex items-center gap-4 pt-2 flex-wrap">
-                            <span class="text-3xl font-bold text-primary">${p.price} ج.م</span>
-                            ${p.oldPrice ? `<span class="text-lg text-gray-400 line-through">${p.oldPrice} ج.م</span>` : ''}
+                            <span class="text-3xl font-bold text-primary">${sanitize(p.price)} ج.م</span>
+                            ${p.oldPrice ? `<span class="text-lg text-gray-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
                             ${p.stock <= LOW_STOCK_THRESHOLD && p.stock > 0 ? `<span class="text-xs bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full font-bold low-stock-alert shadow-sm">⚠️ متبقي ${p.stock} فقط!</span>` : ''}
                             ${p.stock === 0 ? `<span class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-full font-bold shadow-sm">❌ نفذ من المخزون</span>` : ''}
                         </div>
                         <div class="flex items-center gap-3 pt-2">
-                            <button onclick="event.stopPropagation();" data-favorite-btn="${p.id}" class="favorite-btn flex items-center gap-2 px-4 py-2 border-2 border-gray-200 rounded-full hover:border-primary transition-all ${FavoritesManager.isFavorite(p.id) ? 'favorite-active border-primary' : ''}">
+                            <button onclick="event.stopPropagation();" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn flex items-center gap-2 px-4 py-2 border-2 border-gray-200 rounded-full hover:border-primary transition-all ${FavoritesManager.isFavorite(p.id) ? 'favorite-active border-primary' : ''}">
                                 ${FavoritesManager.isFavorite(p.id) 
                                     ? `<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
                                     : `<svg class="heart-icon w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
@@ -1029,12 +1039,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                     
                     <div id="tab-desc" class="tab-content text-gray-600 leading-relaxed animate-fade-in-up">
-                        <p>${p.desc || 'أفضل منتجات العناية المختارة بعناية فائقة لضمان أفضل النتائج لبشرتك وشعرك.'}</p>
-                        ${p.size ? `<p class="mt-4 text-sm"><strong>الحجم:</strong> ${p.size}</p>` : ''}
+                        <p>${sanitize(p.desc) || 'أفضل منتجات العناية المختارة بعناية فائقة لضمان أفضل النتائج لبشرتك وشعرك.'}</p>
+                        ${p.size ? `<p class="mt-4 text-sm"><strong>الحجم:</strong> ${sanitize(p.size)}</p>` : ''}
                     </div>
                     
                     <div id="tab-ingredients" class="tab-content hidden text-gray-600 leading-relaxed">
-                        <p>${p.ingredients || 'مكونات طبيعية 100% بدون مواد حافظة أو كحول. مناسب لجميع أنواع البشرة والشعر.'}</p>
+                        <p>${sanitize(p.ingredients) || 'مكونات طبيعية 100% بدون مواد حافظة أو كحول. مناسب لجميع أنواع البشرة والشعر.'}</p>
                     </div>
                     
                     <div id="tab-reviews" class="tab-content hidden text-gray-600 leading-relaxed">
@@ -1244,11 +1254,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms">
                     <div class="relative overflow-hidden rounded-custom bg-white shadow-md hover:shadow-xl transition-all duration-300">
                         <!-- Badge -->
-                        ${p.badge ? `<span class="absolute top-3 left-3 z-10 bg-primary text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg">${p.badge}</span>` : ''}
+                        ${p.badge ? `<span class="absolute top-3 left-3 z-10 bg-primary text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg">${sanitize(p.badge)}</span>` : ''}
                         
                         <!-- زر المفضلة -->
                         <div class="absolute top-3 right-3 z-20">
-                            <button onclick="event.stopPropagation(); FavoritesManager.toggle('${p.id}');" data-favorite-btn="${p.id}" class="favorite-btn p-2.5 rounded-full shadow-lg transition-all duration-300 ${isFav ? 'favorite-active' : ''}" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
+                            <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn p-2.5 rounded-full shadow-lg transition-all duration-300 ${isFav ? 'favorite-active' : ''}" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
                                 ${isFav 
                                     ? '<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
                                     : '<svg class="heart-icon w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>'
@@ -1257,18 +1267,18 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                         
                         <!-- صورة المنتج -->
-                        <div class="aspect-square bg-[#f9f9f9] p-6 flex items-center justify-center cursor-pointer" onclick="app.navigate('product', '${p.id}')">
-                            <img src="${p.img}" loading="lazy" alt="${p.name}" class="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
+                        <div class="aspect-square bg-[#f9f9f9] p-6 flex items-center justify-center cursor-pointer" onclick="app.navigate('product', '${sanitize(p.id)}')">
+                            <img src="${sanitize(p.img)}" loading="lazy" alt="${sanitize(p.name)}" class="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
                         </div>
                         
                         <!-- معلومات المنتج -->
                         <div class="p-4 space-y-3">
-                            <h3 class="font-bold text-sm text-gray-900 line-clamp-2 min-h-[2.5rem] cursor-pointer hover:text-primary transition-colors" onclick="app.navigate('product', '${p.id}')">${p.name}</h3>
+                            <h3 class="font-bold text-sm text-gray-900 line-clamp-2 min-h-[2.5rem] cursor-pointer hover:text-primary transition-colors" onclick="app.navigate('product', '${sanitize(p.id)}')">${sanitize(p.name)}</h3>
                             
                             <div class="flex items-center gap-2 justify-between">
                                 <div class="flex flex-col">
-                                    <span class="text-primary font-bold text-base">${p.price} ج.م</span>
-                                    ${p.oldPrice ? `<span class="text-xs text-gray-400 line-through">${p.oldPrice} ج.م</span>` : ''}
+                                    <span class="text-primary font-bold text-base">${sanitize(p.price)} ج.م</span>
+                                    ${p.oldPrice ? `<span class="text-xs text-gray-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
                                 </div>
                                 ${isOutOfStock 
                                     ? '<span class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">نفذت الكمية</span>'
@@ -1279,7 +1289,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             </div>
                             
                             ${!isOutOfStock ? `
-                                <button onclick="app.addToCart('${p.id}', 1)" class="w-full bg-primary text-white font-bold uppercase text-[10px] tracking-widest py-2.5 rounded-full hover:bg-neutral-900 transition-all shadow-lg shadow-primary/30 active:scale-95">
+                                <button onclick="app.addToCart('${sanitize(p.id)}', 1)" class="w-full bg-primary text-white font-bold uppercase text-[10px] tracking-widest py-2.5 rounded-full hover:bg-neutral-900 transition-all shadow-lg shadow-primary/30 active:scale-95">
                                     أضف للحقيبة
                                 </button>
                             ` : ''}
@@ -1304,34 +1314,34 @@ document.addEventListener("DOMContentLoaded", () => {
                 return `
                 <div class="flex gap-8 border-b border-gray-100 pb-10 text-right group relative">
                     <div class="w-24 h-24 bg-[#fdf2f5] p-4 rounded-2xl relative shrink-0">
-                        <img src="${item.img}" class="w-full h-full object-contain mix-blend-multiply">
+                        <img src="${sanitize(item.img)}" class="w-full h-full object-contain mix-blend-multiply">
                         <span class="absolute -bottom-2 -left-2 bg-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full">x${item.qty}</span>
                     </div>
                     <div class="flex-grow space-y-1">
                         <span class="text-[9px] font-black uppercase tracking-widest text-primary">هدية مجانية 🎁</span>
-                        <h3 class="text-sm font-extrabold uppercase text-black">${item.name}</h3>
+                        <h3 class="text-sm font-extrabold uppercase text-black">${sanitize(item.name)}</h3>
                         <p class="text-base font-bold text-green-500 pt-2">مجانـــــاً</p>
                     </div>
                 </div>`;
             }
             return `
             <div class="flex gap-8 border-b border-gray-100 pb-10 text-right group relative">
-                <div class="w-24 h-24 bg-[#f9f9f9] p-4 rounded-2xl relative"><img src="${item.img}" class="w-full h-full object-contain mix-blend-multiply"></div>
+                <div class="w-24 h-24 bg-[#f9f9f9] p-4 rounded-2xl relative"><img src="${sanitize(item.img)}" class="w-full h-full object-contain mix-blend-multiply"></div>
                 <div class="flex-grow space-y-1">
-                    <h3 class="text-sm font-extrabold uppercase text-black">${item.name}</h3>
+                    <h3 class="text-sm font-extrabold uppercase text-black">${sanitize(item.name)}</h3>
                     <div class="flex flex-row-reverse justify-between items-center pt-4">
-                        <span class="text-base font-bold text-primary">${(item.price * item.qty)} ج.م</span>
+                        <span class="text-base font-bold text-primary">${sanitize(item.price * item.qty)} ج.م</span>
                         <div class="flex border border-gray-100 rounded-full" dir="ltr">
-                            <button onclick="app.updateQty('${item.id}', 1)" class="px-3 py-1 text-primary font-bold">+</button>
+                            <button onclick="app.updateQty('${sanitize(item.id)}', 1)" class="px-3 py-1 text-primary font-bold">+</button>
                             <span class="px-4 py-1 text-xs font-bold">${item.qty}</span>
-                            <button onclick="app.updateQty('${item.id}', -1)" class="px-3 py-1 text-primary font-bold">-</button>
+                            <button onclick="app.updateQty('${sanitize(item.id)}', -1)" class="px-3 py-1 text-primary font-bold">-</button>
                         </div>
                     </div>
                 </div>
-                <button onclick="app.removeItem('${item.id}')" class="text-gray-300 hover:text-red-500 transition-colors">×</button>
+                <button onclick="app.removeItem('${sanitize(item.id)}')" class="text-gray-300 hover:text-red-500 transition-colors">×</button>
             </div>`;
         }).join('');
-        if (summary) summary.innerHTML = `<div class="flex justify-between items-center text-xl font-bold"><span>الإجمالي</span><span class="text-primary">${subtotal} ج.م</span></div>`;
+        if (summary) summary.innerHTML = `<div class="flex justify-between items-center text-xl font-bold"><span>الإجمالي</span><span class="text-primary">${sanitize(subtotal)} ج.م</span></div>`;
     }
 
     function updateBadge() { 
@@ -1365,11 +1375,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const isFav = FavoritesManager.isFavorite(p.id);
 
             return `
-                <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${p.id}')">
+                <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
                     <div class="product-image-bg relative mb-6 overflow-hidden">
-                        <img src="${p.img}" loading="lazy" class="max-h-full transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
-                        ${p.badge ? `<div class="absolute top-4 left-4 z-10"><span class="badge-premium">${p.badge}</span></div>` : ''}
-                        <button onclick="event.stopPropagation(); FavoritesManager.toggle('${p.id}');" data-favorite-btn="${p.id}" class="favorite-btn absolute top-3 right-3 z-20 w-6 h-6 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${isFav ? 'favorite-active' : ''}" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
+                        <img src="${sanitize(p.img)}" loading="lazy" class="max-h-full transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
+                        ${p.badge ? `<div class="absolute top-4 left-4 z-10"><span class="badge-premium">${sanitize(p.badge)}</span></div>` : ''}
+                        <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn absolute top-3 right-3 z-20 w-6 h-6 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${isFav ? 'favorite-active' : ''}" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
                             ${isFav
                                 ? `<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
                                 : `<svg class="heart-icon w-3.5 h-3.5 text-gray-400 hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
@@ -1378,15 +1388,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                     <div class="space-y-1 mb-6 px-1">
                         <p class="text-[9px] uppercase tracking-widest text-primary font-bold">Elforat Pharma</p>
-                        <h3 class="text-base font-extrabold text-black leading-tight">${p.name}</h3>
+                        <h3 class="text-base font-extrabold text-black leading-tight">${sanitize(p.name)}</h3>
                         <div class="flex flex-row-reverse justify-end items-center gap-3 pt-1">
-                            <span class="text-sm font-bold text-gray-900">${p.price} ج.م</span>
-                            ${p.oldPrice ? `<span class="text-xs text-gray-400 line-through decoration-gray-300">${p.oldPrice} ج.م</span>` : ''}
+                            <span class="text-sm font-bold text-gray-900">${sanitize(p.price)} ج.م</span>
+                            ${p.oldPrice ? `<span class="text-xs text-gray-400 line-through decoration-gray-300">${sanitize(p.oldPrice)} ج.م</span>` : ''}
                         </div>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="event.stopPropagation(); app.addToCart('${p.id}', 1)" class="flex-1 btn-pill btn-add-cart-minimal py-3">أضف للسلة</button>
-                        <button onclick="event.stopPropagation(); app.buyNow('${p.id}')" class="flex-1 btn-pill btn-buy-now-premium py-3">اشتري الآن</button>
+                        <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}', 1)" class="flex-1 btn-pill btn-add-cart-minimal py-3">أضف للسلة</button>
+                        <button onclick="event.stopPropagation(); app.buyNow('${sanitize(p.id)}')" class="flex-1 btn-pill btn-buy-now-premium py-3">اشتري الآن</button>
                     </div>
                 </article>
             `;
