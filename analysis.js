@@ -1222,54 +1222,53 @@ document.addEventListener("DOMContentLoaded", () => {
             emptyState.classList.remove('hidden');
             return;
         }
-        
+
         emptyState.classList.add('hidden');
         grid.innerHTML = favoriteProducts.map((p, index) => {
             const isFav = FavoritesManager.isFavorite(p.id);
-            const isOutOfStock = p.stock <= 0;
-            
+
             return `
-                <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms">
-                    <div class="relative overflow-hidden rounded-custom bg-white shadow-md hover:shadow-xl transition-all duration-300">
-                        <!-- زر المفضلة -->
-                        <div class="absolute top-3 right-3 z-20">
-                            <button onclick="event.stopPropagation(); FavoritesManager.toggle('${p.id}'); updateBadge();" data-favorite-btn="${p.id}" class="favorite-btn p-2.5 rounded-full shadow-lg transition-all duration-300 ${isFav ? 'favorite-active' : ''}" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
-                                ${isFav 
-                                    ? '<svg class="heart-icon w-5 h-5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
-                                    : '<svg class="heart-icon w-5 h-5 text-gray-400 group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>'
-                                }
-                            </button>
+                <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${p.id}')">
+                    <div class="product-image-bg relative mb-6 overflow-hidden">
+                        <img src="${p.img}" loading="lazy" class="max-h-full transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
+                        ${p.badge ? `<div class="absolute top-4 left-4 z-10"><span class="badge-premium">${p.badge}</span></div>` : ''}
+                        <button onclick="event.stopPropagation(); FavoritesManager.toggle('${p.id}');" data-favorite-btn="${p.id}" class="favorite-btn absolute top-3 right-3 z-20 w-6 h-6 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${isFav ? 'favorite-active' : ''}" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
+                            ${isFav
+                                ? `<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+                                : `<svg class="heart-icon w-3.5 h-3.5 text-gray-400 hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
+                            }
+                        </button>
+                    </div>
+                    <div class="space-y-1 mb-6 px-1">
+                        <p class="text-[9px] uppercase tracking-widest text-primary font-bold">Elforat Pharma</p>
+                        <h3 class="text-base font-extrabold text-black leading-tight">${p.name}</h3>
+                        <div class="flex flex-row-reverse justify-end items-center gap-3 pt-1">
+                            <span class="text-sm font-bold text-gray-900">${p.price} ج.م</span>
+                            ${p.oldPrice ? `<span class="text-xs text-gray-400 line-through decoration-gray-300">${p.oldPrice} ج.م</span>` : ''}
                         </div>
-                        
-                        <!-- تنبيه المخزون المنخفض -->
-                        ${p.stock <= 10 && p.stock > 0 ? `<div class="absolute top-3 left-3 z-20 low-stock-alert flex items-center gap-1 bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg"><span>⚠️</span><span>متبقي ${p.stock} فقط</span></div>` : ''}
-                        
-                        <!-- تنبيه نفاد الكمية -->
-                        ${isOutOfStock ? `<div class="absolute top-12 left-3 z-20 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg">نفذت الكمية</div>` : ''}
-                        
-                        <!-- صورة المنتج مع Lazy Loading -->
-                        <div class="h-64 overflow-hidden cursor-pointer" onclick="app.navigate('product', '${p.id}')">
-                            <img src="${p.img}" alt="${p.name}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                        </div>
-                        
-                        <!-- معلومات المنتج -->
-                        <div class="p-4 space-y-3">
-                            <h3 class="font-bold text-base text-gray-900 line-clamp-2 min-h-[2.5rem] cursor-pointer hover:text-primary transition-colors" onclick="app.navigate('product', '${p.id}')">${p.name}</h3>
-                            
-                            <!-- السعر وزر الإضافة -->
-                            <div class="flex justify-between items-center pt-2">
-                                <span class="text-primary font-black text-lg">${p.price} ج.م</span>
-                                ${isOutOfStock 
-                                    ? '<span class="text-gray-400 text-xs font-bold">غير متوفر</span>'
-                                    : `<button onclick="app.addToCart('${p.id}', 1); showToast('تمت الإضافة للسلة')" class="bg-primary text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-neutral-900 transition-colors shadow-lg shadow-primary/30 hover:scale-105 active:scale-95">أضف</button>`
-                                }
-                            </div>
-                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="event.stopPropagation(); app.addToCart('${p.id}', 1)" class="flex-1 btn-pill btn-add-cart-minimal py-3">أضف للسلة</button>
+                        <button onclick="event.stopPropagation(); app.buyNow('${p.id}')" class="flex-1 btn-pill btn-buy-now-premium py-3">اشتري الآن</button>
                     </div>
                 </article>
             `;
         }).join('');
+
+        // إضافة مستمعي الأحداث لأزرار المفضلة
+        setTimeout(() => {
+            document.querySelectorAll('.favorite-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const productId = btn.getAttribute('data-favorite-btn');
+                    FavoritesManager.toggle(productId);
+                    updateBadge();
+                    renderFavorites();
+                });
+            });
+        }, 0);
     }
+        
 
 
      // ==========================================
