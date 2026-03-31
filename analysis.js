@@ -915,11 +915,11 @@ document.addEventListener("DOMContentLoaded", () => {
             grid.innerHTML = products.map((p, index) => {
                 const isFavorite = FavoritesManager.isFavorite(p.id);
                 return `
-                <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
-                    <div class="product-image-bg relative mb-6 overflow-hidden">
-                        <img src="${sanitize(p.img)}" loading="lazy" class="max-h-full transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
+                <article class="floating-card bg-white rounded-3xl p-4 text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
+                    <div class="product-image-bg relative mb-6 overflow-hidden rounded-2xl bg-gray-50 flex items-center justify-center p-6">
+                        <img src="${sanitize(p.img)}" loading="lazy" class="max-h-48 transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
                         ${p.badge ? `<div class="absolute top-4 left-4 z-10"><span class="badge-premium">${sanitize(p.badge)}</span></div>` : ''}
-                        <button onclick="event.stopPropagation();" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn absolute top-3 right-3 z-20 w-6 h-6 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${isFavorite ? 'favorite-active' : ''}" title="${isFavorite ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
+                        <button onclick="event.stopPropagation();" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn absolute top-3 right-3 z-20 w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-md">
                             ${isFavorite 
                                 ? `<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
                                 : `<svg class="heart-icon w-3.5 h-3.5 text-gray-400 hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
@@ -927,16 +927,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         </button>
                     </div>
                     <div class="space-y-1 mb-6 px-1">
-                        <p class="text-[9px] uppercase tracking-widest text-primary font-bold">Elforat Pharma</p>
-                        <h3 class="text-base font-extrabold text-black leading-tight">${sanitize(p.name)}</h3>
+                        <p class="text-[10px] uppercase tracking-widest text-primary font-bold">Elforat Pharma</p>
+                        <h3 class="text-base font-extrabold text-gray-900 leading-tight">${sanitize(p.name)}</h3>
                         <div class="flex flex-row-reverse justify-end items-center gap-3 pt-1">
-                            <span class="text-sm font-bold text-gray-900">${sanitize(p.price)} ج.م</span>
-                            ${p.oldPrice ? `<span class="text-xs text-gray-400 line-through decoration-gray-300">${sanitize(p.oldPrice)} ج.م</span>` : ''}
+                            <span class="text-lg font-bold text-primary">${sanitize(p.price)} ج.م</span>
+                            ${p.oldPrice ? `<span class="text-xs text-gray-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
                         </div>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}')" class="flex-1 btn-pill btn-add-cart-minimal py-3">أضف للسلة</button>
-                        <button onclick="event.stopPropagation(); app.buyNow('${sanitize(p.id)}')" class="flex-1 btn-pill btn-buy-now-premium py-3">اشتري الآن</button>
+                        <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}')" class="flex-1 py-3 px-2 bg-gray-100 text-gray-800 rounded-full text-[11px] font-bold hover:bg-primary hover:text-white transition-colors">أضف للسلة</button>
+                        <button onclick="event.stopPropagation(); app.buyNow('${sanitize(p.id)}')" class="flex-1 py-3 px-2 bg-black text-white rounded-full text-[11px] font-bold hover:bg-primary transition-colors">اشتري الآن</button>
                     </div>
                 </article>`;
             }).join('');
