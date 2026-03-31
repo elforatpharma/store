@@ -1066,3 +1066,38 @@ button[onclick*="buyNow"]:hover::after {
     background: rgba(255, 255, 255, 0.6);
     transform: scale(1.02);
 }
+
+/* تنسيق بطاقات الفئات الزجاجية */
+.category-glass-card {
+    /* تدرج لوني زجاجي (أبيض شفاف إلى وردي خفيف جداً) */
+    background: linear-gradient(
+        135deg, 
+        rgba(255, 255, 255, 0.3) 0%, 
+        rgba(255, 255, 255, 0.1) 100%
+    );
+    
+    /* تأثير الضباب لكسر حدة الخلفية */
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    
+    /* حدود زجاجية رفيعة */
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    
+    /* انحناء زوايا كبير ليعطي طابعاً عصرياً */
+    border-radius: 40px;
+    
+    /* انتقال ناعم للتفاعلات */
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    
+    /* حماية المحتوى الداخلي */
+    position: relative;
+    overflow: hidden;
+}
+
+/* تأثير التفاعل عند مرور الماوس */
+.category-glass-card:hover {
+    transform: translateY(-10px);
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(236, 19, 91, 0.4); /* تلميح بلون البراند عند الهوفر */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+}
