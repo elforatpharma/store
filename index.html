@@ -152,7 +152,7 @@
                         </div>
                         <div class="space-y-2 text-right">
                             <span class="text-primary font-bold tracking-widest uppercase text-sm block">مجموعة العناية الفاخرة</span>
-                            <h1 class="text-5xl md:text-7xl font-bold leading-tight text-gray-900 text-right">اكتشفي إشراقتك <br /><span class="text-primary italic">الطبيعية</span></h1>
+                            <h1 class="text-5xl md:text-7xl font-bold leading-tight text-gray-900 text-right">اصنعي <br /><span class="text-primary italic">جمالك الخاص</span></h1>
                         </div>
                         <p class="text-lg text-gray-600 max-w-md mx-auto md:mr-0 text-right font-medium">مزيج من العلم والرفاهية العضوية مع مجموعتنا المتخصصة للعناية بالشعر والبشرة.</p>
                         <div class="pt-4 text-right">
@@ -161,19 +161,20 @@
                     </div>
                     
                     <!-- Product Carousel Section -->
-                    <div class="w-full md:w-1/2 relative h-[500px] md:h-[700px] flex justify-center items-center z-20 mt-8 md:mt-0">
+                    <div class="w-full md:w-1/2 relative h-[350px] sm:h-[450px] md:h-[700px] flex justify-center items-center z-20 mt-8 md:mt-0 touch-pan-y" id="carousel-touch-area">
                         <!-- Background Glow Effect -->
                         <div class="absolute w-72 h-72 bg-primary/5 rounded-full blur-[100px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse"></div>
                         
                         <!-- Carousel Container -->
                         <div id="hero-carousel" class="relative w-full h-full carousel-container">
                             <!-- Slide 1: Guzél Gold (Featured) -->
-                            <div class="carousel-slide active" data-slide="0">
+                            <div class="carousel-slide active" data-slide="0" role="group" aria-roledescription="slide" aria-label="1 من 11">
                                 <div class="absolute inset-0 flex justify-center items-center">
                                     <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1773786142124.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6" 
+                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
                                          alt="Product 1" 
-                                         onclick="app.navigate('catalog')">
+                                         onclick="app.navigate('catalog')"
+                                         draggable="false">
                                     
                                     <!-- Decorative Elements -->
                                     <div class="absolute bottom-[15%] left-[10%] w-20 h-20 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-2xl animate-pulse"></div>
@@ -182,12 +183,13 @@
                             </div>
                             
                             <!-- Slide 2 -->
-                            <div class="carousel-slide" data-slide="1">
+                            <div class="carousel-slide" data-slide="1" role="group" aria-roledescription="slide" aria-label="2 من 11">
                                 <div class="absolute inset-0 flex justify-center items-center">
                                     <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774329652998-guzel_gold.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6" 
+                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
                                          alt="Product 2" 
-                                         onclick="app.navigate('catalog')">
+                                         onclick="app.navigate('catalog')"
+                                         draggable="false">
                                     
                                     <!-- Decorative Elements -->
                                     <div class="absolute bottom-[10%] right-[12%] w-24 h-24 bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-2xl animate-pulse" style="animation-delay: 0.5s;"></div>
@@ -195,12 +197,13 @@
                             </div>
                             
                             <!-- Slide 3 -->
-                            <div class="carousel-slide" data-slide="2">
+                            <div class="carousel-slide" data-slide="2" role="group" aria-roledescription="slide" aria-label="3 من 11">
                                 <div class="absolute inset-0 flex justify-center items-center">
                                     <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774329755590-lip_balm.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6" 
+                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
                                          alt="Product 3" 
-                                         onclick="app.navigate('catalog')">
+                                         onclick="app.navigate('catalog')"
+                                         draggable="false">
                                     
                                     <!-- Decorative Elements -->
                                     <div class="absolute top-[15%] left-[10%] w-20 h-20 bg-gradient-to-br from-secondary/30 to-transparent rounded-full blur-2xl animate-pulse" style="animation-delay: 1.5s;"></div>
@@ -208,12 +211,13 @@
                             </div>
                             
                             <!-- Slide 4 -->
-                            <div class="carousel-slide" data-slide="3">
+                            <div class="carousel-slide" data-slide="3" role="group" aria-roledescription="slide" aria-label="4 من 11">
                                 <div class="absolute inset-0 flex justify-center items-center">
                                     <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774329816852-1774114154902.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6" 
+                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
                                          alt="Product 4" 
-                                         onclick="app.navigate('catalog')">
+                                         onclick="app.navigate('catalog')"
+                                         draggable="false">
                                     
                                     <!-- Decorative Elements -->
                                     <div class="absolute bottom-[15%] left-[10%] w-20 h-20 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-2xl animate-pulse"></div>
@@ -221,12 +225,13 @@
                             </div>
                             
                             <!-- Slide 5 -->
-                            <div class="carousel-slide" data-slide="4">
+                            <div class="carousel-slide" data-slide="4" role="group" aria-roledescription="slide" aria-label="5 من 11">
                                 <div class="absolute inset-0 flex justify-center items-center">
                                     <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774329893100-foot_cream.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6" 
+                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
                                          alt="Product 5" 
-                                         onclick="app.navigate('catalog')">
+                                         onclick="app.navigate('catalog')"
+                                         draggable="false">
                                     
                                     <!-- Decorative Elements -->
                                     <div class="absolute top-[20%] right-[15%] w-16 h-16 bg-gradient-to-bl from-secondary/40 to-transparent rounded-full blur-xl animate-pulse" style="animation-delay: 1s;"></div>
@@ -234,12 +239,13 @@
                             </div>
                             
                             <!-- Slide 6 -->
-                            <div class="carousel-slide" data-slide="5">
+                            <div class="carousel-slide" data-slide="5" role="group" aria-roledescription="slide" aria-label="6 من 11">
                                 <div class="absolute inset-0 flex justify-center items-center">
                                     <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774329927460-1773777377248-body_scrub.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6" 
+                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
                                          alt="Product 6" 
-                                         onclick="app.navigate('catalog')">
+                                         onclick="app.navigate('catalog')"
+                                         draggable="false">
                                     
                                     <!-- Decorative Elements -->
                                     <div class="absolute bottom-[10%] right-[12%] w-24 h-24 bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-2xl animate-pulse" style="animation-delay: 0.5s;"></div>
@@ -247,12 +253,13 @@
                             </div>
                             
                             <!-- Slide 7 -->
-                            <div class="carousel-slide" data-slide="6">
+                            <div class="carousel-slide" data-slide="6" role="group" aria-roledescription="slide" aria-label="7 من 11">
                                 <div class="absolute inset-0 flex justify-center items-center">
                                     <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774330000225-1774112786737.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6" 
+                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
                                          alt="Product 7" 
-                                         onclick="app.navigate('catalog')">
+                                         onclick="app.navigate('catalog')"
+                                         draggable="false">
                                     
                                     <!-- Decorative Elements -->
                                     <div class="absolute top-[15%] left-[10%] w-20 h-20 bg-gradient-to-br from-secondary/30 to-transparent rounded-full blur-2xl animate-pulse" style="animation-delay: 1.5s;"></div>
@@ -260,12 +267,13 @@
                             </div>
                             
                             <!-- Slide 8 -->
-                            <div class="carousel-slide" data-slide="7">
+                            <div class="carousel-slide" data-slide="7" role="group" aria-roledescription="slide" aria-label="8 من 11">
                                 <div class="absolute inset-0 flex justify-center items-center">
                                     <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774330020724-1773777315418-body_lotion.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6" 
+                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
                                          alt="Product 8" 
-                                         onclick="app.navigate('catalog')">
+                                         onclick="app.navigate('catalog')"
+                                         draggable="false">
                                     
                                     <!-- Decorative Elements -->
                                     <div class="absolute bottom-[15%] left-[10%] w-20 h-20 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-2xl animate-pulse"></div>
@@ -273,12 +281,13 @@
                             </div>
                             
                             <!-- Slide 9 -->
-                            <div class="carousel-slide" data-slide="8">
+                            <div class="carousel-slide" data-slide="8" role="group" aria-roledescription="slide" aria-label="9 من 11">
                                 <div class="absolute inset-0 flex justify-center items-center">
                                     <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774330040835-1774114976490.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6" 
+                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
                                          alt="Product 9" 
-                                         onclick="app.navigate('catalog')">
+                                         onclick="app.navigate('catalog')"
+                                         draggable="false">
                                     
                                     <!-- Decorative Elements -->
                                     <div class="absolute top-[20%] right-[15%] w-16 h-16 bg-gradient-to-bl from-secondary/40 to-transparent rounded-full blur-xl animate-pulse" style="animation-delay: 1s;"></div>
@@ -286,12 +295,13 @@
                             </div>
                             
                             <!-- Slide 10 -->
-                            <div class="carousel-slide" data-slide="9">
+                            <div class="carousel-slide" data-slide="9" role="group" aria-roledescription="slide" aria-label="10 من 11">
                                 <div class="absolute inset-0 flex justify-center items-center">
                                     <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774330058728-1774113244400.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6" 
+                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
                                          alt="Product 10" 
-                                         onclick="app.navigate('catalog')">
+                                         onclick="app.navigate('catalog')"
+                                         draggable="false">
                                     
                                     <!-- Decorative Elements -->
                                     <div class="absolute bottom-[10%] right-[12%] w-24 h-24 bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-2xl animate-pulse" style="animation-delay: 0.5s;"></div>
@@ -299,12 +309,13 @@
                             </div>
                             
                             <!-- Slide 11 -->
-                            <div class="carousel-slide" data-slide="10">
+                            <div class="carousel-slide" data-slide="10" role="group" aria-roledescription="slide" aria-label="11 من 11">
                                 <div class="absolute inset-0 flex justify-center items-center">
                                     <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774330114789-download%20(3).png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6" 
+                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
                                          alt="Product 11" 
-                                         onclick="app.navigate('catalog')">
+                                         onclick="app.navigate('catalog')"
+                                         draggable="false">
                                     
                                     <!-- Decorative Elements -->
                                     <div class="absolute top-[15%] left-[10%] w-20 h-20 bg-gradient-to-br from-secondary/30 to-transparent rounded-full blur-2xl animate-pulse" style="animation-delay: 1.5s;"></div>
@@ -561,5 +572,93 @@
     </footer>
 
     <script src="analysis.js"></script>
+    <script>
+        // Touch/Swipe gesture support for carousel
+        (function() {
+            const carousel = document.getElementById('hero-carousel');
+            const touchArea = document.getElementById('carousel-touch-area');
+            let startX, startY, currentX, currentY;
+            let isDragging = false;
+            let threshold = 50;
+            
+            if (!carousel || !touchArea) return;
+            
+            // Prevent default touch behaviors
+            touchArea.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 1) {
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    isDragging = true;
+                }
+            }, { passive: true });
+            
+            touchArea.addEventListener('touchmove', function(e) {
+                if (!isDragging || e.touches.length !== 1) return;
+                currentX = e.touches[0].clientX;
+                currentY = e.touches[0].clientY;
+            }, { passive: true });
+            
+            touchArea.addEventListener('touchend', function(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                
+                const diffX = currentX - startX;
+                const diffY = currentY - startY;
+                
+                // Only trigger swipe if horizontal movement is greater than vertical
+                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
+                    if (diffX > 0) {
+                        // Swipe right - go to previous slide
+                        const prevBtn = document.getElementById('carousel-prev');
+                        if (prevBtn) prevBtn.click();
+                    } else {
+                        // Swipe left - go to next slide
+                        const nextBtn = document.getElementById('carousel-next');
+                        if (nextBtn) nextBtn.click();
+                    }
+                }
+                
+                currentX = null;
+                currentY = null;
+            }, { passive: true });
+            
+            // Also support mouse drag for desktop testing
+            touchArea.addEventListener('mousedown', function(e) {
+                startX = e.clientX;
+                startY = e.clientY;
+                isDragging = true;
+                touchArea.style.cursor = 'grabbing';
+            });
+            
+            document.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                currentX = e.clientX;
+                currentY = e.clientY;
+            });
+            
+            document.addEventListener('mouseup', function(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                touchArea.style.cursor = '';
+                
+                const diffX = currentX - startX;
+                const diffY = currentY - startY;
+                
+                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
+                    if (diffX > 0) {
+                        const prevBtn = document.getElementById('carousel-prev');
+                        if (prevBtn) prevBtn.click();
+                    } else {
+                        const nextBtn = document.getElementById('carousel-next');
+                        if (nextBtn) nextBtn.click();
+                    }
+                }
+                
+                currentX = null;
+                currentY = null;
+            });
+        })();
+    </script>
+
 </body>
 </html>
