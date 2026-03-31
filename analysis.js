@@ -1005,12 +1005,12 @@ document.addEventListener("DOMContentLoaded", () => {
                             ${p.stock === 0 ? `<span class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-full font-bold shadow-sm">❌ نفذ من المخزون</span>` : ''}
                         </div>
                         <div class="flex items-center gap-3 pt-2">
-                            <button onclick="FavoritesManager.toggle('${sanitize(p.id)}'); event.stopPropagation();" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn flex items-center gap-2 px-4 py-2 border-2 border-gray-200 rounded-full hover:border-primary transition-all ${FavoritesManager.isFavorite(p.id) ? 'favorite-active border-primary' : ''}">
-                                ${FavoritesManager.isFavorite(p.id) 
-                                    ? `<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
-                                    : `<svg class="heart-icon w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
-                                }
-                                <span class="text-sm font-bold">${FavoritesManager.isFavorite(p.id) ? 'في المفضلة' : 'أضف للمفضلة'}</span>
+                            <button id="main-fav-btn" 
+                                    onclick="handleMainFavorite('${sanitize(p.id)}'); event.stopPropagation();" 
+                                    class="w-12 h-12 rounded-full flex items-center justify-center transition-all ${FavoritesManager.isFavorite(p.id) ? 'bg-primary text-white shadow-lg' : 'bg-gray-100 text-gray-400'}">
+                                <svg class="w-6 h-6" fill="${FavoritesManager.isFavorite(p.id) ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
                             </button>
                         </div>
                     </div>
@@ -1655,4 +1655,43 @@ document.addEventListener("DOMContentLoaded", () => {
     
     /* إظهار شريط العروض الترويجية */
     showPromotionBanner();
+    
+    // دالة معالجة زر المفضلة الرئيسي في صفحة المنتج
+    window.handleMainFavorite = function(id) {
+        // 1. تغيير الحالة في التخزين المحلي
+        const isNowFavorite = FavoritesManager.favorites.includes(id) 
+            ? (FavoritesManager.favorites = FavoritesManager.favorites.filter(fid => fid !== id), false) 
+            : (FavoritesManager.favorites.push(id), true);
+        FavoritesManager.save();
+        
+        // 2. تحديث شكل الزر في الصفحة الحالية فوراً
+        const btn = document.getElementById('main-fav-btn');
+        if (btn) {
+            const svg = btn.querySelector('svg');
+            if (isNowFavorite) {
+                btn.classList.remove('bg-gray-100', 'text-gray-400');
+                btn.classList.add('bg-primary', 'text-white', 'shadow-lg');
+                svg.setAttribute('fill', 'currentColor');
+                ToastManager.showSuccess('تمت الإضافة للمفضلة ❤️', 3000);
+            } else {
+                btn.classList.remove('bg-primary', 'text-white', 'shadow-lg');
+                btn.classList.add('bg-gray-100', 'text-gray-400');
+                svg.setAttribute('fill', 'none');
+                ToastManager.showSuccess('تمت الإزالة من المفضلة', 3000);
+            }
+        }
+        
+        // 3. تحديث أيقونات المنتجات في الخلفية (الكتالوج)
+        const otherBtns = document.querySelectorAll(`[data-favorite-btn="${id}"]`);
+        otherBtns.forEach(b => {
+            const isFav = FavoritesManager.isFavorite(id);
+            b.classList.toggle('favorite-active', isFav);
+            b.innerHTML = isFav 
+                ? `<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+                : `<svg class="heart-icon w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`;
+        });
+        
+        updateBadge();
+        return isNowFavorite;
+    };
 });
