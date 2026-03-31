@@ -28,6 +28,12 @@ section, .view-section {
     background: transparent !important;
 }
 
+/* 4. إضافة تأثير Blur قوي على العناصر التي تحتاج خلفية زجاجية */
+.glass-effect, .product-card, .category-card, .favorite-btn, #favorites-grid .product-card {
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+}
+
 /* --- الإعدادات العامة --- */
 body {
     font-family: 'Tajawal', sans-serif;
