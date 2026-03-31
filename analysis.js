@@ -594,23 +594,31 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         },
         handleSearch: function(query) {
-            this.searchTerm = query.trim().toLowerCase();
-            // تحديث حقول البحث الأخرى لتتزامن
-            const desktopInput = document.getElementById('desktop-search-input');
-            const mobileInput = document.getElementById('mobile-search-input');
-            if (desktopInput && desktopInput !== event.target) desktopInput.value = query;
-            if (mobileInput && mobileInput !== event.target) mobileInput.value = query;
+            // إلغاء أي توقيت بحث سابق (Debounce)
+            clearTimeout(this.searchTimer);
             
-            // إظهار/إخفاء قائمة الاقتراحات
-            this.showSearchSuggestions(query);
-            
-            // إذا كنا في صفحة الكتالوج، أعد العرض مع الفلتر
-            if (document.getElementById('catalog')) {
-                renderCatalog(null, this.searchTerm);
-            } else if (this.searchTerm.length > 0) {
-                // إذا لم نكن في الكتالوج، اذهب للكتالوج مع البحث
-                this.navigate('catalog');
-            }
+            // بدء توقيت جديد - البحث سيتم بعد توقف المستخدم عن الكتابة لمدة 300 مللي ثانية
+            this.searchTimer = setTimeout(() => {
+                this.searchTerm = query.trim().toLowerCase();
+                
+                // تحديث حقول البحث الأخرى لتتزامن
+                const desktopInput = document.getElementById('desktop-search-input');
+                const mobileInput = document.getElementById('mobile-search-input');
+                if (desktopInput && desktopInput !== event?.target) desktopInput.value = query;
+                if (mobileInput && mobileInput !== event?.target) mobileInput.value = query;
+                
+                // إظهار/إخفاء قائمة الاقتراحات
+                this.showSearchSuggestions(query);
+                
+                // إذا كنا في صفحة الكتالوج، أعد العرض مع الفلتر
+                if (document.getElementById('catalog')) {
+                    renderCatalog(null, this.searchTerm);
+                } else if (this.searchTerm.length > 0) {
+                    // إذا لم نكن في الكتالوج، اذهب للكتالوج مع البحث
+                    this.navigate('catalog');
+                }
+                console.log("تم تنفيذ البحث عن: " + this.searchTerm);
+            }, 300);
         },
         
         // دالة إظهار اقتراحات البحث التلقائية
@@ -997,7 +1005,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             ${p.stock === 0 ? `<span class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-full font-bold shadow-sm">❌ نفذ من المخزون</span>` : ''}
                         </div>
                         <div class="flex items-center gap-3 pt-2">
-                            <button onclick="event.stopPropagation();" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn flex items-center gap-2 px-4 py-2 border-2 border-gray-200 rounded-full hover:border-primary transition-all ${FavoritesManager.isFavorite(p.id) ? 'favorite-active border-primary' : ''}">
+                            <button onclick="FavoritesManager.toggle('${sanitize(p.id)}'); event.stopPropagation();" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn flex items-center gap-2 px-4 py-2 border-2 border-gray-200 rounded-full hover:border-primary transition-all ${FavoritesManager.isFavorite(p.id) ? 'favorite-active border-primary' : ''}">
                                 ${FavoritesManager.isFavorite(p.id) 
                                     ? `<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
                                     : `<svg class="heart-icon w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
