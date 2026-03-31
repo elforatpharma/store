@@ -717,8 +717,134 @@ document.addEventListener("DOMContentLoaded", () => {
                 overlay.classList.add('hidden');
                 document.body.style.overflow = '';
             }
+        },
+        
+        // ==========================================
+        // Hero Carousel Functions - وظائف الكاروسيل
+        // ==========================================
+        initCarousel: function() {
+            this.carouselIndex = 0;
+            this.carouselSlides = document.querySelectorAll('.carousel-slide');
+            this.carouselDots = document.querySelectorAll('.carousel-dot');
+            this.carouselProgress = document.getElementById('carousel-progress');
+            this.carouselInterval = null;
+            this.carouselPauseTime = 5000; // 5 seconds per slide
+            
+            if (this.carouselSlides.length === 0) return;
+            
+            // Initialize first slide and dot
+            this.updateCarousel(0);
+            
+            // Start auto-rotation
+            this.startCarousel();
+            
+            // Event listeners for navigation buttons
+            const prevBtn = document.getElementById('carousel-prev');
+            const nextBtn = document.getElementById('carousel-next');
+            
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    this.prevSlide();
+                    this.resetCarouselTimer();
+                });
+            }
+            
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    this.nextSlide();
+                    this.resetCarouselTimer();
+                });
+            }
+            
+            // Event listeners for dots
+            this.carouselDots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    this.goToSlide(index);
+                    this.resetCarouselTimer();
+                });
+            });
+            
+            // Pause on hover
+            const carouselContainer = document.getElementById('hero-carousel');
+            if (carouselContainer) {
+                carouselContainer.addEventListener('mouseenter', () => this.pauseCarousel());
+                carouselContainer.addEventListener('mouseleave', () => this.startCarousel());
+            }
+        },
+        
+        updateCarousel: function(index) {
+            // Update slides
+            this.carouselSlides.forEach((slide, i) => {
+                slide.classList.remove('active', 'prev');
+                if (i === index) {
+                    slide.classList.add('active');
+                } else if (i < index) {
+                    slide.classList.add('prev');
+                }
+            });
+            
+            // Update dots
+            this.carouselDots.forEach((dot, i) => {
+                dot.classList.remove('active');
+                dot.classList.add('bg-gray-300', 'border-gray-300');
+                dot.classList.remove('bg-primary/60', 'border-primary');
+                if (i === index) {
+                    dot.classList.add('active');
+                    dot.classList.remove('bg-gray-300', 'border-gray-300');
+                    dot.classList.add('bg-primary/60', 'border-primary');
+                }
+            });
+            
+            // Reset and restart progress bar animation
+            if (this.carouselProgress) {
+                this.carouselProgress.style.animation = 'none';
+                setTimeout(() => {
+                    this.carouselProgress.style.animation = `progressAnimation ${this.carouselPauseTime}ms linear`;
+                }, 10);
+            }
+        },
+        
+        nextSlide: function() {
+            const newIndex = (this.carouselIndex + 1) % this.carouselSlides.length;
+            this.goToSlide(newIndex);
+        },
+        
+        prevSlide: function() {
+            const newIndex = (this.carouselIndex - 1 + this.carouselSlides.length) % this.carouselSlides.length;
+            this.goToSlide(newIndex);
+        },
+        
+        goToSlide: function(index) {
+            this.carouselIndex = index;
+            this.updateCarousel(index);
+        },
+        
+        startCarousel: function() {
+            if (this.carouselInterval) clearInterval(this.carouselInterval);
+            this.carouselInterval = setInterval(() => this.nextSlide(), this.carouselPauseTime);
+        },
+        
+        pauseCarousel: function() {
+            if (this.carouselInterval) clearInterval(this.carouselInterval);
+            if (this.carouselProgress) {
+                this.carouselProgress.style.animationPlayState = 'paused';
+            }
+        },
+        
+        resetCarouselTimer: function() {
+            this.startCarousel();
+            if (this.carouselProgress) {
+                this.carouselProgress.style.animationPlayState = 'running';
+            }
         }
     };
+    
+    // Initialize carousel when DOM is ready
+    setTimeout(() => {
+        if (window.app && typeof window.app.initCarousel === 'function') {
+            window.app.initCarousel();
+        }
+    }, 100);
     
     // إضافة مستمع لزر القائمة في الجوال
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
