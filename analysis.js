@@ -68,10 +68,10 @@ document.addEventListener("DOMContentLoaded", () => {
             };
             
             const titles = {
-                success: 'نجاح!',
-                error: 'خطأ!',
-                warning: 'تنبيه!',
-                info: 'معلومة'
+                success: '',
+                error: '',
+                warning: '',
+                info: ''
             };
             
             const toast = document.createElement('div');
@@ -369,9 +369,9 @@ document.addEventListener("DOMContentLoaded", () => {
     function showCustomAlert(message, type = 'error') {
         // استخدام نظام Toast الجديد بدلاً من المودال القديم
         if (type === 'error') {
-            ToastManager.showError(message, 5000, 'تنبيه!');
+            ToastManager.showError(message, 5000);
         } else {
-            ToastManager.showSuccess(message, 4000, 'نجاح!');
+            ToastManager.showSuccess(message, 4000);
         }
     }
 
