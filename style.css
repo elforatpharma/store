@@ -1,8 +1,37 @@
+/* 1. تعريف الألوان كمتغيرات برمجية لسهولة التحكم */
+:root {
+    --bg-pink-start: #ffafbd; /* وردي دافئ */
+    --bg-pink-end: #ffc3a0;   /* وردي مائل للمشمشي الخفيف */
+    --site-font: 'Tajawal', sans-serif;
+}
+
+/* 2. تطبيق الخلفية الشاملة على جسم الصفحة */
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    font-family: var(--site-font);
+    
+    /* إنشاء التدرج اللوني */
+    background: linear-gradient(135deg, var(--bg-pink-start) 0%, var(--bg-pink-end) 100%);
+    
+    /* جعل الخلفية ثابتة أثناء السكرول لتعزيز تأثير الزجاج */
+    background-attachment: fixed;
+    
+    /* ضمان تغطية الخلفية للمساحة بالكامل */
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+/* 3. إزالة أي خلفيات بيضاء صلبة من السيكشنز القديمة */
+section, .view-section {
+    background: transparent !important;
+}
+
 /* --- الإعدادات العامة --- */
 body {
     font-family: 'Tajawal', sans-serif;
     scroll-behavior: smooth;
-    background-color: #ffffff;
     color: #111111;
     overflow-x: hidden;
 }
