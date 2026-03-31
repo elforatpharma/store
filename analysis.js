@@ -1063,7 +1063,88 @@ document.addEventListener("DOMContentLoaded", () => {
                     activeBtn.classList.add('border-primary', 'text-primary');
                     activeBtn.setAttribute('aria-selected', 'true');
                 }
+                
+                // تحديث Breadcrumb
+                const breadcrumbCategory = document.getElementById('breadcrumb-category');
+                if (breadcrumbCategory) {
+                    breadcrumbCategory.textContent = '${p.category}';
+                }
+                
+                // عرض المنتجات ذات الصلة
+                renderRelatedProducts('${p.id}', '${p.category}');
             <\/script>`;
+    }
+    
+    // دالة عرض المنتجات ذات الصلة
+    function renderRelatedProducts(currentId, category) {
+        const relatedSection = document.getElementById('related-products');
+        const relatedGrid = document.getElementById('related-products-grid');
+        
+        if (!relatedSection || !relatedGrid) return;
+        
+        // جلب منتجات من نفس الفئة باستثناء المنتج الحالي
+        const relatedProducts = productsDB
+            .filter(p => p.category === category && p.id !== currentId)
+            .slice(0, 4);
+        
+        if (relatedProducts.length === 0) {
+            relatedSection.classList.add('hidden');
+            return;
+        }
+        
+        relatedSection.classList.remove('hidden');
+        relatedGrid.innerHTML = relatedProducts.map((p, index) => {
+            const isFav = FavoritesManager.isFavorite(p.id);
+            const isOutOfStock = p.stock <= 0;
+            
+            return `
+                <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms">
+                    <div class="relative overflow-hidden rounded-custom bg-white shadow-md hover:shadow-xl transition-all duration-300">
+                        <!-- Badge -->
+                        ${p.badge ? `<span class="absolute top-3 left-3 z-10 bg-primary text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg">${p.badge}</span>` : ''}
+                        
+                        <!-- زر المفضلة -->
+                        <div class="absolute top-3 right-3 z-20">
+                            <button onclick="event.stopPropagation(); FavoritesManager.toggle('${p.id}');" data-favorite-btn="${p.id}" class="favorite-btn p-2.5 rounded-full shadow-lg transition-all duration-300 ${isFav ? 'favorite-active' : ''}" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
+                                ${isFav 
+                                    ? '<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
+                                    : '<svg class="heart-icon w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>'
+                                }
+                            </button>
+                        </div>
+                        
+                        <!-- صورة المنتج -->
+                        <div class="aspect-square bg-[#f9f9f9] p-6 flex items-center justify-center cursor-pointer" onclick="app.navigate('product', '${p.id}')">
+                            <img src="${p.img}" loading="lazy" alt="${p.name}" class="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
+                        </div>
+                        
+                        <!-- معلومات المنتج -->
+                        <div class="p-4 space-y-3">
+                            <h3 class="font-bold text-sm text-gray-900 line-clamp-2 min-h-[2.5rem] cursor-pointer hover:text-primary transition-colors" onclick="app.navigate('product', '${p.id}')">${p.name}</h3>
+                            
+                            <div class="flex items-center gap-2 justify-between">
+                                <div class="flex flex-col">
+                                    <span class="text-primary font-bold text-base">${p.price} ج.م</span>
+                                    ${p.oldPrice ? `<span class="text-xs text-gray-400 line-through">${p.oldPrice} ج.م</span>` : ''}
+                                </div>
+                                ${isOutOfStock 
+                                    ? '<span class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">نفذت الكمية</span>'
+                                    : p.stock <= LOW_STOCK_THRESHOLD 
+                                        ? `<span class="text-[10px] bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-bold">متبقي ${p.stock}</span>`
+                                        : ''
+                                }
+                            </div>
+                            
+                            ${!isOutOfStock ? `
+                                <button onclick="app.addToCart('${p.id}', 1)" class="w-full bg-primary text-white font-bold uppercase text-[10px] tracking-widest py-2.5 rounded-full hover:bg-neutral-900 transition-all shadow-lg shadow-primary/30 active:scale-95">
+                                    أضف للحقيبة
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </article>
+            `;
+        }).join('');
     }
 
     function renderCart() {
