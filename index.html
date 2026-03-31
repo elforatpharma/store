@@ -159,21 +159,99 @@
                             <button onclick="app.navigate('catalog')" class="bg-primary text-white px-10 py-4 rounded-custom font-semibold text-lg hover:bg-neutral-900 transition-all shadow-xl shadow-primary/30">تسوقي الآن</button>
                         </div>
                     </div>
+                    
+                    <!-- Product Carousel Section -->
                     <div class="w-full md:w-1/2 relative h-[500px] md:h-[700px] flex justify-center items-center z-20 mt-8 md:mt-0">
-    <div class="absolute w-72 h-72 bg-primary/5 rounded-full blur-[100px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
-    
-    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/body_lotion.png" 
-         class="absolute loading="lazy" w-[35%] max-h-[55%] object-contain drop-shadow-2xl z-10 hover:z-40 hover:-translate-y-4 transition-all duration-500 right-[5%] bottom-[20%] mix-blend-multiply opacity-90 hover:opacity-100 cursor-pointer" 
-         alt="Body Lotion" onclick="app.navigate('product', 'ELFORAT-1773929789662')">
-    
-    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/guzel_gold.png" 
-         class="absolute w-[52%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 hover:-translate-y-6 transition-all duration-700 left-1/2 -translate-x-1/2 bottom-[5%] mix-blend-multiply cursor-pointer" 
-         alt="Guzel Gold" onclick="app.navigate('product', 'ELFORAT-1773926599633')">
-    
-    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/cleanser.png" 
-         class="absolute w-[32%] max-h-[45%] object-contain drop-shadow-2xl z-10 hover:z-40 hover:-translate-y-4 transition-all duration-500 left-[5%] bottom-[15%] mix-blend-multiply opacity-90 hover:opacity-100 cursor-pointer" 
-         alt="Facial Cleanser" onclick="app.navigate('product', 'ELFORAT-1773929625881')">
-</div>
+                        <!-- Background Glow Effect -->
+                        <div class="absolute w-72 h-72 bg-primary/5 rounded-full blur-[100px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse"></div>
+                        
+                        <!-- Carousel Container -->
+                        <div id="hero-carousel" class="relative w-full h-full carousel-container">
+                            <!-- Slide 1: Guzél Gold (Featured) -->
+                            <div class="carousel-slide active" data-slide="0">
+                                <div class="absolute inset-0 flex justify-center items-center">
+                                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/guzel_gold.png" 
+                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6" 
+                                         alt="Guzel Gold" 
+                                         onclick="app.navigate('product', 'ELFORAT-1773926599633')">
+                                    
+                                    <!-- Decorative Elements -->
+                                    <div class="absolute bottom-[15%] left-[10%] w-20 h-20 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-2xl animate-pulse"></div>
+                                    <div class="absolute top-[20%] right-[15%] w-16 h-16 bg-gradient-to-bl from-secondary/40 to-transparent rounded-full blur-xl animate-pulse" style="animation-delay: 1s;"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Slide 2: Body Lotion -->
+                            <div class="carousel-slide" data-slide="1">
+                                <div class="absolute inset-0 flex justify-center items-center">
+                                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/body_lotion.png" 
+                                         class="w-[40%] max-h-[60%] object-contain drop-shadow-2xl z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6" 
+                                         alt="Body Lotion" 
+                                         onclick="app.navigate('product', 'ELFORAT-1773929789662')">
+                                    
+                                    <!-- Side Products (Smaller) -->
+                                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/cleanser.png" 
+                                         class="absolute w-[25%] max-h-[40%] object-contain drop-shadow-xl z-20 opacity-70 hover:opacity-100 transition-all duration-500 left-[8%] bottom-[18%] cursor-pointer transform hover:scale-105" 
+                                         alt="Facial Cleanser" 
+                                         onclick="app.navigate('product', 'ELFORAT-1773929625881')">
+                                    
+                                    <!-- Decorative Elements -->
+                                    <div class="absolute bottom-[10%] right-[12%] w-24 h-24 bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-2xl animate-pulse" style="animation-delay: 0.5s;"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Slide 3: Facial Cleanser -->
+                            <div class="carousel-slide" data-slide="2">
+                                <div class="absolute inset-0 flex justify-center items-center">
+                                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/cleanser.png" 
+                                         class="w-[38%] max-h-[55%] object-contain drop-shadow-2xl z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6" 
+                                         alt="Facial Cleanser" 
+                                         onclick="app.navigate('product', 'ELFORAT-1773929625881')">
+                                    
+                                    <!-- Side Products (Smaller) -->
+                                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/body_lotion.png" 
+                                         class="absolute w-[28%] max-h-[45%] object-contain drop-shadow-xl z-20 opacity-70 hover:opacity-100 transition-all duration-500 right-[8%] bottom-[15%] cursor-pointer transform hover:scale-105" 
+                                         alt="Body Lotion" 
+                                         onclick="app.navigate('product', 'ELFORAT-1773929789662')">
+                                    
+                                    <!-- Decorative Elements -->
+                                    <div class="absolute top-[15%] left-[10%] w-20 h-20 bg-gradient-to-br from-secondary/30 to-transparent rounded-full blur-2xl animate-pulse" style="animation-delay: 1.5s;"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Carousel Navigation Arrows -->
+                            <button id="carousel-prev" class="absolute left-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-white/80 backdrop-blur-sm border-2 border-primary/30 rounded-full flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all duration-300 shadow-lg hover:shadow-primary/30 group" aria-label="السابق">
+                                <svg class="w-6 h-6 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                            </button>
+                            
+                            <button id="carousel-next" class="absolute right-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-white/80 backdrop-blur-sm border-2 border-primary/30 rounded-full flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all duration-300 shadow-lg hover:shadow-primary/30 group" aria-label="التالي">
+                                <svg class="w-6 h-6 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </button>
+                            
+                            <!-- Carousel Indicators (Dots) -->
+                            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex gap-3">
+                                <button class="carousel-dot w-3 h-3 rounded-full bg-primary/60 border-2 border-primary transition-all duration-300 hover:scale-125" data-dot="0" aria-label="الشريحة 1"></button>
+                                <button class="carousel-dot w-3 h-3 rounded-full bg-gray-300 border-2 border-gray-300 transition-all duration-300 hover:scale-125" data-dot="1" aria-label="الشريحة 2"></button>
+                                <button class="carousel-dot w-3 h-3 rounded-full bg-gray-300 border-2 border-gray-300 transition-all duration-300 hover:scale-125" data-dot="2" aria-label="الشريحة 3"></button>
+                            </div>
+                        </div>
+                        
+                        <!-- Loading Progress Bar for Carousel -->
+                        <div class="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 rounded-full overflow-hidden">
+                            <div id="carousel-progress" class="h-full bg-gradient-to-r from-primary to-pink-500 transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Animated Background Particles -->
+                <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div class="particle absolute w-2 h-2 bg-primary/20 rounded-full top-[10%] left-[20%] animate-float"></div>
+                    <div class="particle absolute w-3 h-3 bg-secondary/30 rounded-full top-[60%] right-[15%] animate-float" style="animation-delay: 2s;"></div>
+                    <div class="particle absolute w-2 h-2 bg-primary/15 rounded-full bottom-[20%] left-[30%] animate-float" style="animation-delay: 4s;"></div>
                 </div>
             </section>
 
