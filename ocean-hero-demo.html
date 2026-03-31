@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocean AI Hero Demo</title>
+    <style>
+        /* إعدادات عامة */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 1. كود الخلفية الرئيسي (لقسم الـ Hero) */
+        .hero-ocean-ai-bg {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            
+            /* الصورة المتدرجة الأصلية */
+            background-image: url("https://raw.githubusercontent.com/mobalti/open-props-interfaces/refs/heads/main/ai-hero-chat-popover/assets/bg-gradient.jpg");
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        /* لضمان التوافق مع الشاشات الصغيرة (Responsive) */
+        @media (max-width: 1439px) {
+            .hero-ocean-ai-bg {
+                background-position: top 20% center;
+                background-size: 150%;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .hero-ocean-ai-bg {
+                background-position: top 20% center;
+                background-size: 1000%; /* يعطي تأثير تكبير للألوان على الموبايل */
+            }
+        }
+
+        /* حاوية الكروت */
+        .cards-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 1200px;
+        }
+
+        /* 2. كود التدرج الوردي/الأبيض (الخلفية الزجاجية للكروت) */
+        .glass-pink-gradient {
+            width: 300px;
+            padding: 2rem;
+            border-radius: 20px;
+            color: #333;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            
+            background: linear-gradient(170.96deg, 
+                        oklch(100% 0 0 / 60%) 18.95%, 
+                        oklch(100% 0 0 / 20%) 99.73%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px); /* لدعم سفاري */
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            
+            transition: transform 0.3s ease;
+        }
+
+        .glass-pink-gradient:hover {
+            transform: translateY(-5px);
+        }
+
+        .glass-pink-gradient h2 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            color: #4a4a4a;
+        }
+
+        .glass-pink-gradient p {
+            line-height: 1.6;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- قسم الهيرو بالخلفية المطلوبة -->
+    <section class="hero-ocean-ai-bg">
+        
+        <div class="cards-container">
+            <!-- كارت 1 -->
+            <div class="glass-pink-gradient">
+                <h2>تحليل ذكي</h2>
+                <p>استمتع بتجربة مستخدم سلسة مع خلفية زجاجية عصرية تتجاوب مع جميع أحجام الشاشات.</p>
+            </div>
+
+            <!-- كارت 2 -->
+            <div class="glass-pink-gradient">
+                <h2>تصميم متجاوب</h2>
+                <p>الخلفية الرئيسية تتكيف تلقائياً، حيث تظهر التفاصيل الكاملة على الشاشات الكبيرة وتبرز الألوان على الموبايل.</p>
+            </div>
+
+            <!-- كارت 3 -->
+            <div class="glass-pink-gradient">
+                <h2>أداء عالي</h2>
+                <p>كود CSS نقي بدون مكتبات خارجية ثقيلة، مما يضمن سرعة تحميل فائقة لصفحتك.</p>
+            </div>
+        </div>
+
+    </section>
+
+</body>
+</html>
