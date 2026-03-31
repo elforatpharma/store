@@ -437,13 +437,14 @@ nav {
 /* حاوية الإشعارات - ثابتة في الزاوية العلوية اليسرى */
 .toast-container {
     position: fixed;
-    top: 20px;
-    left: 20px;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 9999;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    max-width: 420px;
+    gap: 10px;
+    max-width: 320px;
     width: calc(100% - 40px);
     pointer-events: none;
 }
@@ -452,28 +453,28 @@ nav {
 .toast-notification {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 16px 18px;
-    border-radius: 16px;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 50px;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
     pointer-events: auto;
-    transform: translateX(-120%);
+    transform: translateY(120%);
     opacity: 0;
     transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
     position: relative;
     overflow: hidden;
-    min-height: 64px;
+    min-height: auto;
 }
 
 .toast-notification.slide-in {
-    transform: translateX(0);
+    transform: translateY(0);
     opacity: 1;
 }
 
 .toast-notification.slide-out {
-    transform: translateX(-120%);
+    transform: translateY(120%);
     opacity: 0;
 }
 
@@ -496,13 +497,13 @@ nav {
 /* أيقونة الإشعار */
 .toast-icon {
     flex-shrink: 0;
-    width: 28px;
-    height: 28px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 12px;
     font-weight: bold;
 }
 
@@ -513,26 +514,27 @@ nav {
 }
 
 .toast-title {
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 600;
     line-height: 1.4;
-    margin-bottom: 2px;
+    margin-bottom: 0;
 }
 
 .toast-message {
-    font-size: 13px;
-    line-height: 1.5;
+    font-size: 11px;
+    line-height: 1.4;
     opacity: 0.9;
+    display: none;
 }
 
 /* زر الإغلاق */
 .toast-close {
     flex-shrink: 0;
-    width: 28px;
-    height: 28px;
+    width: 20px;
+    height: 20px;
     border: none;
     background: rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
+    border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -549,8 +551,8 @@ nav {
 }
 
 .toast-close svg {
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
 }
 
 /* الأنواع الأربعة للإشعارات */
@@ -614,15 +616,13 @@ nav {
 /* تحسينات للجوال */
 @media (max-width: 480px) {
     .toast-container {
-        left: 12px;
-        right: 12px;
-        top: 12px;
-        width: auto;
-        max-width: none;
+        bottom: 12px;
+        width: calc(100% - 24px);
+        max-width: 280px;
     }
     
     .toast-notification {
-        padding: 14px 16px;
+        padding: 8px 14px;
     }
 }
 

@@ -79,8 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
             toast.innerHTML = `
                 <div class="toast-icon">${icons[type]}</div>
                 <div class="toast-content">
-                    <div class="toast-title">${title || titles[type]}</div>
-                    <div class="toast-message">${message}</div>
+                    <div class="toast-title">${title || titles[type]}${message ? ' - ' + message : ''}</div>
                 </div>
                 <button class="toast-close" onclick="ToastManager.dismiss(this.closest('.toast-notification'))">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
