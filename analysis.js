@@ -891,10 +891,10 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         }
         
-        // تفضيل عرض المجموعات العلاجية المتكاملة قبل المنتجات الفردية
+        // تفضيل عرض المنتجات الفردية قبل المجموعات العلاجية المتكاملة
         products = [...products].sort((a, b) => {
-            const aBundle = a.category === 'مجموعات متكاملة' ? 0 : 1;
-            const bBundle = b.category === 'مجموعات متكاملة' ? 0 : 1;
+            const aBundle = a.category === 'مجموعات متكاملة' ? 1 : 0;
+            const bBundle = b.category === 'مجموعات متكاملة' ? 1 : 0;
             return aBundle - bBundle;
         });
         
@@ -1633,26 +1633,42 @@ document.addEventListener("DOMContentLoaded", () => {
     // (محتاج جدول اسمه offer_countdowns فيه عمودين: ip (text, primary key) و end_time (bigint)
     async function getOrCreateEndTimeForIP(ip) {
         const DURATION = 24 * 60 * 60 * 1000; // 24 ساعة
+        const localKey = 'elforat_offer_end_' + ip;
+        const now = Date.now();
 
+        // 1) نسأل السيرفر الأول (هو مصدر الحقيقة الأساسي)
         const { data, error } = await _supabase
             .from('offer_countdowns')
             .select('end_time')
             .eq('ip', ip)
             .maybeSingle();
 
-        if (error) return null; // الجدول غير موجود أو خطأ في الاتصال
-
-        const now = Date.now();
-
-        if (data && data.end_time && data.end_time > now) {
-            return data.end_time; // العداد لسه شغال لنفس الـ IP
+        if (!error && data && data.end_time && data.end_time > now) {
+            localStorage.setItem(localKey, data.end_time); // نزامن النسخة المحلية
+            return data.end_time;
         }
 
-        // مفيش عداد لسه، أو انتهى: ننشئ واحد جديد لنفس الـ IP
+        // 2) لو السيرفر مرجعش نتيجة صالحة (جدول مش موجود، مشكلة شبكة، RLS...)
+        // قبل ما نعتبر إن العرض خلص، نتأكد من النسخة المحفوظة محليًا لنفس الـ IP
+        const cached = localStorage.getItem(localKey);
+        if (cached && parseInt(cached, 10) > now) {
+            const cachedEndTime = parseInt(cached, 10);
+            // نحاول نزامنها تاني مع السيرفر (بدون ما نوقف لو فشلت)
+            _supabase.from('offer_countdowns')
+                .upsert({ ip: ip, end_time: cachedEndTime }, { onConflict: 'ip' })
+                .then(() => {});
+            return cachedEndTime;
+        }
+
+        // 3) مفيش أي نسخة صالحة (سيرفر ولا محلي): دلوقتي بس ننشئ عداد جديد فعلاً
         const newEndTime = now + DURATION;
-        await _supabase
+        localStorage.setItem(localKey, newEndTime);
+        const { error: upsertError } = await _supabase
             .from('offer_countdowns')
             .upsert({ ip: ip, end_time: newEndTime }, { onConflict: 'ip' });
+        if (upsertError) {
+            console.warn('تعذر حفظ العداد على السيرفر، هيتحفظ محليًا فقط:', upsertError.message);
+        }
 
         return newEndTime;
     }
@@ -1666,10 +1682,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const DURATION = 24 * 60 * 60 * 1000;
         let endTime = null;
-        const ip = await getVisitorIP();
 
-        if (ip) {
-            endTime = await getOrCreateEndTimeForIP(ip);
+        try {
+            const ip = await getVisitorIP();
+            if (ip) {
+                endTime = await getOrCreateEndTimeForIP(ip);
+            }
+        } catch (e) {
+            console.warn('فشل ربط العداد بالـ IP، هيشتغل بالطريقة المحلية:', e);
         }
 
         // لو معرفناش الـ IP أو فشل الاتصال بـ Supabase، نرجع لأسلوب localStorage القديم كبديل
