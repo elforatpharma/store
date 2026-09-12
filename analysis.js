@@ -1618,31 +1618,86 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 8. كود العداد الذكي (معدل ليتجدد تلقائياً)
     // ==========================================
-    function startCountdown() {
+    // بيجيب IP الزائر من خدمة خارجية مجانية
+    async function getVisitorIP() {
+        try {
+            const res = await fetch('https://api.ipify.org?format=json');
+            const data = await res.json();
+            return data.ip;
+        } catch (e) {
+            return null; // لو فشل النت، هنرجع لأسلوب localStorage العادي
+        }
+    }
+
+    // بيجيب أو بينشئ وقت انتهاء العرض الخاص بالـ IP ده من Supabase
+    // (محتاج جدول اسمه offer_countdowns فيه عمودين: ip (text, primary key) و end_time (bigint)
+    async function getOrCreateEndTimeForIP(ip) {
+        const DURATION = 24 * 60 * 60 * 1000; // 24 ساعة
+
+        const { data, error } = await _supabase
+            .from('offer_countdowns')
+            .select('end_time')
+            .eq('ip', ip)
+            .maybeSingle();
+
+        if (error) return null; // الجدول غير موجود أو خطأ في الاتصال
+
+        const now = Date.now();
+
+        if (data && data.end_time && data.end_time > now) {
+            return data.end_time; // العداد لسه شغال لنفس الـ IP
+        }
+
+        // مفيش عداد لسه، أو انتهى: ننشئ واحد جديد لنفس الـ IP
+        const newEndTime = now + DURATION;
+        await _supabase
+            .from('offer_countdowns')
+            .upsert({ ip: ip, end_time: newEndTime }, { onConflict: 'ip' });
+
+        return newEndTime;
+    }
+
+    async function startCountdown() {
         const hoursEl = document.getElementById('hours');
         const minutesEl = document.getElementById('minutes');
         const secondsEl = document.getElementById('seconds');
 
         if (!hoursEl || !minutesEl || !secondsEl) return;
 
-        let endTime = localStorage.getItem('elforat_offer_end');
+        const DURATION = 24 * 60 * 60 * 1000;
+        let endTime = null;
+        const ip = await getVisitorIP();
 
-        if (!endTime || parseInt(endTime, 10) <= Date.now()) {
-            endTime = Date.now() + (24 * 60 * 60 * 1000); 
-            localStorage.setItem('elforat_offer_end', endTime);
-        } else {
-            endTime = parseInt(endTime, 10);
+        if (ip) {
+            endTime = await getOrCreateEndTimeForIP(ip);
         }
 
-        setInterval(() => {
+        // لو معرفناش الـ IP أو فشل الاتصال بـ Supabase، نرجع لأسلوب localStorage القديم كبديل
+        if (!endTime) {
+            const stored = localStorage.getItem('elforat_offer_end');
+            if (!stored || parseInt(stored, 10) <= Date.now()) {
+                endTime = Date.now() + DURATION;
+                localStorage.setItem('elforat_offer_end', endTime);
+            } else {
+                endTime = parseInt(stored, 10);
+            }
+        }
+
+        setInterval(async () => {
             const now = Date.now();
             let timeRemaining = Math.floor((endTime - now) / 1000);
 
             if (timeRemaining <= 0) {
-                endTime = Date.now() + (24 * 60 * 60 * 1000);
-                localStorage.setItem('elforat_offer_end', endTime);
+                endTime = Date.now() + DURATION;
+                if (ip) {
+                    await _supabase
+                        .from('offer_countdowns')
+                        .upsert({ ip: ip, end_time: endTime }, { onConflict: 'ip' });
+                } else {
+                    localStorage.setItem('elforat_offer_end', endTime);
+                }
                 timeRemaining = Math.floor((endTime - now) / 1000);
-                
+
                 checkOffers();
                 renderCart();
                 updateBadge();
