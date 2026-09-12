@@ -3,6 +3,63 @@
  * النسخة الكاملة: التصميم الأصلي + سوبابيز + الترتيب + الخط المتحرك + الصور
  */
 
+// ==========================================
+// نظام الرسائل المنبثقة (Toast) - بديل جميل لـ alert() الافتراضي
+// ==========================================
+(function() {
+    let toastContainer = null;
+
+    function getToastContainer() {
+        if (!toastContainer || !document.body.contains(toastContainer)) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'fixed top-5 inset-x-0 z-[9999] flex flex-col items-center gap-3 pointer-events-none px-4';
+            document.body.appendChild(toastContainer);
+        }
+        return toastContainer;
+    }
+
+    // النوع: 'success' (افتراضي) / 'error' / 'info'
+    window.showToast = function(message, type = 'success') {
+        const container = getToastContainer();
+
+        const styles = {
+            success: { bg: 'from-primary to-secondary', icon: 'fa-circle-check', iconColor: 'text-emerald-300' },
+            error:   { bg: 'from-rose-500 to-rose-600',   icon: 'fa-circle-exclamation', iconColor: 'text-white' },
+            info:    { bg: 'from-emerald-500 to-emerald-600', icon: 'fa-circle-info', iconColor: 'text-white' },
+        };
+        const s = styles[type] || styles.success;
+
+        const toast = document.createElement('div');
+        toast.setAttribute('role', 'status');
+        toast.className = `pointer-events-auto flex items-center gap-3 bg-gradient-to-l ${s.bg} text-white font-bold text-sm px-5 py-3.5 rounded-2xl shadow-purple-glow border border-white/20 max-w-sm w-fit opacity-0 -translate-y-4 transition-all duration-300 ease-out`;
+        toast.innerHTML = `
+            <span class="${s.iconColor} text-lg leading-none"><i class="fa-solid ${s.icon}"></i></span>
+            <span class="flex-1 leading-snug">${message}</span>
+        `;
+
+        container.appendChild(toast);
+
+        // Animate in
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                toast.classList.remove('opacity-0', '-translate-y-4');
+            });
+        });
+
+        // Auto dismiss
+        setTimeout(() => {
+            toast.classList.add('opacity-0', '-translate-y-4');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    };
+
+    // استبدال alert() الافتراضي في كل الموقع برسالة منبثقة أنيقة
+    window.alert = function(message) {
+        window.showToast(message, 'success');
+    };
+})();
+
 document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 1. إعدادات السيرفر وقاعدة البيانات
