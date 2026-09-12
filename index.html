@@ -169,15 +169,28 @@
 </a>
 </div>
 <!-- Navigation Links with Hover underline micro-effects -->
-<nav id="nav-container" class="hidden lg:flex items-center gap-7 text-sm font-bold text-slate-700">
+<nav id="nav-container" class="hidden xl:flex items-center gap-5 text-sm font-bold text-slate-700 whitespace-nowrap">
 <a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group" onclick="app.navigate('home')" data-target="home">
           الرئيسية
 </a>
 <a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group" onclick="app.navigate('catalog')" data-target="catalog">
           المنتجات
 </a>
+<a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group" onclick="app.navigate('catalog', 'العناية بالشعر')" data-target="catalog:العناية بالشعر">
+          العناية بالشعر
+</a>
+<a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group" onclick="app.navigate('catalog', 'العناية بالبشرة')" data-target="catalog:العناية بالبشرة">
+          العناية بالبشرة
+</a>
+<a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group flex items-center gap-1.5" onclick="app.navigate('catalog', 'المجموعات')" data-target="catalog:المجموعات">
+<span class="text-[9px] font-black text-white bg-rose-500 px-2 py-0.5 rounded-full">جديد</span>
+          المجموعات
+</a>
 <a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group" onclick="app.navigate('about')" data-target="about">
-          عن الشركة
+          من الشركة
+</a>
+<a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group" href="https://wa.me/201146809133" target="_blank">
+          تواصل معنا
 </a>
 </nav>
 <!-- Search Bar -->
@@ -193,7 +206,7 @@
 <!-- Action Items: Admin Dashboard, Wishlist, Cart with Counter Glow -->
 <div class="flex items-center gap-2.5 sm:gap-3">
 <!-- Mobile Menu Button -->
-<button id="mobile-menu-btn" class="md:hidden p-2 text-gray-500 hover:text-primary transition-colors" onclick="app.toggleMobileMenu()">
+<button id="mobile-menu-btn" class="xl:hidden p-2 text-gray-500 hover:text-primary transition-colors" onclick="app.toggleMobileMenu()">
     <i class="fa-solid fa-bars text-lg"></i>
 </button>
 <!-- Wishlist with Hover scale -->
@@ -223,9 +236,9 @@
 </div>
 </div>
 <!-- Mobile Menu Overlay -->
-<div id="mobile-menu-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden md:hidden" onclick="app.toggleMobileMenu()"></div>
+<div id="mobile-menu-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden xl:hidden" onclick="app.toggleMobileMenu()"></div>
 <!-- Mobile Menu Slide Panel -->
-<div id="mobile-menu-panel" class="fixed top-0 right-0 h-full w-[280px] bg-white z-[101] transform translate-x-full transition-transform duration-300 ease-in-out md:hidden shadow-2xl">
+<div id="mobile-menu-panel" class="fixed top-0 right-0 h-full w-[280px] bg-white z-[101] transform translate-x-full transition-transform duration-300 ease-in-out xl:hidden shadow-2xl">
     <div class="p-6">
         <div class="flex items-center justify-between mb-8">
             <span class="text-xl font-bold text-primary">القائمة</span>
@@ -236,8 +249,15 @@
         <nav class="space-y-4">
             <a href="javascript:void(0)" onclick="app.navigate('home'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">الرئيسية</a>
             <a href="javascript:void(0)" onclick="app.navigate('catalog'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">المنتجات</a>
+            <a href="javascript:void(0)" onclick="app.navigate('catalog', 'العناية بالشعر'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">العناية بالشعر</a>
+            <a href="javascript:void(0)" onclick="app.navigate('catalog', 'العناية بالبشرة'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">العناية بالبشرة</a>
+            <a href="javascript:void(0)" onclick="app.navigate('catalog', 'المجموعات'); app.toggleMobileMenu();" class="flex items-center gap-2 py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">
+                المجموعات
+                <span class="text-[9px] font-black text-white bg-rose-500 px-2 py-0.5 rounded-full">جديد</span>
+            </a>
             <a href="javascript:void(0)" onclick="app.navigate('favorites'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">المفضلة</a>
-            <a href="javascript:void(0)" onclick="app.navigate('about'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">عن الشركة</a>
+            <a href="javascript:void(0)" onclick="app.navigate('about'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">من الشركة</a>
+            <a href="https://wa.me/201146809133" target="_blank" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">تواصل معنا</a>
         </nav>
     </div>
 </div>

@@ -424,9 +424,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    function updateNavMorph(activeId) {
+    function updateNavMorph(activeId, activeParam = null) {
+        const activeKey = activeParam ? `${activeId}:${activeParam}` : activeId;
         document.querySelectorAll('.nav-link').forEach(link => {
-            if (link.getAttribute('data-target') === activeId) {
+            const linkTarget = link.getAttribute('data-target');
+            if (linkTarget === activeKey || (!activeParam && linkTarget === activeId)) {
                 link.classList.add('text-primary');
                 link.classList.remove('text-gray-900');
                 
@@ -570,7 +572,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (addToHistory) history.pushState({ viewId, param }, "", param ? `#${viewId}?item=${param}` : `#${viewId}`);
                 document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
                 
-                updateNavMorph(viewId); 
+                updateNavMorph(viewId, viewId === 'catalog' ? param : null); 
 
                 if (['home', 'catalog', 'about'].includes(viewId)) {
                     document.getElementById('view-main').classList.add('active');
