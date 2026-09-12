@@ -4,23 +4,64 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Elforat Pharma - العناية الفاخرة</title>
+    <title>متجر الفُرات فارما الإلكتروني | ELFORAT PHARMA STORE</title>
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet" />
+    
+    <!-- Google Fonts: Cairo & Tajawal -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     
     <script>
         tailwind.config = {
-            theme: {
-                extend: {
-                    colors: { primary: '#ec135b', secondary: '#fce7ee', neutral: { 50: '#fafafa', 900: '#111111' } },
-                    fontFamily: { sans: ['Tajawal', 'sans-serif'] },
-                    borderRadius: { 'custom': '8px' }
+          theme: {
+            extend: {
+              fontFamily: {
+                sans: ['Tajawal', 'Cairo', 'sans-serif'],
+                display: ['Cairo', 'sans-serif'],
+              },
+              colors: {
+                primary: '#4D3CEB',
+                secondary: '#8536FF',
+                darkNavy: '#131B2E',
+                deepGray: '#64748B',
+                softBg: '#F8FAFC',
+              },
+              boxShadow: {
+                'purple-soft': '0 10px 25px -5px rgba(77, 60, 235, 0.08)',
+                'purple-glow': '0 8px 30px rgba(77, 60, 235, 0.32)',
+                'purple-card': '0 20px 40px -15px rgba(77, 60, 235, 0.16)',
+                'glass-glow': '0 0 25px rgba(133, 54, 255, 0.25)',
+              },
+              animation: {
+                'float-slow': 'floating 5s ease-in-out infinite',
+                'float-delayed': 'floating 6s ease-in-out 2s infinite',
+                'pulse-subtle': 'pulseSubtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                'shimmer': 'shimmer 2.5s infinite linear',
+              },
+              keyframes: {
+                floating: {
+                  '0%, 100%': { transform: 'translateY(0px)' },
+                  '50%': { transform: 'translateY(-10px)' },
+                },
+                pulseSubtle: {
+                  '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+                  '50%': { opacity: '0.85', transform: 'scale(1.03)' },
+                },
+                shimmer: {
+                  '0%': { backgroundPosition: '-200% 0' },
+                  '100%': { backgroundPosition: '200% 0' },
                 }
+              }
             }
+          }
         }
     </script>
 </head>
@@ -44,395 +85,294 @@
         </div>
     </div>
 
-    <nav class="bg-white/90 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
-            <div class="flex-shrink-0 cursor-pointer flex items-center gap-4" onclick="app.navigate('home')">
-                <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/logo.png" 
-                     alt="Elforat Pharma" 
-                     class="h-10 md:h-14 w-auto object-contain transition-transform hover:scale-105"
-                     loading="lazy">
-                
-                <div dir="ltr" class="flex items-baseline gap-1.5">
-                    <span class="text-2xl md:text-3xl font-black tracking-tighter text-primary">ELFORAT</span>
-                    <span class="text-sm md:text-base uppercase tracking-widest text-gray-400 font-bold hidden sm:inline-block">Pharma</span>
-                </div>
-            </div>
-            
-            <!-- Desktop Navigation -->
-            <div id="nav-container" class="hidden md:flex space-x-6 space-x-reverse font-bold text-sm tracking-wider uppercase relative">
-                <a href="javascript:void(0)" onclick="app.navigate('home')" data-target="home" class="nav-link transition-colors duration-300">الرئيسية</a>
-                <a href="javascript:void(0)" onclick="app.navigate('catalog')" data-target="catalog" class="nav-link transition-colors duration-300">المنتجات</a>
-                <a href="javascript:void(0)" onclick="app.navigate('about')" data-target="about" class="nav-link transition-colors duration-300">عن الشركة</a>
-            </div>
-
-            <div class="flex items-center space-x-3 space-x-reverse">
-                <!-- Search Bar (Desktop) -->
-                <div class="hidden md:flex relative">
-                    <input type="text" id="desktop-search-input" placeholder="ابحث عن منتج..." 
-                           class="w-64 px-4 py-2 pr-10 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
-                           oninput="app.handleSearch(this.value)"
-                           autocomplete="off">
-                    <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                    <!-- قائمة الاقتراحات -->
-                    <div id="search-suggestions-desktop" class="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 hidden z-50 overflow-hidden"></div>
-                </div>
-                
-                <!-- Mobile Menu Button -->
-                <button id="mobile-menu-btn" class="md:hidden p-2 text-gray-500 hover:text-primary transition-colors">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-                
-                <!-- Favorites Button -->
-                <button onclick="app.navigate('favorites')" class="text-gray-500 hover:text-primary relative transition-colors p-2 bg-gray-50 rounded-full">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                    </svg>
-                    <span id="favorites-badge" class="absolute -top-1 -end-1 bg-primary text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-lg shadow-primary/20">0</span>
-                </button>
-                
-                <!-- Cart Button -->
-                <button onclick="app.navigate('cart')" class="text-gray-500 hover:text-primary relative transition-colors p-2 bg-gray-50 rounded-full">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                    <span id="cart-badge" class="absolute -top-1 -end-1 bg-primary text-white text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-lg shadow-primary/20">0</span>
-                </button>
-            </div>
+    <!-- Top Announcement Marquee Bar with Shimmer & Live Countdown -->
+<div class="bg-gradient-to-r from-[#3312D5] via-[#4D3CEB] to-[#8536FF] text-white py-2 px-4 text-xs font-medium sticky top-0 z-50 shadow-md">
+<div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
+<!-- Live dynamic announcement badge -->
+<div class="flex items-center gap-2.5 overflow-hidden">
+<span class="badge-shimmer text-white px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase shadow-sm flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+        عرض حصري ومحدود 🔥
+      </span>
+<div class="hidden sm:flex items-center gap-2 text-xs font-semibold">
+<span class="">احصلي على كريم صنفرة مجاناً للطلبات فوق 500 ج.م</span>
+<span class="text-purple-200">|</span>
+<span class="text-amber-300 font-bold">خصم 20% بكود: FORAT20</span>
+</div>
+</div>
+<!-- Contact & Quick stats -->
+<div class="flex items-center gap-4 text-xs text-white/95">
+<div class="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-2.5 py-0.5 rounded-full">
+<span class="text-[10px] text-purple-200">ينتهي العرض خلال:</span>
+<span class="font-mono font-bold text-amber-300">23:59:49</span>
+</div>
+<a class="flex items-center gap-1.5 hover:text-amber-300 transition-colors bg-emerald-500/30 hover:bg-emerald-500/50 px-2.5 py-0.5 rounded-full" href="https://wa.me/201146809133" target="_blank">
+<i class="fa-brands fa-whatsapp text-emerald-300 text-xs"></i>
+<span class="font-mono text-xs">+20 114 680 9133</span>
+</a>
+<span class="hidden md:inline text-white/30">|</span>
+<span class="hidden md:flex items-center gap-1.5"><i class="fa-solid fa-truck-fast text-purple-200"></i> شحن سريع لجميع المحافظات</span>
+</div>
+</div>
+</div>
+<!-- Main Sticky Glass Navbar with Glow & Micro-interactions -->
+<header class="sticky top-[37px] md:top-[41px] z-40 glass-nav transition-all duration-300 shadow-sm">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-20 gap-4">
+<!-- Official Brand Logo & Store Name -->
+<div class="flex items-center gap-3 flex-shrink-0">
+<a class="flex items-center gap-3 group cursor-pointer" onclick="app.navigate('home')">
+<div class="w-13 h-13 rounded-2xl bg-white p-1.5 shadow-sm border border-purple-100/80 flex items-center justify-center overflow-hidden group-hover:shadow-purple-soft transition-all duration-300">
+<img alt="شعار الفُرات فارما" class="w-11 h-11 object-contain transform group-hover:scale-110 transition-transform duration-500" src="logo.png">
+</div>
+<div class="flex flex-col">
+<span class="text-xl md:text-2xl font-black font-display tracking-tight text-darkNavy group-hover:text-primary transition-colors flex items-center gap-1">
+              الفُرات <span class="text-gradient">فارما</span>
+</span>
+<span class="text-[10px] tracking-widest text-deepGray font-semibold -mt-1 uppercase">ELFORAT PHARMA</span>
+</div>
+</a>
+</div>
+<!-- Navigation Links with Hover underline micro-effects -->
+<nav id="nav-container" class="hidden lg:flex items-center gap-7 text-sm font-bold text-slate-700">
+<a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group" onclick="app.navigate('home')" data-target="home">
+          الرئيسية
+</a>
+<a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group" onclick="app.navigate('catalog')" data-target="catalog">
+          المنتجات
+</a>
+<a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group" onclick="app.navigate('about')" data-target="about">
+          عن الشركة
+</a>
+</nav>
+<!-- Search Bar -->
+<div class="hidden md:flex flex-1 max-w-xs xl:max-w-sm mx-2">
+<div class="relative w-full group">
+<input type="text" id="desktop-search-input" placeholder="ابحث عن منتج..." class="w-full bg-slate-100/80 hover:bg-white border border-slate-200/80 focus:bg-white text-darkNavy text-xs rounded-full pr-10 pl-4 py-2.5 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-slate-400" oninput="app.handleSearch(this.value)" autocomplete="off">
+<div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+<i class="fa-solid fa-magnifying-glass text-xs"></i>
+</div>
+<div id="search-suggestions-desktop" class="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 hidden z-50 overflow-hidden"></div>
+</div>
+</div>
+<!-- Action Items: Admin Dashboard, Wishlist, Cart with Counter Glow -->
+<div class="flex items-center gap-2.5 sm:gap-3">
+<!-- Mobile Menu Button -->
+<button id="mobile-menu-btn" class="md:hidden p-2 text-gray-500 hover:text-primary transition-colors" onclick="app.toggleMobileMenu()">
+    <i class="fa-solid fa-bars text-lg"></i>
+</button>
+<!-- Wishlist with Hover scale -->
+<button class="btn-fav w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-darkNavy hover:text-rose-500 hover:border-rose-300 transition-all relative shadow-sm" onclick="app.navigate('favorites')">
+<i class="fa-regular fa-heart text-base"></i>
+<span id="favorites-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow">0</span>
+</button>
+<!-- Cart with Glow Count -->
+<button class="w-10 h-10 rounded-full bg-white border border-purple-200 flex items-center justify-center text-darkNavy hover:text-primary hover:border-primary transition-all relative shadow-sm group" onclick="app.navigate('cart')">
+<i class="fa-solid fa-bag-shopping text-base text-primary group-hover:scale-110 transition-transform"></i>
+<span id="cart-badge" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gradient-to-r from-primary to-secondary text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-purple-glow animate-pulse">
+            0
+          </span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<!-- Mobile Search Bar -->
+<div class="p-3 bg-white border-b border-purple-50 md:hidden">
+<div class="relative w-full">
+<input type="text" id="mobile-search-input" placeholder="ابحث عن منتج..." class="w-full bg-slate-50 border border-purple-100 text-darkNavy text-xs rounded-full pr-9 pl-4 py-2.5 focus:outline-none focus:border-primary shadow-inner" oninput="app.handleSearch(this.value)" autocomplete="off">
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-primary">
+<i class="fa-solid fa-magnifying-glass text-xs"></i>
+</div>
+<div id="search-suggestions-mobile" class="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 hidden z-50 overflow-hidden"></div>
+</div>
+</div>
+<!-- Mobile Menu Overlay -->
+<div id="mobile-menu-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden md:hidden" onclick="app.toggleMobileMenu()"></div>
+<!-- Mobile Menu Slide Panel -->
+<div id="mobile-menu-panel" class="fixed top-0 right-0 h-full w-[280px] bg-white z-[101] transform translate-x-full transition-transform duration-300 ease-in-out md:hidden shadow-2xl">
+    <div class="p-6">
+        <div class="flex items-center justify-between mb-8">
+            <span class="text-xl font-bold text-primary">القائمة</span>
+            <button onclick="app.toggleMobileMenu()" class="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
         </div>
-        
-        <!-- Mobile Search Bar -->
-        <div class="md:hidden px-4 pb-4">
-            <div class="relative">
-                <input type="text" id="mobile-search-input" placeholder="ابحث عن منتج..." 
-                       class="w-full px-4 py-3 pr-10 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
-                       oninput="app.handleSearch(this.value)"
-                       autocomplete="off">
-                <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-                <!-- قائمة الاقتراحات للجوال -->
-                <div id="search-suggestions-mobile" class="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 hidden z-50 overflow-hidden"></div>
-            </div>
-        </div>
-        
-        <!-- Mobile Menu Overlay -->
-        <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden md:hidden" onclick="app.toggleMobileMenu()"></div>
-        
-        <!-- Mobile Menu Slide Panel -->
-        <div id="mobile-menu-panel" class="fixed top-0 right-0 h-full w-[280px] bg-white z-[101] transform translate-x-full transition-transform duration-300 ease-in-out md:hidden shadow-2xl">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-8">
-                    <span class="text-xl font-bold text-primary">القائمة</span>
-                    <button onclick="app.toggleMobileMenu()" class="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-                <nav class="space-y-4">
-                    <a href="javascript:void(0)" onclick="app.navigate('home'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">الرئيسية</a>
-                    <a href="javascript:void(0)" onclick="app.navigate('catalog'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">المنتجات</a>
-                    <a href="javascript:void(0)" onclick="app.navigate('favorites'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">المفضلة</a>
-                    <a href="javascript:void(0)" onclick="app.navigate('about'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">عن الشركة</a>
-                </nav>
-            </div>
-        </div>
-    </nav>
+        <nav class="space-y-4">
+            <a href="javascript:void(0)" onclick="app.navigate('home'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">الرئيسية</a>
+            <a href="javascript:void(0)" onclick="app.navigate('catalog'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">المنتجات</a>
+            <a href="javascript:void(0)" onclick="app.navigate('favorites'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">المفضلة</a>
+            <a href="javascript:void(0)" onclick="app.navigate('about'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">عن الشركة</a>
+        </nav>
+    </div>
+</div>
 
     <div id="app-container">
         <div id="view-main" class="view-section active">
-            <section id="home" class="relative bg-gradient-to-l from-[#fdfbfb] to-[#f4f4f4] overflow-hidden pt-12 md:pt-0">
-                <div class="max-w-7xl mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center min-h-[85vh]">
-                    <div class="w-full md:w-1/2 space-y-6 py-12 relative z-50 text-center md:text-right">
-                        <div id="promo-badge" class="inline-flex flex-wrap justify-center md:justify-start items-center gap-3 bg-white/70 backdrop-blur-md border border-primary/20 px-5 py-2 rounded-full shadow-sm mb-2">
-                            <span class="text-gray-800 text-sm font-bold">🔥 عروض حصرية تنتهي خلال:</span>
-                            <div id="countdown" dir="ltr" class="text-primary font-black tracking-widest text-sm bg-primary/10 px-3 py-1 rounded-full">
-                                <span id="hours">24</span>:<span id="minutes">00</span>:<span id="seconds">00</span>
-                            </div>
-                        </div>
-                        <div class="space-y-2 text-right">
-                            <span class="text-primary font-bold tracking-widest uppercase text-sm block">مجموعة العناية الفاخرة</span>
-                            <h1 class="text-5xl md:text-7xl font-bold leading-tight text-gray-900 text-right">اصنعي <br /><span class="text-primary italic">جمالك الخاص</span></h1>
-                        </div>
-                        <p class="text-lg text-gray-600 max-w-md mx-auto md:mr-0 text-right font-medium">مزيج من العلم والرفاهية العضوية مع مجموعتنا المتخصصة للعناية بالشعر والبشرة.</p>
-                        <div class="pt-4 text-right">
-                            <button onclick="app.navigate('catalog')" class="bg-primary text-white px-10 py-4 rounded-custom font-semibold text-lg hover:bg-neutral-900 transition-all shadow-xl shadow-primary/30">تسوقي الآن</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Product Carousel Section -->
-                    <div class="w-full md:w-1/2 relative h-[350px] sm:h-[450px] md:h-[700px] flex justify-center items-center z-20 mt-8 md:mt-0 touch-pan-y" id="carousel-touch-area">
-                        <!-- Background Glow Effect -->
-                        <div class="absolute w-72 h-72 bg-primary/5 rounded-full blur-[100px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse"></div>
-                        
-                        <!-- Carousel Container -->
-                        <div id="hero-carousel" class="relative w-full h-full carousel-container">
-                            <!-- Slide 1: Guzél Gold (Featured) -->
-                            <div class="carousel-slide active" data-slide="0" role="group" aria-roledescription="slide" aria-label="1 من 11">
-                                <div class="absolute inset-0 flex justify-center items-center">
-                                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1773786142124.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
-                                         alt="Product 1" 
-                                         onclick="app.navigate('catalog')"
-                                         draggable="false"
-                                         loading="lazy">
-                                    
-                                    <!-- Decorative Elements -->
-                                    <div class="absolute bottom-[15%] left-[10%] w-20 h-20 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-2xl animate-pulse"></div>
-                                    <div class="absolute top-[20%] right-[15%] w-16 h-16 bg-gradient-to-bl from-secondary/40 to-transparent rounded-full blur-xl animate-pulse" style="animation-delay: 1s;"></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Slide 2 -->
-                            <div class="carousel-slide" data-slide="1" role="group" aria-roledescription="slide" aria-label="2 من 11">
-                                <div class="absolute inset-0 flex justify-center items-center">
-                                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774329652998-guzel_gold.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
-                                         alt="Product 2" 
-                                         onclick="app.navigate('catalog')"
-                                         draggable="false"
-                                         loading="lazy">
-                                    
-                                    <!-- Decorative Elements -->
-                                    <div class="absolute bottom-[10%] right-[12%] w-24 h-24 bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-2xl animate-pulse" style="animation-delay: 0.5s;"></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Slide 3 -->
-                            <div class="carousel-slide" data-slide="2" role="group" aria-roledescription="slide" aria-label="3 من 11">
-                                <div class="absolute inset-0 flex justify-center items-center">
-                                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774329755590-lip_balm.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
-                                         alt="Product 3" 
-                                         onclick="app.navigate('catalog')"
-                                         draggable="false"
-                                         loading="lazy">
-                                    
-                                    <!-- Decorative Elements -->
-                                    <div class="absolute top-[15%] left-[10%] w-20 h-20 bg-gradient-to-br from-secondary/30 to-transparent rounded-full blur-2xl animate-pulse" style="animation-delay: 1.5s;"></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Slide 4 -->
-                            <div class="carousel-slide" data-slide="3" role="group" aria-roledescription="slide" aria-label="4 من 11">
-                                <div class="absolute inset-0 flex justify-center items-center">
-                                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774329816852-1774114154902.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
-                                         alt="Product 4" 
-                                         onclick="app.navigate('catalog')"
-                                         draggable="false"
-                                         loading="lazy">
-                                    
-                                    <!-- Decorative Elements -->
-                                    <div class="absolute bottom-[15%] left-[10%] w-20 h-20 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-2xl animate-pulse"></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Slide 5 -->
-                            <div class="carousel-slide" data-slide="4" role="group" aria-roledescription="slide" aria-label="5 من 11">
-                                <div class="absolute inset-0 flex justify-center items-center">
-                                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774329893100-foot_cream.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
-                                         alt="Product 5" 
-                                         onclick="app.navigate('catalog')"
-                                         draggable="false"
-                                         loading="lazy">
-                                    
-                                    <!-- Decorative Elements -->
-                                    <div class="absolute top-[20%] right-[15%] w-16 h-16 bg-gradient-to-bl from-secondary/40 to-transparent rounded-full blur-xl animate-pulse" style="animation-delay: 1s;"></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Slide 6 -->
-                            <div class="carousel-slide" data-slide="5" role="group" aria-roledescription="slide" aria-label="6 من 11">
-                                <div class="absolute inset-0 flex justify-center items-center">
-                                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774329927460-1773777377248-body_scrub.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
-                                         alt="Product 6" 
-                                         onclick="app.navigate('catalog')"
-                                         draggable="false"
-                                         loading="lazy">
-                                    
-                                    <!-- Decorative Elements -->
-                                    <div class="absolute bottom-[10%] right-[12%] w-24 h-24 bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-2xl animate-pulse" style="animation-delay: 0.5s;"></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Slide 7 -->
-                            <div class="carousel-slide" data-slide="6" role="group" aria-roledescription="slide" aria-label="7 من 11">
-                                <div class="absolute inset-0 flex justify-center items-center">
-                                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774330000225-1774112786737.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
-                                         alt="Product 7" 
-                                         onclick="app.navigate('catalog')"
-                                         draggable="false"
-                                         loading="lazy">
-                                    
-                                    <!-- Decorative Elements -->
-                                    <div class="absolute top-[15%] left-[10%] w-20 h-20 bg-gradient-to-br from-secondary/30 to-transparent rounded-full blur-2xl animate-pulse" style="animation-delay: 1.5s;"></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Slide 8 -->
-                            <div class="carousel-slide" data-slide="7" role="group" aria-roledescription="slide" aria-label="8 من 11">
-                                <div class="absolute inset-0 flex justify-center items-center">
-                                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774330020724-1773777315418-body_lotion.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
-                                         alt="Product 8" 
-                                         onclick="app.navigate('catalog')"
-                                         draggable="false"
-                                         loading="lazy">
-                                    
-                                    <!-- Decorative Elements -->
-                                    <div class="absolute bottom-[15%] left-[10%] w-20 h-20 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-2xl animate-pulse"></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Slide 9 -->
-                            <div class="carousel-slide" data-slide="8" role="group" aria-roledescription="slide" aria-label="9 من 11">
-                                <div class="absolute inset-0 flex justify-center items-center">
-                                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774330040835-1774114976490.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
-                                         alt="Product 9" 
-                                         onclick="app.navigate('catalog')"
-                                         draggable="false"
-                                         loading="lazy">
-                                    
-                                    <!-- Decorative Elements -->
-                                    <div class="absolute top-[20%] right-[15%] w-16 h-16 bg-gradient-to-bl from-secondary/40 to-transparent rounded-full blur-xl animate-pulse" style="animation-delay: 1s;"></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Slide 10 -->
-                            <div class="carousel-slide" data-slide="9" role="group" aria-roledescription="slide" aria-label="10 من 11">
-                                <div class="absolute inset-0 flex justify-center items-center">
-                                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774330058728-1774113244400.png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
-                                         alt="Product 10" 
-                                         onclick="app.navigate('catalog')"
-                                         draggable="false"
-                                         loading="lazy">
-                                    
-                                    <!-- Decorative Elements -->
-                                    <div class="absolute bottom-[10%] right-[12%] w-24 h-24 bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-2xl animate-pulse" style="animation-delay: 0.5s;"></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Slide 11 -->
-                            <div class="carousel-slide" data-slide="10" role="group" aria-roledescription="slide" aria-label="11 من 11">
-                                <div class="absolute inset-0 flex justify-center items-center">
-                                    <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1774330114789-download%20(3).png" 
-                                         class="w-[55%] max-h-[85%] object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] z-30 carousel-item floating-animation cursor-pointer transform transition-all duration-700 hover:scale-110 hover:-translate-y-6 touch-none select-none" 
-                                         alt="Product 11" 
-                                         onclick="app.navigate('catalog')"
-                                         draggable="false"
-                                         loading="lazy">
-                                    
-                                    <!-- Decorative Elements -->
-                                    <div class="absolute top-[15%] left-[10%] w-20 h-20 bg-gradient-to-br from-secondary/30 to-transparent rounded-full blur-2xl animate-pulse" style="animation-delay: 1.5s;"></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Carousel Navigation Arrows -->
-                            <button id="carousel-prev" class="absolute left-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-white/80 backdrop-blur-sm border-2 border-primary/30 rounded-full flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all duration-300 shadow-lg hover:shadow-primary/30 group" aria-label="السابق">
-                                <svg class="w-6 h-6 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path>
-                                </svg>
-                            </button>
-                            
-                            <button id="carousel-next" class="absolute right-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-white/80 backdrop-blur-sm border-2 border-primary/30 rounded-full flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all duration-300 shadow-lg hover:shadow-primary/30 group" aria-label="التالي">
-                                <svg class="w-6 h-6 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </button>
-                            
-                            <!-- Carousel Indicators (Dots) -->
-                            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex gap-3">
-                                <button class="carousel-dot w-3 h-3 rounded-full bg-primary/60 border-2 border-primary transition-all duration-300 hover:scale-125" data-dot="0" aria-label="الشريحة 1"></button>
-                                <button class="carousel-dot w-3 h-3 rounded-full bg-gray-300 border-2 border-gray-300 transition-all duration-300 hover:scale-125" data-dot="1" aria-label="الشريحة 2"></button>
-                                <button class="carousel-dot w-3 h-3 rounded-full bg-gray-300 border-2 border-gray-300 transition-all duration-300 hover:scale-125" data-dot="2" aria-label="الشريحة 3"></button>
-                                <button class="carousel-dot w-3 h-3 rounded-full bg-gray-300 border-2 border-gray-300 transition-all duration-300 hover:scale-125" data-dot="3" aria-label="الشريحة 4"></button>
-                                <button class="carousel-dot w-3 h-3 rounded-full bg-gray-300 border-2 border-gray-300 transition-all duration-300 hover:scale-125" data-dot="4" aria-label="الشريحة 5"></button>
-                                <button class="carousel-dot w-3 h-3 rounded-full bg-gray-300 border-2 border-gray-300 transition-all duration-300 hover:scale-125" data-dot="5" aria-label="الشريحة 6"></button>
-                                <button class="carousel-dot w-3 h-3 rounded-full bg-gray-300 border-2 border-gray-300 transition-all duration-300 hover:scale-125" data-dot="6" aria-label="الشريحة 7"></button>
-                                <button class="carousel-dot w-3 h-3 rounded-full bg-gray-300 border-2 border-gray-300 transition-all duration-300 hover:scale-125" data-dot="7" aria-label="الشريحة 8"></button>
-                                <button class="carousel-dot w-3 h-3 rounded-full bg-gray-300 border-2 border-gray-300 transition-all duration-300 hover:scale-125" data-dot="8" aria-label="الشريحة 9"></button>
-                                <button class="carousel-dot w-3 h-3 rounded-full bg-gray-300 border-2 border-gray-300 transition-all duration-300 hover:scale-125" data-dot="9" aria-label="الشريحة 10"></button>
-                                <button class="carousel-dot w-3 h-3 rounded-full bg-gray-300 border-2 border-gray-300 transition-all duration-300 hover:scale-125" data-dot="10" aria-label="الشريحة 11"></button>
-                            </div>
-                        </div>
-                        
-                        <!-- Loading Progress Bar for Carousel -->
-                        <div class="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 rounded-full overflow-hidden">
-                            <div id="carousel-progress" class="h-full bg-gradient-to-r from-primary to-pink-500 transition-all duration-300" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Animated Background Particles -->
-                <div class="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div class="particle absolute w-2 h-2 bg-primary/20 rounded-full top-[10%] left-[20%] animate-float"></div>
-                    <div class="particle absolute w-3 h-3 bg-secondary/30 rounded-full top-[60%] right-[15%] animate-float" style="animation-delay: 2s;"></div>
-                    <div class="particle absolute w-2 h-2 bg-primary/15 rounded-full bottom-[20%] left-[30%] animate-float" style="animation-delay: 4s;"></div>
-                </div>
-            </section>
-
-            <section class="py-24 bg-white border-t border-gray-50 overflow-hidden">
-                <div class="max-w-7xl mx-auto px-4 text-center">
-                    <div class="mb-20">
-                        <h2 class="text-4xl md:text-5xl font-black tracking-tight text-gray-900">تسوقي حسب الفئة</h2>
-                        <p class="text-gray-400 mt-4 font-medium uppercase tracking-[0.2em] text-sm">اختاري روتينك الخاص</p>
-                        <div class="h-1.5 w-20 bg-primary mx-auto mt-6 rounded-full shadow-[0_0_15px_rgba(236,19,91,0.4)]"></div>
-                    </div>
-                    
-<div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto px-4">
-    <div onclick="app.navigate('catalog', 'العناية بالشعر')" class="category-glass-card group cursor-pointer p-8">
-        <div class="flex flex-col items-center">
-            <!-- وعاء الصورة بتأثير نبض خفيف -->
-            <div class="w-40 h-40 mb-6 bg-white/20 rounded-full flex items-center justify-center transition-transform group-hover:scale-110">
-                <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/guzel_gold.png" 
-                     class="w-3/4 object-contain drop-shadow-2xl" 
-                     alt="العناية بالشعر"
-                     loading="lazy">
-            </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-2">العناية بالشعر</h3>
-            <p class="text-gray-600 text-sm">تغذية عميقة ولمعان طبيعي</p>
-        </div>
-    </div>
-
-    <div onclick="app.navigate('catalog', 'العناية بالبشرة')" class="category-glass-card group cursor-pointer p-8">
-        <div class="flex flex-col items-center">
-            <!-- وعاء الصورة بتأثير نبض خفيف -->
-            <div class="w-40 h-40 mb-6 bg-white/20 rounded-full flex items-center justify-center transition-transform group-hover:scale-110">
-                <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/body_lotion.png" 
-                     class="w-3/4 object-contain drop-shadow-2xl" 
-                     alt="العناية بالبشرة"
-                     loading="lazy">
-            </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-2">العناية بالبشرة</h3>
-            <p class="text-gray-600 text-sm">بشرة ناعمة كالحرير يومياً</p>
-        </div>
-    </div>
-
-    <div onclick="app.navigate('catalog', 'مجموعات متكاملة')" class="category-glass-card group cursor-pointer p-8">
-        <div class="flex flex-col items-center">
-            <!-- وعاء الصورة بتأثير نبض خفيف -->
-            <div class="w-40 h-40 mb-6 bg-white/20 rounded-full flex items-center justify-center transition-transform group-hover:scale-110">
-                <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/group2.png" 
-                     class="w-3/4 object-contain drop-shadow-2xl" 
-                     alt="مجموعات متكاملة"
-                     loading="lazy">
-            </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-2">مجموعات كاملة</h3>
-            <p class="text-gray-600 text-sm">أفضل النتائج بأفضل توفير</p>
-        </div>
-    </div>
+            <!-- Hero Section with Ambient Glow, Floating Elements & Micro-Animations -->
+<section id="home" class="relative overflow-hidden pt-8 pb-14 lg:pt-14 lg:pb-20">
+<div class="absolute top-0 right-1/4 w-[450px] h-[450px] bg-primary/10 rounded-full blur-3xl pointer-events-none -z-10 animate-pulse-subtle"></div>
+<div class="absolute top-1/3 left-10 w-96 h-96 bg-secondary/15 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<div class="absolute bottom-10 right-10 w-64 h-64 bg-amber-200/20 rounded-full blur-2xl pointer-events-none -z-10"></div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-10 items-center">
+<!-- Right Column: Hero Content -->
+<div class="lg:col-span-7 flex flex-col items-start text-right">
+<div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/95 border border-purple-200/90 shadow-purple-soft mb-5 backdrop-blur-md">
+<span class="badge-shimmer text-[11px] font-black px-3 py-1 rounded-full uppercase text-white shadow-sm flex items-center gap-1">
+<i class="fa-solid fa-sparkles text-amber-200 text-xs"></i> ?????? ??????? ???????
+          </span>
+<span class="text-xs font-bold text-darkNavy flex items-center gap-1.5">
+            ???? ????? ????? ??????: 
+            <span class="font-mono text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md font-extrabold border border-rose-100">23:59:49</span>
+</span>
 </div>
-            </section>
+<h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display text-darkNavy leading-tight sm:leading-tight lg:leading-tight mb-5 tracking-tight">
+          ????? <span class="text-gradient drop-shadow-sm">?????? ?????</span>
+</h1>
+<p class="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mb-8 font-normal">
+          ???? ?????? ?? ????? ????????? ????????? ??????? ????????. ???? ??? ???????? ?????? ???????? ????? ?????? ?????? ????? ?????? ?????? ?????? ?? ????? ????? ?????? ?? ??? ?????.
+        </p>
+<!-- CTA Buttons with Shimmer & Glow -->
+<div class="flex flex-wrap items-center gap-4 w-full sm:w-auto mb-10">
+<a class="btn-gradient-shimmer rounded-full px-8 py-4 text-base font-black flex items-center justify-center gap-3 w-full sm:w-auto text-white shadow-purple-glow group cursor-pointer" onclick="app.navigate('catalog')">
+<span class="">????? ????</span>
+<i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+</a>
+<a class="btn-outline px-7 py-4 text-base font-bold flex items-center justify-center gap-2.5 w-full sm:w-auto hover:shadow-lg cursor-pointer" onclick="app.navigate('catalog', '?????????')">
+<i class="fa-solid fa-wand-magic-sparkles text-primary"></i>
+<span class="">??????? ?????????</span>
+</a>
+</div>
+<!-- Trust Stats Bar -->
+<div class="grid grid-cols-3 gap-4 pt-6 border-t border-purple-100 w-full max-w-lg">
+<div class="flex flex-col">
+<span class="text-2xl font-black text-darkNavy font-display flex items-center gap-1">
+              100%
+              <i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i>
+</span>
+<span class="text-xs text-slate-500 font-bold mt-0.5">??????? ????? ?????</span>
+</div>
+<div class="flex flex-col border-r border-slate-200 pr-4">
+<span class="text-2xl font-black text-primary font-display flex items-center gap-1">
+              ????
+              <i class="fa-solid fa-bolt text-amber-500 text-sm"></i>
+</span>
+<span class="text-xs text-slate-500 font-bold mt-0.5">??? ????? ?????????</span>
+</div>
+<div class="flex flex-col border-r border-slate-200 pr-4">
+<span class="text-2xl font-black text-darkNavy font-display flex items-center gap-1">
+              +15,000
+              <i class="fa-solid fa-heart text-rose-500 text-sm"></i>
+</span>
+<span class="text-xs text-slate-500 font-bold mt-0.5">????? ?????? ??????</span>
+</div>
+</div>
+</div>
+<!-- Left Column: Hero Image Showcase with Floating Glass Badges -->
+<div class="lg:col-span-5 relative">
+<div class="relative mx-auto max-w-md lg:max-w-none">
+<div class="absolute -inset-3 bg-gradient-to-r from-primary via-secondary to-purple-400 rounded-3xl blur-2xl opacity-30 animate-pulse-subtle"></div>
+<!-- Main Showcase Card -->
+<div class="relative bg-white rounded-3xl p-3 sm:p-4 shadow-purple-card border border-purple-100 overflow-hidden">
+<div class="aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 relative group">
+<img alt="?????? ??????? ??????? ??????? ?????" class="w-full h-full object-cover transform group-hover:scale-108 transition-transform duration-700 ease-out" src="https://lh3.googleusercontent.com/aida/AEtjO1WzkVyug0_ZQdM94vcJD-48nXdDVVM5d6H0MxEisPwvB-HmC047OCnlkAcDdBvclm2LaY1iZ6gBKuKswKqnAyyg_eLrIH-bXSQRPd85BDMjjYVBsjQfEZRfatSwjP7s6ac63Y2G7wPh8j_gF5TqX5Kp235pl6bZlilwvtqHpolcypByekaauu6XoZV3Z4VQBp7VwjYI579aKWhvehV1b1J_vM3ymtd2O3RXSLR7TJQycYMqdLH9n28Lwv8">
+<div class="absolute inset-0 bg-gradient-to-t from-darkNavy/60 via-transparent to-transparent"></div>
+<div class="absolute bottom-3 right-3 text-white">
+<span class="bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 border border-white/20">
+<span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  ?????? Elforat Pharma ??????? ???????
+                </span>
+</div>
+</div>
+<!-- Floating Glass Badge 1 (Top Left) -->
+<div class="absolute top-6 left-6 glass-card-frosted p-3 rounded-2xl shadow-xl flex items-center gap-3 animate-float-slow border border-white/80">
+<div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-lg shadow-inner">
+<i class="fa-solid fa-leaf"></i>
+</div>
+<div>
+<div class="text-xs font-black text-darkNavy">??????? ???????? ????</div>
+<div class="text-[10px] font-semibold text-slate-500">????? ?? ????????? ??????????</div>
+</div>
+</div>
+<!-- Floating Glass Badge 2 (Bottom Right) -->
+<div class="absolute bottom-6 right-6 glass-card-frosted p-3 rounded-2xl shadow-xl flex items-center gap-3 animate-float-delayed border border-white/80">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-secondary text-white flex items-center justify-center text-base shadow-md">
+<i class="fa-solid fa-gift animate-pulse"></i>
+</div>
+<div>
+<div class="text-xs font-black text-darkNavy">???? ?????? ??????? +500 ?.?</div>
+<div class="text-[10px] font-bold text-primary">???? ????? ????? ???? ??????</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Shop By Category Section with Frosted Glass & 3D Glowing Icons -->
+<section class="py-14 bg-white/70 backdrop-blur-md border-y border-purple-100/70" id="categories">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+<div class="max-w-md mx-auto mb-10">
+<span class="text-xs font-black text-primary uppercase tracking-widest bg-purple-50 px-3 py-1 rounded-full border border-purple-100">
+        ????? ??????? ????????
+      </span>
+<h2 class="text-2xl sm:text-3xl font-black font-display text-darkNavy mt-2">?????? ??? ?????</h2>
+<p class="text-xs sm:text-sm text-slate-500 mt-1.5">?????? ??????? ?????? ??????? ????? ????? ???????? ???????</p>
+<div class="w-16 h-1 bg-gradient-to-r from-primary to-secondary mx-auto mt-3 rounded-full"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Category 1: Hair Care -->
+<a class="group relative p-7 rounded-3xl bg-gradient-to-b from-white to-purple-50/40 hover:to-purple-50 border border-purple-100 hover:border-primary/40 shadow-sm hover:shadow-2xl hover:-translate-y-2.5 transition-all duration-300 flex flex-col items-center overflow-hidden cursor-pointer" onclick="app.navigate('catalog', '??????? ??????')">
+<div class="absolute -top-10 -right-10 w-24 h-24 bg-primary/10 rounded-full blur-xl group-hover:bg-primary/20 transition-all"></div>
+<div class="w-28 h-28 rounded-2xl bg-white shadow-purple-soft p-3 mb-5 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 border border-purple-100">
+<div class="w-20 h-20 rounded-xl bg-purple-50 text-primary flex items-center justify-center text-4xl shadow-inner group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+<i class="fa-solid fa-pump-soap"></i>
+</div>
+</div>
+<h3 class="text-xl font-black text-darkNavy group-hover:text-primary transition-colors mb-1.5 font-display">??????? ??????</h3>
+<p class="text-xs text-slate-500 max-w-xs">????? ?????? ???? ?????? ???????? ?????? ?????</p>
+<div class="mt-5 px-4 py-1.5 rounded-full bg-purple-50 group-hover:bg-primary group-hover:text-white text-primary text-xs font-bold flex items-center gap-1.5 transition-all duration-300">
+<span class="">??????? 4 ??????</span>
+<i class="fa-solid fa-arrow-left text-[11px] group-hover:-translate-x-1 transition-transform"></i>
+</div>
+</a>
+<!-- Category 2: Skin Care -->
+<a class="group relative p-7 rounded-3xl bg-gradient-to-b from-white to-purple-50/40 hover:to-purple-50 border border-purple-100 hover:border-secondary/40 shadow-sm hover:shadow-2xl hover:-translate-y-2.5 transition-all duration-300 flex flex-col items-center overflow-hidden cursor-pointer" onclick="app.navigate('catalog', '??????? ???????')">
+<div class="absolute -top-10 -right-10 w-24 h-24 bg-secondary/10 rounded-full blur-xl group-hover:bg-secondary/20 transition-all"></div>
+<div class="w-28 h-28 rounded-2xl bg-white shadow-purple-soft p-3 mb-5 flex items-center justify-center group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300 border border-purple-100">
+<div class="w-20 h-20 rounded-xl bg-purple-50 text-secondary flex items-center justify-center text-4xl shadow-inner group-hover:bg-secondary group-hover:text-white transition-colors duration-300">
+<i class="fa-solid fa-spa"></i>
+</div>
+</div>
+<h3 class="text-xl font-black text-darkNavy group-hover:text-secondary transition-colors mb-1.5 font-display">??????? ??????? ??????</h3>
+<p class="text-xs text-slate-500 max-w-xs">????? ????? ????? ????? ?????? ??????? ??????</p>
+<div class="mt-5 px-4 py-1.5 rounded-full bg-purple-50 group-hover:bg-secondary group-hover:text-white text-secondary text-xs font-bold flex items-center gap-1.5 transition-all duration-300">
+<span class="">??????? 8 ??????</span>
+<i class="fa-solid fa-arrow-left text-[11px] group-hover:-translate-x-1 transition-transform"></i>
+</div>
+</a>
+<!-- Category 3: Full Bundles -->
+<a class="group relative p-7 rounded-3xl bg-gradient-to-b from-white to-amber-50/30 hover:to-amber-50 border border-amber-100 hover:border-amber-400/40 shadow-sm hover:shadow-2xl hover:-translate-y-2.5 transition-all duration-300 flex flex-col items-center overflow-hidden cursor-pointer" onclick="app.navigate('catalog', '?????????')">
+<div class="absolute -top-10 -right-10 w-24 h-24 bg-amber-400/10 rounded-full blur-xl group-hover:bg-amber-400/20 transition-all"></div>
+<div class="w-28 h-28 rounded-2xl bg-white shadow-purple-soft p-3 mb-5 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 border border-amber-100">
+<div class="w-20 h-20 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-4xl shadow-inner group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300">
+<i class="fa-solid fa-boxes-stacked"></i>
+</div>
+</div>
+<h3 class="text-xl font-black text-darkNavy group-hover:text-amber-600 transition-colors mb-1.5 font-display">????????? ????????</h3>
+<p class="text-xs text-slate-500 max-w-xs">???? ??????? ???????? ????? ???? ????? ??????</p>
+<div class="mt-5 px-4 py-1.5 rounded-full bg-amber-50 group-hover:bg-amber-500 group-hover:text-white text-amber-700 text-xs font-bold flex items-center gap-1.5 transition-all duration-300">
+<span class="">???? ??? 120 ?.?</span>
+<i class="fa-solid fa-arrow-left text-[11px] group-hover:-translate-x-1 transition-transform"></i>
+</div>
+</a>
+</div>
+</div>
+</section>
 
-            <section id="catalog" class="max-w-7xl mx-auto px-4 md:px-8 py-20 border-t border-gray-100">
+<section id="catalog" class="max-w-7xl mx-auto px-4 md:px-8 py-20 border-t border-gray-100">
                 <div class="mb-10 text-right flex justify-between items-center">
                     <h1 class="text-3xl font-bold tracking-tight text-gray-900">منتجاتنا المتميزة</h1>
                 </div>
@@ -518,10 +458,59 @@
         </div>
     </div>
 
-    <footer id="about" class="bg-white border-t pt-16 pb-8 text-right">
-    <div class="max-w-7xl mx-auto px-4 md:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
-            <div class="space-y-4 flex flex-col items-start">
+        <footer id="about" class="bg-[#283044] text-gray-200 py-12">
+      
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          <div class="flex flex-col items-start space-y-4">
+            <div class="flex items-center gap-3">
+              <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/logo.png" alt="Elforat Pharma Logo" class="h-12 w-auto object-contain" loading="lazy">
+              <div class="flex items-baseline gap-1">
+                <span class="text-3xl font-bold text-primary">ELFORAT</span>
+                <span class="text-sm text-gray-400 font-bold uppercase tracking-widest">PHARMA</span>
+              </div>
+            </div>
+            <p class="text-gray-300 text-sm max-w-sm">
+              رفيقتك في رحلة العناية بجمالك. نقدم لكِ أفضل منتجات العناية بالبشرة والشعر بتركيبات آمنة وفعالة تبرز إشراقتك الطبيعية.
+            </p>
+          </div>
+          <div class="space-y-4">
+            <h3 class="text-lg font-bold text-gray-100 relative inline-block">
+              تواصل معنا
+              <span class="absolute -bottom-1 right-0 w-1/2 h-0.5 bg-primary rounded-full"></span>
+            </h3>
+            <ul class="space-y-2 text-sm text-gray-300">
+              <li>
+                <a href="https://wa.me/201146809133" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-primary transition-colors">
+                  <i class="fa-brands fa-whatsapp text-primary"></i>
+                  <span dir="ltr" class="font-medium">+20 114 680 9133</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="space-y-4">
+            <h3 class="text-lg font-bold text-gray-100 relative inline-block">
+              تابعونا على
+              <span class="absolute -bottom-1 right-0 w-1/2 h-0.5 bg-primary rounded-full"></span>
+            </h3>
+            <div class="flex gap-3 mt-4">
+              <a href="https://www.facebook.com/profile.php?id=61574765620560" target="_blank" class="text-gray-300 hover:text-primary"><i class="fa-brands fa-facebook-f"></i></a>
+              <a href="https://www.instagram.com/elforat_pharma_dr__asmaa_salem" target="_blank" class="text-gray-300 hover:text-primary"><i class="fa-brands fa-instagram"></i></a>
+              <a href="https://wa.me/201146809133" target="_blank" class="text-gray-300 hover:text-primary"><i class="fa-brands fa-whatsapp"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-gray-700 pt-4 flex flex-col md:flex-row items-center justify-between text-xs text-gray-400">
+          <p>© 2026 Elforat Pharma. جميع الحقوق محفوظة.</p>
+          <div class="flex gap-4">
+            <a href="#" class="hover:text-primary transition-colors">سياسة الخصوصية</a>
+            <a href="#" class="hover:text-primary transition-colors">الشروط والأحكام</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+    
+        
+            
                 <div class="flex items-center gap-3">
                     <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/logo.png" 
                          alt="Elforat Pharma Logo" 

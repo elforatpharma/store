@@ -1136,3 +1136,163 @@ button[onclick*="buyNow"]:hover::after {
     border-color: rgba(236, 19, 91, 0.4); /* تلميح بلون البراند عند الهوفر */
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
 }
+body {
+  font-family: 'Tajawal', 'Cairo', sans-serif;
+  background-color: #F8FAFC;
+  color: #131B2E;
+  overflow-x: hidden;
+}
+
+/* Glossy Shimmer CTA Effect */
+.btn-gradient-shimmer {
+  background: linear-gradient(135deg, #4D3CEB 0%, #8536FF 100%);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 25px -4px rgba(77, 60, 235, 0.4);
+}
+.btn-gradient-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  bottom: -50%;
+  left: -50%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: rotate(30deg) translate(-100%, 0);
+  animation: glossSweep 4.5s ease-in-out infinite;
+}
+@keyframes glossSweep {
+  0% { transform: rotate(30deg) translate(-120%, 0); }
+  25%, 100% { transform: rotate(30deg) translate(120%, 0); }
+}
+
+.btn-gradient-shimmer:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 14px 30px -2px rgba(133, 54, 255, 0.5);
+  filter: brightness(1.06);
+}
+
+.btn-dark {
+  background-color: #111827;
+  color: #ffffff;
+  border-radius: 9999px;
+  transition: all 0.25s ease;
+}
+.btn-dark:hover {
+  background-color: #1f2937;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(17, 24, 39, 0.25);
+}
+
+.btn-outline {
+  border: 1.5px solid #4D3CEB;
+  color: #4D3CEB;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.95);
+}
+.btn-outline:hover {
+  background: #4D3CEB;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(77, 60, 235, 0.25);
+}
+
+.glass-nav {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+}
+
+.glass-card-frosted {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 14px 34px -10px rgba(77, 60, 235, 0.1);
+}
+
+.badge-gradient {
+  background: linear-gradient(135deg, #4D3CEB 0%, #8536FF 100%);
+  color: #ffffff;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #4D3CEB 0%, #8536FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Product Card Interactive Overhaul */
+.pro-product-card {
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-radius: 24px;
+  background: #ffffff;
+}
+.pro-product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 22px 35px -8px rgba(77, 60, 235, 0.16);
+  border-color: #C4B5FD;
+}
+
+/* Heart button micro-animation */
+.btn-fav {
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.btn-fav:hover {
+  transform: scale(1.18);
+}
+.btn-fav:active {
+  transform: scale(0.9);
+}
+
+/* Shimmer Badge */
+.badge-shimmer {
+  background: linear-gradient(90deg, #e11d48, #f43f5e, #fb7185, #e11d48);
+  background-size: 200% auto;
+  animation: badgeShine 3s linear infinite;
+}
+@keyframes badgeShine {
+  to { background-position: 200% center; }
+}
+
+/* Marquee ticker animation */
+@keyframes marqueeRTL {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(50%); }
+}
+.marquee-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marqueeRTL 25s linear infinite;
+}
+.marquee-container:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+/* Toast Notification entrance */
+@keyframes toastSlide {
+  0% { transform: translateY(120%) scale(0.9); opacity: 0; }
+  15%, 85% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(120%) scale(0.9); opacity: 0; }
+}
+.animate-social-toast {
+  animation: toastSlide 9s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+/* Custom smooth scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #C4B5FD;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #8536FF;
+}

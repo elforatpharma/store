@@ -245,10 +245,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const btn = document.querySelector(`[data-favorite-btn="${productId}"]`);
             if (btn) {
                 const isFav = this.isFavorite(productId);
-                btn.classList.toggle('favorite-active', isFav);
                 btn.innerHTML = isFav 
-                    ? `<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
-                    : `<svg class="heart-icon w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`;
+                    ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
+                    : `<i class="fa-regular fa-heart text-xs"></i>`;
             }
         },
         
@@ -915,30 +914,48 @@ document.addEventListener("DOMContentLoaded", () => {
             grid.innerHTML = products.map((p, index) => {
                 const isFavorite = FavoritesManager.isFavorite(p.id);
                 return `
-                <article class="floating-card bg-white rounded-3xl p-4 text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
-                    <div class="product-visual-glass relative mb-6 overflow-hidden rounded-2xl flex items-center justify-center p-6">
-                        <img src="${sanitize(p.img)}" loading="lazy" class="max-h-48 transition-transform duration-500 group-hover:scale-110 drop-shadow-xl" onerror="this.src='logo.png'">
-                        ${p.badge ? `<div class="absolute top-4 left-4 z-10"><span class="badge-premium">${sanitize(p.badge)}</span></div>` : ''}
-                        <button onclick="event.stopPropagation();" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn absolute top-3 right-3 z-20 w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-md">
-                            ${isFavorite 
-                                ? `<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
-                                : `<svg class="heart-icon w-3.5 h-3.5 text-gray-400 hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
-                            }
-                        </button>
-                    </div>
-                    <div class="space-y-1 mb-6 px-1">
-                        <p class="text-[10px] uppercase tracking-widest text-primary font-bold">Elforat Pharma</p>
-                        <h3 class="text-base font-extrabold text-gray-900 leading-tight">${sanitize(p.name)}</h3>
-                        <div class="flex flex-row-reverse justify-end items-center gap-3 pt-1">
-                            <span class="text-lg font-bold text-primary">${sanitize(p.price)} ج.م</span>
-                            ${p.oldPrice ? `<span class="text-xs text-gray-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}')" class="flex-1 py-3 px-2 bg-gray-100 text-gray-800 rounded-full text-[11px] font-bold hover:bg-primary hover:text-white transition-colors">أضف للسلة</button>
-                        <button onclick="event.stopPropagation(); app.buyNow('${sanitize(p.id)}')" class="flex-1 py-3 px-2 bg-black text-white rounded-full text-[11px] font-bold hover:bg-primary transition-colors">اشتري الآن</button>
-                    </div>
-                </article>`;
+<article class="pro-product-card p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group opacity-0 animate-fade-in-up cursor-pointer" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
+    <div class="flex items-center justify-between w-full mb-3 z-10">
+        ${p.badge ? `<span class="badge-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
+        <button onclick="event.stopPropagation();" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20">
+            ${isFavorite 
+                ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
+                : `<i class="fa-regular fa-heart text-xs"></i>`
+            }
+        </button>
+    </div>
+    <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-4 mb-3.5 flex items-center justify-center overflow-hidden">
+        <img src="${sanitize(p.img)}" loading="lazy" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="this.src='logo.png'">
+        <span class="absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
+    </div>
+    <div class="flex flex-col flex-1">
+        <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-bold text-primary">${sanitize(p.category || 'العناية')}</span>
+            <div class="flex items-center gap-1 text-amber-400 text-xs">
+                <i class="fa-solid fa-star"></i>
+                <span class="text-xs font-bold text-slate-700">${p.rating || '4.9'}</span>
+            </div>
+        </div>
+        <h3 class="font-extrabold text-darkNavy text-sm line-clamp-2 leading-snug mb-2 group-hover:text-primary transition-colors">
+            ${sanitize(p.name)}
+        </h3>
+        <div class="mt-auto pt-3 border-t border-slate-100">
+            <div class="flex items-baseline justify-between mb-3">
+                <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-black text-darkNavy font-display">${sanitize(p.price)} <span class="text-xs font-bold text-slate-500">ج.م</span></span>
+                    ${p.oldPrice ? `<span class="text-xs text-slate-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="event.stopPropagation(); app.buyNow('${sanitize(p.id)}')" class="btn-dark py-2.5 text-xs font-bold shadow-sm">اشتري الآن</button>
+                <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}')" class="btn-outline py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
+                    <i class="fa-solid fa-cart-plus text-xs"></i>
+                    <span>أضف للسلة</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</article>`;
             }).join('');
             
             // إضافة مستمعي الأحداث لأزرار المفضلة
