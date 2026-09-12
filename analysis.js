@@ -891,6 +891,22 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         }
         
+        // تفضيل عرض المجموعات العلاجية المتكاملة قبل المنتجات الفردية
+        products = [...products].sort((a, b) => {
+            const aBundle = a.category === 'مجموعات متكاملة' ? 0 : 1;
+            const bBundle = b.category === 'مجموعات متكاملة' ? 0 : 1;
+            return aBundle - bBundle;
+        });
+        
+        // تحديث عنوان القسم وتفعيل التبويب المطابق
+        const heading = document.getElementById('catalog-heading');
+        if (heading) {
+            heading.textContent = filter === 'مجموعات متكاملة' ? 'المجموعات العلاجية المتكاملة' : 'منتجاتنا المتميزة';
+        }
+        document.querySelectorAll('.catalog-tab-btn').forEach(btn => {
+            btn.classList.toggle('active', (btn.getAttribute('data-filter') || '') === (filter || ''));
+        });
+        
         if (grid) {
             if (products.length === 0) {
                 grid.innerHTML = `

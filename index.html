@@ -120,8 +120,10 @@
         </div>
     </div>
 
+    <!-- Sticky wrapper: marquee + navbar stick together with no gap between them -->
+    <div class="sticky top-0 z-50">
     <!-- Top Announcement Marquee Bar with Shimmer & Live Countdown -->
-<div class="bg-gradient-to-r from-[#3312D5] via-[#4D3CEB] to-[#8536FF] text-white py-2 px-4 text-xs font-medium sticky top-0 z-50 shadow-md">
+<div class="bg-gradient-to-r from-[#3312D5] via-[#4D3CEB] to-[#8536FF] text-white py-2 px-4 text-xs font-medium shadow-md">
 <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
 <!-- Live dynamic announcement badge -->
 <div class="flex items-center gap-2.5 overflow-hidden">
@@ -150,21 +152,21 @@
 </div>
 </div>
 </div>
-<!-- Main Sticky Glass Navbar with Glow & Micro-interactions -->
-<header class="sticky top-[37px] md:top-[41px] z-40 glass-nav transition-all duration-300 shadow-sm">
+<!-- Main Glass Navbar with Glow & Micro-interactions -->
+<header class="glass-nav transition-all duration-300 shadow-sm">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center justify-between h-20 gap-4">
+<div class="flex items-center justify-between h-16 gap-4">
 <!-- Official Brand Logo & Store Name -->
-<div class="flex items-center gap-3 flex-shrink-0">
-<a class="flex items-center gap-3 group cursor-pointer" onclick="app.navigate('home')">
-<div class="w-13 h-13 rounded-2xl bg-white p-1.5 shadow-sm border border-purple-100/80 flex items-center justify-center overflow-hidden group-hover:shadow-purple-soft transition-all duration-300">
-<img alt="شعار الفُرات فارما" class="w-11 h-11 object-contain transform group-hover:scale-110 transition-transform duration-500" src="logo.png">
+<div class="flex items-center gap-2.5 flex-shrink-0">
+<a class="flex items-center gap-2.5 group cursor-pointer" onclick="app.navigate('home')">
+<div class="w-11 h-11 rounded-xl bg-white p-1 shadow-sm border border-purple-100/80 flex items-center justify-center overflow-hidden group-hover:shadow-purple-soft transition-all duration-300">
+<img alt="شعار الفُرات فارما" class="w-9 h-9 object-contain transform group-hover:scale-110 transition-transform duration-500" src="logo.png">
 </div>
-<div class="flex flex-col">
-<span class="text-xl md:text-2xl font-black font-display tracking-tight text-darkNavy group-hover:text-primary transition-colors flex items-center gap-1">
+<div class="flex flex-col justify-center">
+<span class="text-lg md:text-xl font-black font-display tracking-tight text-darkNavy group-hover:text-primary transition-colors flex items-center gap-1 leading-tight">
               الفُرات <span class="text-gradient">فارما</span>
 </span>
-<span class="text-[10px] tracking-widest text-deepGray font-semibold -mt-1 uppercase">ELFORAT PHARMA</span>
+<span class="text-[9px] tracking-widest text-deepGray font-semibold uppercase leading-none">ELFORAT PHARMA</span>
 </div>
 </a>
 </div>
@@ -182,7 +184,7 @@
 <a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group" onclick="app.navigate('catalog', 'العناية بالبشرة')" data-target="catalog:العناية بالبشرة">
           العناية بالبشرة
 </a>
-<a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group flex items-center gap-1.5" onclick="app.navigate('catalog', 'المجموعات')" data-target="catalog:المجموعات">
+<a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group flex items-center gap-1.5" onclick="app.navigate('catalog', 'مجموعات متكاملة')" data-target="catalog:مجموعات متكاملة">
 <span class="text-[9px] font-black text-white bg-rose-500 px-2 py-0.5 rounded-full">جديد</span>
           المجموعات
 </a>
@@ -204,19 +206,19 @@
 </div>
 </div>
 <!-- Action Items: Admin Dashboard, Wishlist, Cart with Counter Glow -->
-<div class="flex items-center gap-2.5 sm:gap-3">
+<div class="flex items-center gap-2 sm:gap-2.5">
 <!-- Mobile Menu Button -->
-<button id="mobile-menu-btn" class="xl:hidden p-2 text-gray-500 hover:text-primary transition-colors" onclick="app.toggleMobileMenu()">
-    <i class="fa-solid fa-bars text-lg"></i>
+<button id="mobile-menu-btn" class="xl:hidden w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:text-primary hover:bg-primary/5 transition-colors" onclick="app.toggleMobileMenu()">
+    <i class="fa-solid fa-bars text-base"></i>
 </button>
 <!-- Wishlist with Hover scale -->
-<button class="btn-fav w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-darkNavy hover:text-rose-500 hover:border-rose-300 transition-all relative shadow-sm" onclick="app.navigate('favorites')">
-<i class="fa-regular fa-heart text-base"></i>
+<button class="btn-fav w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center text-darkNavy hover:text-rose-500 hover:border-rose-300 transition-all relative shadow-sm" onclick="app.navigate('favorites')">
+<i class="fa-regular fa-heart text-sm"></i>
 <span id="favorites-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow">0</span>
 </button>
 <!-- Cart with Glow Count -->
-<button class="w-10 h-10 rounded-full bg-white border border-purple-200 flex items-center justify-center text-darkNavy hover:text-primary hover:border-primary transition-all relative shadow-sm group" onclick="app.navigate('cart')">
-<i class="fa-solid fa-bag-shopping text-base text-primary group-hover:scale-110 transition-transform"></i>
+<button class="w-9 h-9 rounded-full bg-white border border-purple-200 flex items-center justify-center text-darkNavy hover:text-primary hover:border-primary transition-all relative shadow-sm group" onclick="app.navigate('cart')">
+<i class="fa-solid fa-bag-shopping text-sm text-primary group-hover:scale-110 transition-transform"></i>
 <span id="cart-badge" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gradient-to-r from-primary to-secondary text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-purple-glow animate-pulse">
             0
           </span>
@@ -225,6 +227,7 @@
 </div>
 </div>
 </header>
+    </div>
 <!-- Mobile Search Bar -->
 <div class="p-3 bg-white border-b border-purple-50 md:hidden">
 <div class="relative w-full">
@@ -251,7 +254,7 @@
             <a href="javascript:void(0)" onclick="app.navigate('catalog'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">المنتجات</a>
             <a href="javascript:void(0)" onclick="app.navigate('catalog', 'العناية بالشعر'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">العناية بالشعر</a>
             <a href="javascript:void(0)" onclick="app.navigate('catalog', 'العناية بالبشرة'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">العناية بالبشرة</a>
-            <a href="javascript:void(0)" onclick="app.navigate('catalog', 'المجموعات'); app.toggleMobileMenu();" class="flex items-center gap-2 py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">
+            <a href="javascript:void(0)" onclick="app.navigate('catalog', 'مجموعات متكاملة'); app.toggleMobileMenu();" class="flex items-center gap-2 py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">
                 المجموعات
                 <span class="text-[9px] font-black text-white bg-rose-500 px-2 py-0.5 rounded-full">جديد</span>
             </a>
@@ -274,7 +277,7 @@
 <!-- Right Column: Hero Content -->
 <div class="lg:col-span-7 flex flex-col items-start text-right">
 <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display text-darkNavy leading-tight sm:leading-tight lg:leading-tight mb-5 tracking-tight">
-          متجرك <span class="text-gradient drop-shadow-sm">لجمالك وصحتك</span>
+          اصنعي <span class="text-gradient drop-shadow-sm">جمالكِ الخاص</span>
 </h1>
 <p class="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mb-8 font-normal">
           نقدم لكِ أفضل المنتجات الطبيعية والعلاجية للعناية بالبشرة. حلول آمنة ومختبرة طبياً لتتألقي بإشراقة طبيعية تدوم طويلاً من خبراء التجميل في عالم الجمال.
@@ -285,7 +288,7 @@
 <span class="">تسوقي الآن</span>
 <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
 </a>
-<a class="btn-outline px-7 py-4 text-base font-bold flex items-center justify-center gap-2.5 w-full sm:w-auto hover:shadow-lg cursor-pointer" onclick="app.navigate('catalog', 'المجموعات')">
+<a class="btn-outline px-7 py-4 text-base font-bold flex items-center justify-center gap-2.5 w-full sm:w-auto hover:shadow-lg cursor-pointer" onclick="app.navigate('catalog', 'مجموعات متكاملة')">
 <i class="fa-solid fa-wand-magic-sparkles text-primary"></i>
 <span class="">اكتشفي المجموعات</span>
 </a>
@@ -301,7 +304,7 @@
 </div>
 <div class="flex flex-col border-r border-slate-200 pr-4">
 <span class="text-2xl font-black text-primary font-display flex items-center gap-1">
-              فوري
+              سريع
               <i class="fa-solid fa-bolt text-amber-500 text-sm"></i>
 </span>
 <span class="text-xs text-slate-500 font-bold mt-0.5">شحن سريع للمحافظات</span>
@@ -400,7 +403,7 @@
 </div>
 </a>
 <!-- Category 3: Full Bundles -->
-<a class="group relative p-7 rounded-3xl bg-gradient-to-b from-white to-amber-50/30 hover:to-amber-50 border border-amber-100 hover:border-amber-400/40 shadow-sm hover:shadow-2xl hover:-translate-y-2.5 transition-all duration-300 flex flex-col items-center overflow-hidden cursor-pointer" onclick="app.navigate('catalog', 'المجموعات')">
+<a class="group relative p-7 rounded-3xl bg-gradient-to-b from-white to-amber-50/30 hover:to-amber-50 border border-amber-100 hover:border-amber-400/40 shadow-sm hover:shadow-2xl hover:-translate-y-2.5 transition-all duration-300 flex flex-col items-center overflow-hidden cursor-pointer" onclick="app.navigate('catalog', 'مجموعات متكاملة')">
 <div class="absolute -top-10 -right-10 w-24 h-24 bg-amber-400/10 rounded-full blur-xl group-hover:bg-amber-400/20 transition-all"></div>
 <div class="w-28 h-28 rounded-2xl bg-white shadow-purple-soft p-3 mb-5 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 border border-amber-100">
 <div class="w-20 h-20 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-4xl shadow-inner group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300">
@@ -419,8 +422,16 @@
 </section>
 
 <section id="catalog" class="max-w-7xl mx-auto px-4 md:px-8 py-20 border-t border-purple-100">
-                <div class="mb-10 text-right flex justify-between items-center">
-                    <h1 class="text-3xl font-black tracking-tight text-darkNavy font-display">منتجاتنا المتميزة</h1>
+                <div class="mb-6 text-right">
+                    <span class="text-xs font-black text-primary uppercase tracking-widest">المنتجات المعتمدة 100%</span>
+                    <h1 id="catalog-heading" class="text-3xl font-black tracking-tight text-darkNavy font-display mt-1">منتجاتنا المتميزة</h1>
+                </div>
+                <!-- Category Filter Tabs -->
+                <div id="catalog-tabs" class="flex flex-wrap items-center gap-2.5 mb-10">
+                    <button class="catalog-tab-btn" data-filter="" onclick="app.navigate('catalog', null)">الكل</button>
+                    <button class="catalog-tab-btn" data-filter="العناية بالبشرة" onclick="app.navigate('catalog', 'العناية بالبشرة')">العناية بالبشرة</button>
+                    <button class="catalog-tab-btn" data-filter="العناية بالشعر" onclick="app.navigate('catalog', 'العناية بالشعر')">العناية بالشعر</button>
+                    <button class="catalog-tab-btn" data-filter="مجموعات متكاملة" onclick="app.navigate('catalog', 'مجموعات متكاملة')">المجموعات والعروض</button>
                 </div>
                 <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 text-right">
                     </div>

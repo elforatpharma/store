@@ -498,6 +498,20 @@ nav {
 .nav-link { color: #464556; transition: color 0.3s; position: relative; font-weight: 600; }
 .nav-link.text-primary { color: #3312d5; }
 
+.catalog-tab-btn {
+    font-size: 0.8rem;
+    font-weight: 800;
+    padding: 0.55rem 1.25rem;
+    border-radius: 9999px;
+    color: #464556;
+    background: #f5f3ff;
+    border: 1px solid rgba(77, 60, 235, 0.12);
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+.catalog-tab-btn:hover { background: rgba(77, 60, 235, 0.12); color: #3312d5; }
+.catalog-tab-btn.active { background: linear-gradient(135deg, #4D3CEB 0%, #8536FF 100%); color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(77, 60, 235, 0.25); }
+
 /* تحسينات التجاوب مع الجوال */
 @media (max-width: 768px) {
     .product-image-bg { padding: 1rem !important; }
