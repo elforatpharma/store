@@ -1,5 +1,47 @@
 /* 1. تعريف الألوان كمتغيرات برمجية لسهولة التحكم */
 :root {
+    --surface: #faf8ff;
+    --surface-dim: #d2d9f4;
+    --surface-bright: #faf8ff;
+    --surface-container-lowest: #ffffff;
+    --surface-container-low: #f2f3ff;
+    --surface-container: #eaedff;
+    --surface-container-high: #e2e7ff;
+    --surface-container-highest: #dae2fd;
+    --on-surface: #131b2e;
+    --primary: #3312d5;
+    --on-primary: #ffffff;
+    --primary-container: #4d3ceb;
+    --on-primary-container: #d5d1ff;
+    --secondary: #6a00e1;
+    --on-secondary: #ffffff;
+    --secondary-container: #8434fe;
+    --on-secondary-container: #f3e8ff;
+    --tertiary: #004f35;
+    --on-tertiary: #ffffff;
+    --tertiary-container: #006a48;
+    --on-tertiary-container: #60eeb1;
+    --error: #ba1a1a;
+    --on-error: #ffffff;
+    --error-container: #ffdad6;
+    --on-error-container: #93000a;
+    --background: #faf8ff;
+    --on-background: #131b2e;
+    --surface-variant: #dae2fd;
+    --brand-gradient: linear-gradient(90deg, #4d3ceb 0%, #8536ff 100%);
+    --brand-gradient-hover: linear-gradient(90deg, #3f2fd4 0%, #7624f2 100%);
+    --primary-surface: #f5f3ff;
+    --primary-border: #ddd6fe;
+    --accent-glow: rgba(77, 60, 235, 0.3);
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+}
+
+/* Utility classes for design tokens */
+.bg-surface { background: var(--surface); }
+.text-on-surface { color: var(--on-surface); }
+
     --bg-pink-start: #ffafbd; /* وردي دافئ */
     --bg-pink-end: #ffc3a0;   /* وردي مائل للمشمشي الخفيف */
     --site-font: 'Tajawal', sans-serif;
@@ -13,7 +55,7 @@ body {
     font-family: var(--site-font);
     
     /* إنشاء التدرج اللوني */
-    background: linear-gradient(135deg, var(--bg-pink-start) 0%, var(--bg-pink-end) 100%);
+    background: #faf8ff;
     
     /* جعل الخلفية ثابتة أثناء السكرول لتعزيز تأثير الزجاج */
     background-attachment: fixed;
