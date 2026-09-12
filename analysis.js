@@ -1685,8 +1685,7 @@ document.addEventListener("DOMContentLoaded", () => {
     checkLowStock();
     startCountdown();
     
-    /* إظهار شريط العروض الترويجية */
-    showPromotionBanner();
+    /* تم إلغاء إظهار شريط العروض الترويجية بناءً على طلب العميل */
     
     // دالة معالجة زر المفضلة الرئيسي في صفحة المنتج
     window.handleMainFavorite = function(id) {
