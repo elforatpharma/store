@@ -495,8 +495,8 @@ nav {
 .btn-buy-now-premium { background: #111; color: #fff; border: 1.5px solid #111; }
 .btn-buy-now-premium:hover { background: #ec135b; border-color: #ec135b; }
 
-.nav-link { color: #9ca3af; transition: color 0.3s; position: relative; font-weight: 600; }
-.nav-link.text-primary { color: #ec135b; }
+.nav-link { color: #464556; transition: color 0.3s; position: relative; font-weight: 600; }
+.nav-link.text-primary { color: #3312d5; }
 
 /* تحسينات التجاوب مع الجوال */
 @media (max-width: 768px) {

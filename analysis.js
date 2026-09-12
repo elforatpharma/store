@@ -507,7 +507,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         const banner = document.createElement("div");
         banner.id = "promo-banner";
-        banner.className = "fixed top-0 left-0 right-0 bg-gradient-to-r from-primary via-pink-600 to-primary text-white py-3 px-4 z-[9998] flex items-center justify-center gap-4 overflow-hidden";
+        banner.className = "fixed top-0 left-0 right-0 bg-gradient-to-r from-primary via-secondary to-primary text-white py-3 px-4 z-[9998] flex items-center justify-center gap-4 overflow-hidden shadow-purple-glow";
         banner.innerHTML = `
             <div class="animate-pulse">🎉</div>
             <span class="font-bold text-sm md:text-base">احصل علي كريم صنفرة مجانا للطلبات فوق 500 ج.م! | خصم 20% على المجموعات المتكاملة</span>
@@ -901,7 +901,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <h3 class="text-2xl font-bold text-gray-900 mb-3">لم يتم العثور على نتائج</h3>
                         <p class="text-gray-500 text-lg mb-6 max-w-md">لا توجد منتجات تطابق بحثك "<span class="font-bold text-primary">${searchTerm}</span>"</p>
                         <button onclick="app.handleSearch(''); document.getElementById('desktop-search-input').value=''; document.getElementById('mobile-search-input').value='';" 
-                                class="px-8 py-3 bg-primary text-white rounded-full font-bold hover:bg-neutral-900 transition-all shadow-lg shadow-primary/30 flex items-center gap-2">
+                                class="px-8 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-full font-bold hover:brightness-110 transition-all shadow-purple-glow flex items-center gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
                             </svg>
@@ -1276,52 +1276,52 @@ document.addEventListener("DOMContentLoaded", () => {
             const isOutOfStock = p.stock <= 0;
             
             return `
-                <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms">
-                    <div class="relative overflow-hidden rounded-custom bg-white shadow-md hover:shadow-xl transition-all duration-300">
-                        <!-- Badge -->
-                        ${p.badge ? `<span class="absolute top-3 left-3 z-10 bg-primary text-white text-[10px] font-black px-2 py-1 rounded-full shadow-lg">${sanitize(p.badge)}</span>` : ''}
-                        
-                        <!-- زر المفضلة -->
-                        <div class="absolute top-3 right-3 z-20">
-                            <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn p-2.5 rounded-full shadow-lg transition-all duration-300 ${isFav ? 'favorite-active' : ''}" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
-                                ${isFav 
-                                    ? '<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
-                                    : '<svg class="heart-icon w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>'
-                                }
-                            </button>
-                        </div>
-                        
-                        <!-- صورة المنتج -->
-                        <div class="aspect-square bg-[#f9f9f9] p-6 flex items-center justify-center cursor-pointer" onclick="app.navigate('product', '${sanitize(p.id)}')">
-                            <img src="${sanitize(p.img)}" loading="lazy" alt="${sanitize(p.name)}" class="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-110" onerror="this.src='logo.png'">
-                        </div>
-                        
-                        <!-- معلومات المنتج -->
-                        <div class="p-4 space-y-3">
-                            <h3 class="font-bold text-sm text-gray-900 line-clamp-2 min-h-[2.5rem] cursor-pointer hover:text-primary transition-colors" onclick="app.navigate('product', '${sanitize(p.id)}')">${sanitize(p.name)}</h3>
-                            
-                            <div class="flex items-center gap-2 justify-between">
-                                <div class="flex flex-col">
-                                    <span class="text-primary font-bold text-base">${sanitize(p.price)} ج.م</span>
-                                    ${p.oldPrice ? `<span class="text-xs text-gray-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
-                                </div>
-                                ${isOutOfStock 
-                                    ? '<span class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">نفذت الكمية</span>'
-                                    : p.stock <= LOW_STOCK_THRESHOLD 
-                                        ? `<span class="text-[10px] bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-bold">متبقي ${p.stock}</span>`
-                                        : ''
-                                }
-                            </div>
-                            
-                            ${!isOutOfStock ? `
-                                <button onclick="app.addToCart('${sanitize(p.id)}', 1)" class="w-full bg-primary text-white font-bold uppercase text-[10px] tracking-widest py-2.5 rounded-full hover:bg-neutral-900 transition-all shadow-lg shadow-primary/30 active:scale-95">
-                                    أضف للحقيبة
-                                </button>
-                            ` : ''}
-                        </div>
-                    </div>
-                </article>
-            `;
+<article class="pro-product-card p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group opacity-0 animate-fade-in-up cursor-pointer" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
+    <div class="flex items-center justify-between w-full mb-3 z-10">
+        ${p.badge ? `<span class="badge-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
+        <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
+            ${isFav
+                ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
+                : `<i class="fa-regular fa-heart text-xs"></i>`
+            }
+        </button>
+    </div>
+    <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-4 mb-3.5 flex items-center justify-center overflow-hidden">
+        <img src="${sanitize(p.img)}" loading="lazy" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="this.src='logo.png'">
+        <span class="absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
+    </div>
+    <div class="flex flex-col flex-1">
+        <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-bold text-primary">${sanitize(p.category || 'العناية')}</span>
+            ${isOutOfStock
+                ? '<span class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">نفذت الكمية</span>'
+                : p.stock <= LOW_STOCK_THRESHOLD
+                    ? `<span class="text-[10px] bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-bold">متبقي ${p.stock}</span>`
+                    : ''
+            }
+        </div>
+        <h3 class="font-extrabold text-darkNavy text-sm line-clamp-2 leading-snug mb-2 group-hover:text-primary transition-colors">
+            ${sanitize(p.name)}
+        </h3>
+        <div class="mt-auto pt-3 border-t border-slate-100">
+            <div class="flex items-baseline justify-between mb-3">
+                <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-black text-darkNavy font-display">${sanitize(p.price)} <span class="text-xs font-bold text-slate-500">ج.م</span></span>
+                    ${p.oldPrice ? `<span class="text-xs text-slate-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
+                </div>
+            </div>
+            ${!isOutOfStock ? `
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="event.stopPropagation(); app.buyNow('${sanitize(p.id)}')" class="btn-dark py-2.5 text-xs font-bold shadow-sm">اشتري الآن</button>
+                    <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}', 1)" class="btn-outline py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
+                        <i class="fa-solid fa-cart-plus text-xs"></i>
+                        <span>أضف للحقيبة</span>
+                    </button>
+                </div>
+            ` : ''}
+        </div>
+    </div>
+</article>`;
         }).join('');
     }
 
@@ -1400,31 +1400,44 @@ document.addEventListener("DOMContentLoaded", () => {
             const isFav = FavoritesManager.isFavorite(p.id);
 
             return `
-                <article class="product-card text-right group opacity-0 animate-fade-in-up" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
-                    <div class="product-visual-glass relative mb-6 overflow-hidden">
-                        <img src="${sanitize(p.img)}" loading="lazy" class="max-h-full transition-transform duration-500 group-hover:scale-110 drop-shadow-xl" onerror="this.src='logo.png'">
-                        ${p.badge ? `<div class="absolute top-4 left-4 z-10"><span class="badge-premium">${sanitize(p.badge)}</span></div>` : ''}
-                        <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn absolute top-3 right-3 z-20 w-6 h-6 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all ${isFav ? 'favorite-active' : ''}" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
-                            ${isFav
-                                ? `<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
-                                : `<svg class="heart-icon w-3.5 h-3.5 text-gray-400 hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`
-                            }
-                        </button>
-                    </div>
-                    <div class="space-y-1 mb-6 px-1">
-                        <p class="text-[9px] uppercase tracking-widest text-primary font-bold">Elforat Pharma</p>
-                        <h3 class="text-base font-extrabold text-black leading-tight">${sanitize(p.name)}</h3>
-                        <div class="flex flex-row-reverse justify-end items-center gap-3 pt-1">
-                            <span class="text-sm font-bold text-gray-900">${sanitize(p.price)} ج.م</span>
-                            ${p.oldPrice ? `<span class="text-xs text-gray-400 line-through decoration-gray-300">${sanitize(p.oldPrice)} ج.م</span>` : ''}
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}', 1)" class="flex-1 btn-pill btn-add-cart-minimal py-3">أضف للسلة</button>
-                        <button onclick="event.stopPropagation(); app.buyNow('${sanitize(p.id)}')" class="flex-1 btn-pill btn-buy-now-premium py-3">اشتري الآن</button>
-                    </div>
-                </article>
-            `;
+<article class="pro-product-card p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group opacity-0 animate-fade-in-up cursor-pointer" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
+    <div class="flex items-center justify-between w-full mb-3 z-10">
+        ${p.badge ? `<span class="badge-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
+        <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
+            ${isFav
+                ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
+                : `<i class="fa-regular fa-heart text-xs"></i>`
+            }
+        </button>
+    </div>
+    <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-4 mb-3.5 flex items-center justify-center overflow-hidden">
+        <img src="${sanitize(p.img)}" loading="lazy" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="this.src='logo.png'">
+        <span class="absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
+    </div>
+    <div class="flex flex-col flex-1">
+        <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-bold text-primary">${sanitize(p.category || 'العناية')}</span>
+        </div>
+        <h3 class="font-extrabold text-darkNavy text-sm line-clamp-2 leading-snug mb-2 group-hover:text-primary transition-colors">
+            ${sanitize(p.name)}
+        </h3>
+        <div class="mt-auto pt-3 border-t border-slate-100">
+            <div class="flex items-baseline justify-between mb-3">
+                <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-black text-darkNavy font-display">${sanitize(p.price)} <span class="text-xs font-bold text-slate-500">ج.م</span></span>
+                    ${p.oldPrice ? `<span class="text-xs text-slate-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="event.stopPropagation(); app.buyNow('${sanitize(p.id)}')" class="btn-dark py-2.5 text-xs font-bold shadow-sm">اشتري الآن</button>
+                <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}', 1)" class="btn-outline py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
+                    <i class="fa-solid fa-cart-plus text-xs"></i>
+                    <span>أضف للسلة</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</article>`;
         }).join('');
 
         // إضافة مستمعي الأحداث لأزرار المفضلة
