@@ -1576,6 +1576,29 @@ document.addEventListener("DOMContentLoaded", () => {
                 return; 
             }
 
+            // ===== Paymob: الدفع بالبطاقة أونلاين =====
+            if (payment === 'paymob-card') {
+                if (!window.PaymobCheckout) {
+                    showCustomAlert('ملف الدفع الإلكتروني (paymob.js) غير محمل. تأكدي من إضافة السكريبت.', 'error');
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    return;
+                }
+                try {
+                    await window.PaymobCheckout.startCardPayment({
+                        name, phone, address,
+                        supabaseClient: _supabase,
+                        submitBtn
+                    });
+                    // تم التحويل لصفحة Paymob — لا تكملي باقي الكود
+                    return;
+                } catch (err) {
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    return;
+                }
+            }
+
             let subtotal = 0;
             const orderItems = [];
             
@@ -1592,6 +1615,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             try {
+                const paymentLabel = payment === 'paymob-card' ? 'بطاقة بنكية (Paymob)' : payment;
                 const orderData = {
                     customerName: name,
                     phone: phone,
@@ -1601,8 +1625,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     date: new Date().toLocaleString('ar-EG'),
                     items: orderItems
                 };
-                const { error: orderError } = await _supabase.from('orders').insert([orderData]);
-                if (orderError) throw orderError;
+                // حقل إضافي لو موجود في الجدول (آمن: لو العمود مش موجود سيتم تجاهل الخطأ)
+                try {
+                    const { error: orderError } = await _supabase.from('orders').insert([{...orderData, payment_method: paymentLabel}]);
+                    if (orderError) throw orderError;
+                } catch (e2) {
+                    const { error: orderError } = await _supabase.from('orders').insert([orderData]);
+                    if (orderError) throw orderError;
+                }
             } catch (err) {
                 console.error("خطأ صامت في سوبابيز، جاري استكمال التحويل...", err);
             }
@@ -1821,6 +1851,14 @@ document.addEventListener("DOMContentLoaded", () => {
     loadGifts();
     FavoritesManager.init(); // تهيئة نظام المفضلة
     updateBadge(); // تحديث شارة المفضلة عند التحميل
+    // معالجة الرجوع من بوابة Paymob (نجاح / فشل الدفع)
+    try {
+        if (window.PaymobCheckout && typeof window.PaymobCheckout.handleReturn === 'function') {
+            window.PaymobCheckout.handleReturn(_supabase).then((handled) => {
+                if (handled) { loadCart(); updateBadge(); renderCart(); }
+            }).catch((e) => console.warn('Paymob return handler:', e));
+        }
+    } catch (e) { console.warn('Paymob return handler:', e); }
     fetchProducts().then(() => {
         hideGlobalLoader();
     }).catch(() => {

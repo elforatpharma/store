@@ -1,0 +1,240 @@
+/**
+ * Paymob (Intention API) - Frontend helper لمتجر Elforat Pharma
+ *
+ * الإعداد: عدّل القيمتين دول فقط 👇
+ * 1) SUPABASE_URL ثابت عندك
+ * 2) FUNCTION_URL بعد ما تعمل deploy للـ Edge Function
+ * 3) PAYMOB_PUBLIC_KEY مفتاحك العلني (آمن يظهر في المتصفح)
+ */
+window.PAYMOB_CONFIG = window.PAYMOB_CONFIG || {
+  SUPABASE_URL: "https://sidtdxchiqiogfkwbdui.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZHRkeGNoaXFpb2dma3diZHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTEyMTAsImV4cCI6MjA4OTY4NzIxMH0.QF1-67Qu2HfWJt3ANSegM87fykOYQBwqC7ggLG8LTVU",
+  // مثال: https://sidtdxchiqiogfkwbdui.supabase.co/functions/v1/paymob-create-intention
+  FUNCTION_URL: "https://sidtdxchiqiogfkwbdui.supabase.co/functions/v1/paymob-create-intention",
+  PAYMOB_PUBLIC_KEY: "egy_pk_test_sUkeX09sfj2qssvSdPyfglMJFj7m2N62",
+};
+
+window.PaymobCheckout = (() => {
+  function getCart() {
+    try {
+      const raw = localStorage.getItem("elforat_cart");
+      const cart = raw ? JSON.parse(raw) : [];
+      return cart.filter((i) => !i.isGift);
+    } catch { return []; }
+  }
+
+  function cartTotal(cart) {
+    return cart.reduce((s, i) => s + Number(i.price || 0) * Number(i.qty || 1), 0);
+  }
+
+  function splitName(full) {
+    const parts = String(full || "Customer Elforat").trim().split(/\s+/);
+    return { first: parts[0] || "Customer", last: parts.slice(1).join(" ") || "Elforat" };
+  }
+
+  /** ينشئ Intention عبر الـ Edge Function ويرجع رابط الدفع */
+  async function createIntention({ name, phone, address, email }) {
+    const cart = getCart();
+    if (!cart.length) throw new Error("السلة فارغة");
+
+    const total = cartTotal(cart);
+    const merchant_order_id = `elforat-${Date.now()}`;
+
+    const items = cart.map((i) => ({
+      name: String(i.name).slice(0, 100),
+      amount: Math.round(Number(i.price) * 100), // بالقروش لكل قطعة
+      description: String(i.name).slice(0, 200),
+      quantity: Number(i.qty || 1),
+    }));
+
+    const { first, last } = splitName(name);
+    const redirection_url =
+      window.location.origin + window.location.pathname +
+      `?paymob=return&merchant_order_id=${encodeURIComponent(merchant_order_id)}`;
+
+    const res = await fetch(window.PAYMOB_CONFIG.FUNCTION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": window.PAYMOB_CONFIG.SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${window.PAYMOB_CONFIG.SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({
+        amount_egp: total,
+        items,
+        billing_data: {},
+        customer: { name, phone, address, email },
+        merchant_order_id,
+        redirection_url,
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data?.error || data?.details?.detail || "فشل إنشاء جلسة الدفع (Paymob)");
+    }
+
+    // خزّن بيانات الطلب مؤقتاً لاستكماله بعد الرجوع من Paymob
+    sessionStorage.setItem("paymob_pending_order", JSON.stringify({
+      merchant_order_id,
+      name, phone, address,
+      total,
+      items: cart.map((i) => ({ id: i.id, name: i.name, qty: i.qty, price: i.price, isGift: !!i.isGift })),
+      intention_id: data.intention_id,
+      paymob_order_id: data.paymob_order_id,
+      created_at: new Date().toISOString(),
+    }));
+
+    return data; // {checkout_url, client_secret, ...}
+  }
+
+  /** حفظ طلب مبدئي في جدول orders بحالة "بانتظار الدفع" */
+  async function savePendingOrder(supabaseClient, pending) {
+    try {
+      const full = {
+        customerName: pending.name,
+        phone: pending.phone,
+        address: pending.address,
+        total: pending.total,
+        status: "بانتظار الدفع - Paymob",
+        payment_status: "pending",
+        payment_method: "بطاقة بنكية (Paymob)",
+        merchant_order_id: pending.merchant_order_id,
+        paymob_order_id: pending.paymob_order_id ? String(pending.paymob_order_id) : null,
+        date: new Date().toLocaleString("ar-EG"),
+        items: pending.items,
+      };
+      let { data, error } = await supabaseClient.from("orders").insert([full]).select("id").single();
+      if (error) {
+        // fallback لو الأعمدة الجديدة لسه متضافتش في الجدول
+        console.warn("savePendingOrder full failed, retry minimal:", error.message);
+        const minimal = {
+          customerName: pending.name,
+          phone: pending.phone,
+          address: pending.address,
+          total: pending.total,
+          status: "بانتظار الدفع - Paymob",
+          date: new Date().toLocaleString("ar-EG"),
+          items: pending.items,
+        };
+        const r2 = await supabaseClient.from("orders").insert([minimal]).select("id").single();
+        data = r2.data; error = r2.error;
+        if (error) console.warn("savePendingOrder minimal:", error.message);
+      }
+      return data;
+    } catch (e) {
+      console.warn("savePendingOrder failed:", e);
+      return null;
+    }
+  }
+
+  /** الدالة الرئيسية: تُستدعى من فورم الـ checkout */
+  async function startCardPayment({ name, phone, address, supabaseClient, submitBtn, onBeforeRedirect }) {
+    const btnText = submitBtn ? submitBtn.innerText : "";
+    try {
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.innerText = "جاري تحويلك لبوابة الدفع الآمنة..."; }
+      const data = await createIntention({ name, phone, address });
+
+      const pending = JSON.parse(sessionStorage.getItem("paymob_pending_order") || "{}");
+      if (supabaseClient && pending.merchant_order_id) {
+        await savePendingOrder(supabaseClient, pending);
+      }
+      if (typeof onBeforeRedirect === "function") await onBeforeRedirect(pending);
+
+      // تحويل العميل لصفحة Paymob
+      window.location.href = data.checkout_url;
+    } catch (err) {
+      console.error(err);
+      if (window.showToast) window.showToast(err.message || "تعذر بدء الدفع الإلكتروني", "error");
+      else alert(err.message || "تعذر بدء الدفع الإلكتروني");
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = btnText; }
+      throw err;
+    }
+  }
+
+  /** تُستدعى تلقائياً عند تحميل الصفحة للتعامل مع الرجوع من Paymob */
+  async function handleReturn(supabaseClient) {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("paymob") !== "return") return false;
+
+    const success = params.get("success") === "true" || params.get("success") === "True";
+    const merchantOrderId = params.get("merchant_order_id") || params.get("special_reference") || "";
+    const transactionId = params.get("id") || params.get("transaction_id") || "";
+
+    // نظّف الرابط من باراميترات Paymob
+    const cleanUrl = window.location.origin + window.location.pathname + "#cart";
+    window.history.replaceState({}, "", cleanUrl);
+
+    let pending = null;
+    try { pending = JSON.parse(sessionStorage.getItem("paymob_pending_order") || "null"); } catch {}
+
+    if (success) {
+      // حدّث الطلب كمدفوع
+      try {
+        if (supabaseClient && (merchantOrderId || pending?.merchant_order_id)) {
+          await supabaseClient.from("orders").update({
+            status: "مدفوع - Paymob",
+            payment_status: "paid",
+            transaction_id: transactionId ? String(transactionId) : null,
+          }).eq("merchant_order_id", String(merchantOrderId || pending.merchant_order_id));
+        }
+      } catch (e) { console.warn(e); }
+
+      // ابعت الطلب واتساب زي باقي طرق الدفع + فضّي السلة
+      const order = pending || { name: "", phone: "", address: "", total: "", items: [] };
+      let message = `*طلب جديد مدفوع أونلاين - Elforat Pharma* ✅💳\n\n`;
+      message += `👤 *الاسم:* ${order.name || ""}\n📞 *الهاتف:* ${order.phone || ""}\n📍 *العنوان:* ${order.address || ""}\n`;
+      message += `🆔 *رقم الطلب:* ${merchantOrderId}\n💳 *المعاملة:* ${transactionId}\n\n*المنتجات:*\n`;
+      (order.items || []).forEach((item) => {
+        message += `▫️ ${item.name} (x${item.qty}) = ${item.price * item.qty} ج.م\n`;
+      });
+      message += `\n💰 *الإجمالي المدفوع:* ${order.total} ج.م\nشكراً لاختيارك الفرات فارما! 🌺`;
+
+      localStorage.removeItem("elforat_cart");
+      localStorage.removeItem("elforat_cart_expiry");
+      sessionStorage.removeItem("paymob_pending_order");
+      if (window.app?.navigate) { try { window.app.navigate("home"); } catch {} }
+
+      showReturnModal(true, merchantOrderId, transactionId);
+
+      // افتح واتساب للتأكيد (اختياري - بعد ثانيتين عشان العميل يشوف رسالة النجاح)
+      setTimeout(() => {
+        window.open(`https://wa.me/201146809133?text=${encodeURIComponent(message)}`, "_blank");
+      }, 2500);
+    } else {
+      showReturnModal(false, merchantOrderId, transactionId);
+      try {
+        if (supabaseClient && (merchantOrderId || pending?.merchant_order_id)) {
+          await supabaseClient.from("orders").update({
+            status: "فشل الدفع",
+            payment_status: "failed",
+          }).eq("merchant_order_id", String(merchantOrderId || pending.merchant_order_id));
+        }
+      } catch (e) { console.warn(e); }
+    }
+    return true;
+  }
+
+  function showReturnModal(ok, orderId, txnId) {
+    let modal = document.getElementById("paymob-return-modal");
+    if (modal) modal.remove();
+    modal = document.createElement("div");
+    modal.id = "paymob-return-modal";
+    modal.className = "fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm";
+    modal.innerHTML = `
+      <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl" dir="rtl">
+        <div class="w-16 h-16 mx-auto rounded-full flex items-center justify-center text-2xl mb-4 ${ok ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600"}">
+          <i class="fa-solid ${ok ? "fa-check" : "fa-xmark"}"></i>
+        </div>
+        <h3 class="text-xl font-black text-gray-900 mb-2">${ok ? "تم الدفع بنجاح! 🎉" : "فشلت عملية الدفع"}</h3>
+        <p class="text-sm text-gray-500 mb-1">${ok ? "شكراً لطلبك، سنتواصل معك قريباً لتأكيد الشحن." : "لم يتم خصم أي مبلغ. يمكنك المحاولة مرة أخرى أو اختيار الدفع عند الاستلام."}</p>
+        ${orderId ? `<p class="text-xs text-gray-400 font-mono mt-2" dir="ltr">Order: ${orderId}${txnId ? ` | Txn: ${txnId}` : ""}</p>` : ""}
+        <button id="paymob-modal-close" class="mt-6 w-full py-3 rounded-full font-black text-white bg-gradient-to-r from-primary to-secondary">تمام</button>
+      </div>`;
+    document.body.appendChild(modal);
+    document.getElementById("paymob-modal-close").onclick = () => modal.remove();
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  }
+
+  return { createIntention, startCardPayment, handleReturn };
+})();
