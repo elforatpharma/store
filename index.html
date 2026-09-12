@@ -157,7 +157,7 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 <div class="flex items-center justify-between h-16 gap-4">
 <!-- Official Brand Logo & Store Name -->
-<div class="flex items-center gap-2.5 flex-shrink-0">
+<div class="flex items-center gap-2.5 flex-shrink-0 ml-4 md:ml-6">
 <a class="flex items-center gap-2.5 group cursor-pointer" onclick="app.navigate('home')">
 <div class="w-11 h-11 rounded-xl bg-white p-1 shadow-sm border border-purple-100/80 flex items-center justify-center overflow-hidden group-hover:shadow-purple-soft transition-all duration-300">
 <img alt="شعار الفُرات فارما" class="w-9 h-9 object-contain transform group-hover:scale-110 transition-transform duration-500" src="logo.png">
@@ -467,7 +467,7 @@
                                 <p class="text-xs text-white/80 mb-4 leading-relaxed">أضيفي الكود في صفحة الدفع واحصلي على كريم صنفرة هدية مع طلبك</p>
                                 <div class="flex items-center gap-2 bg-white/15 border border-dashed border-white/40 rounded-xl px-4 py-2.5">
                                     <span class="font-mono font-black tracking-widest text-amber-200 flex-1 text-sm">FORAT20</span>
-                                    <button onclick="navigator.clipboard && navigator.clipboard.writeText('FORAT20')" class="text-[10px] font-bold bg-white text-primary px-3 py-1.5 rounded-full hover:brightness-95 transition-all">نسخ الكود</button>
+                                    <button onclick="if (navigator.clipboard) { navigator.clipboard.writeText('FORAT20').then(() => alert('تم نسخ الكود بنجاح')).catch(() => alert('تعذر نسخ الكود، انسخيه يدويًا: FORAT20')); } else { alert('تعذر نسخ الكود تلقائيًا، انسخيه يدويًا: FORAT20'); }" class="text-[10px] font-bold bg-white text-primary px-3 py-1.5 rounded-full hover:brightness-95 transition-all">نسخ الكود</button>
                                 </div>
                             </div>
                         </div>
