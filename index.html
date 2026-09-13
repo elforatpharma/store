@@ -530,6 +530,25 @@
                 <aside class="p-6 bg-white border border-purple-100 shadow-purple-soft rounded-2xl h-fit">
                     <h2 class="font-black text-darkNavy mb-6 border-b border-purple-100 pb-4">ملخص الطلب</h2>
                     <div id="cart-summary-totals" class="mb-6 space-y-2 text-slate-600"></div>
+
+                    <!-- كود الخصم (كوبون) -->
+                    <div class="mb-6 pb-6 border-b border-purple-100">
+                        <div id="coupon-input-wrap" class="flex gap-2">
+                            <input type="text" id="coupon-code-input" placeholder="لديكِ كود خصم؟" dir="ltr"
+                                class="flex-1 p-3 border border-slate-200 rounded-2xl text-center font-bold uppercase focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
+                            <button type="button" id="apply-coupon-btn" onclick="app.applyCoupon()"
+                                class="px-5 py-3 bg-darkNavy text-white rounded-2xl font-bold text-sm hover:bg-black transition-all whitespace-nowrap">تطبيق</button>
+                        </div>
+                        <div id="coupon-applied-wrap" class="hidden items-center justify-between bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-3">
+                            <span class="text-sm font-bold text-emerald-700 flex items-center gap-2">
+                                <i class="fa-solid fa-tag"></i>
+                                كود <span data-coupon-code class="font-mono" dir="ltr"></span> مُفعّل ✅
+                            </span>
+                            <button type="button" onclick="app.removeCoupon()" class="text-xs font-bold text-red-500 hover:underline">إزالة</button>
+                        </div>
+                        <p id="coupon-message" class="hidden text-xs font-bold mt-2"></p>
+                    </div>
+
                     <form id="checkout-form" class="space-y-4">
                         <input type="text" id="cust-name" placeholder="الاسم" required class="w-full p-3 border border-slate-200 rounded-2xl text-right focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
                         <input type="tel" id="cust-phone" placeholder="رقم الهاتف" required class="w-full p-3 border border-slate-200 rounded-2xl text-right focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all" dir="ltr">

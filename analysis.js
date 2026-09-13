@@ -315,6 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let productsDB = [];
     let cart = [];
+    let appliedCoupon = null; // { code, discount_percentage }
 
     // ==========================================
     // دوال حفظ واسترجاع السلة (الجديدة)
@@ -330,6 +331,84 @@ document.addEventListener("DOMContentLoaded", () => {
         // حفظ السلة لمدة 60 يوم
         localStorage.setItem('elforat_cart', JSON.stringify(cart));
         localStorage.setItem('elforat_cart_expiry', Date.now() + (60 * 24 * 60 * 60 * 1000));
+    }
+
+    // ==========================================
+    // دوال حفظ واسترجاع كود الكوبون المطبّق
+    // ==========================================
+    function loadCoupon() {
+        try {
+            const saved = localStorage.getItem('elforat_coupon');
+            appliedCoupon = saved ? JSON.parse(saved) : null;
+        } catch (e) {
+            appliedCoupon = null;
+        }
+    }
+
+    function saveCoupon() {
+        if (appliedCoupon) {
+            localStorage.setItem('elforat_coupon', JSON.stringify(appliedCoupon));
+        } else {
+            localStorage.removeItem('elforat_coupon');
+        }
+    }
+
+    function getCartSubtotal() {
+        return cart.reduce((s, i) => s + (i.price * i.qty), 0);
+    }
+
+    // يرجع قيمة الخصم بالجنيه بناءً على الكوبون المطبّق حالياً
+    function getCartDiscount(subtotal) {
+        if (!appliedCoupon || !appliedCoupon.discount_percentage) return 0;
+        const discount = (subtotal * appliedCoupon.discount_percentage) / 100;
+        return Math.round(discount * 100) / 100;
+    }
+
+    // إعادة التحقق من صلاحية الكوبون المحفوظ محلياً كل مرة يُفتح فيها السلة
+    // (في حالة الآدمن أوقف الكوبون أو انتهت صلاحيته من وقت ما اتحفظ في المتصفح)
+    async function revalidateCoupon() {
+        if (!appliedCoupon) return;
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const { data, error } = await _supabase
+                .from('coupons')
+                .select('*')
+                .eq('code', appliedCoupon.code)
+                .eq('is_active', true)
+                .gte('expiry_date', today)
+                .maybeSingle();
+
+            if (error || !data) {
+                appliedCoupon = null;
+                saveCoupon();
+            } else if (data.discount_percentage !== appliedCoupon.discount_percentage) {
+                appliedCoupon = { code: data.code, discount_percentage: data.discount_percentage };
+                saveCoupon();
+            }
+            renderCart();
+        } catch (e) {
+            console.warn('revalidateCoupon error:', e);
+        }
+    }
+
+    function renderCouponUI() {
+        const inputWrap = document.getElementById('coupon-input-wrap');
+        const appliedWrap = document.getElementById('coupon-applied-wrap');
+        const msg = document.getElementById('coupon-message');
+        if (!inputWrap || !appliedWrap) return;
+
+        if (appliedCoupon) {
+            inputWrap.classList.add('hidden');
+            appliedWrap.classList.remove('hidden');
+            appliedWrap.classList.add('flex');
+            const codeEl = appliedWrap.querySelector('[data-coupon-code]');
+            if (codeEl) codeEl.textContent = appliedCoupon.code;
+        } else {
+            inputWrap.classList.remove('hidden');
+            appliedWrap.classList.add('hidden');
+            appliedWrap.classList.remove('flex');
+        }
+        if (msg) { msg.classList.add('hidden'); msg.textContent = ''; }
     }
     
     // التحقق من انتهاء صلاحية السلة
@@ -370,7 +449,11 @@ document.addEventListener("DOMContentLoaded", () => {
             
             const data = await fetchWithRetry();
 
-            productsDB = data.map(p => ({
+            // إخفاء المنتجات التي عطّلها الأدمن من لوحة التحكم (عمود is_active)
+            // نستخدم فلترة بالـ JS (مش .eq في الاستعلام) حتى لو العمود مش موجود بعد في القاعدة
+            const visibleData = data.filter(p => p.is_active !== false);
+
+            productsDB = visibleData.map(p => ({
                 id: p.id,
                 name: p.name,
                 category: p.category || 'عام',
@@ -640,7 +723,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById('view-' + viewId).classList.add('active');
                     window.scrollTo({ top: 0, behavior: "smooth" });
                     if (viewId === 'product') renderProductDetails(param);
-                    if (viewId === 'cart') renderCart();
+                    if (viewId === 'cart') { renderCart(); revalidateCoupon(); }
                     if (viewId === 'favorites') renderFavorites();
                 }
             };
@@ -756,6 +839,62 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         },
         buyNow: function (id, qty = 1) { this.addToCart(id, qty, true); this.navigate('cart'); },
+        // ==========================================
+        // تطبيق كود الكوبون في صفحة السلة
+        // ==========================================
+        applyCoupon: async function () {
+            const input = document.getElementById('coupon-code-input');
+            const msg = document.getElementById('coupon-message');
+            const btn = document.getElementById('apply-coupon-btn');
+            if (!input) return;
+
+            const code = input.value.trim().toUpperCase();
+            const showMsg = (text, ok) => {
+                if (!msg) return;
+                msg.textContent = text;
+                msg.className = `text-xs font-bold mt-2 ${ok ? 'text-emerald-600' : 'text-red-500'}`;
+                msg.classList.remove('hidden');
+            };
+
+            if (!code) { showMsg('برجاء إدخال كود الكوبون', false); return; }
+
+            if (btn) { btn.disabled = true; btn.innerText = 'جاري التحقق...'; }
+
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const { data, error } = await _supabase
+                    .from('coupons')
+                    .select('*')
+                    .eq('code', code)
+                    .eq('is_active', true)
+                    .gte('expiry_date', today)
+                    .maybeSingle();
+
+                if (error || !data) {
+                    appliedCoupon = null;
+                    saveCoupon();
+                    showMsg('كود الكوبون غير صالح أو منتهي الصلاحية', false);
+                    renderCart();
+                    return;
+                }
+
+                appliedCoupon = { code: data.code, discount_percentage: data.discount_percentage };
+                saveCoupon();
+                input.value = '';
+                renderCart();
+                showMsg(`تم تطبيق خصم ${data.discount_percentage}% بنجاح 🎉`, true);
+            } catch (e) {
+                console.error('applyCoupon error:', e);
+                showMsg('حدث خطأ أثناء التحقق من الكوبون، حاولي مرة أخرى', false);
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerText = 'تطبيق'; }
+            }
+        },
+        removeCoupon: function () {
+            appliedCoupon = null;
+            saveCoupon();
+            renderCart();
+        },
         updateQty: function (id, change) {
             const item = cart.find(item => item.id === id);
             if (item) { 
@@ -1496,9 +1635,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!container) return;
         if (cart.length === 0) { 
             container.innerHTML = '<div class="py-32 text-center text-gray-400 uppercase tracking-widest">حقيبة التسوق فارغة</div>'; 
-            if (summary) summary.innerHTML = ''; return; 
+            if (summary) summary.innerHTML = ''; 
+            renderCouponUI();
+            return; 
         }
-        let subtotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+        let subtotal = getCartSubtotal();
         container.innerHTML = cart.map(item => {
             if (item.isGift) {
                 return `
@@ -1531,7 +1672,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 <button onclick="app.removeItem('${sanitize(item.id)}')" class="text-gray-300 hover:text-red-500 transition-colors">×</button>
             </div>`;
         }).join('');
-        if (summary) summary.innerHTML = `<div class="flex justify-between items-center text-xl font-bold"><span>الإجمالي</span><span class="text-primary">${sanitize(subtotal)} ج.م</span></div>`;
+
+        const discount = getCartDiscount(subtotal);
+        const finalTotal = Math.max(subtotal - discount, 0);
+
+        if (summary) {
+            summary.innerHTML = `
+                <div class="flex justify-between items-center text-sm"><span>الإجمالي الفرعي</span><span>${sanitize(subtotal)} ج.م</span></div>
+                ${discount > 0 ? `<div class="flex justify-between items-center text-sm text-emerald-600 font-bold"><span>خصم كود (${sanitize(appliedCoupon.code)})</span><span>- ${sanitize(discount)} ج.م</span></div>` : ''}
+                <div class="flex justify-between items-center text-xl font-bold pt-2 mt-1 border-t border-purple-100"><span>الإجمالي</span><span class="text-primary">${sanitize(finalTotal)} ج.م</span></div>
+            `;
+        }
+        renderCouponUI();
     }
 
     function updateBadge() { 
@@ -1704,24 +1856,39 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             });
 
+            // ===== تطبيق خصم الكوبون (لو موجود) على الإجمالي =====
+            const discountAmount = getCartDiscount(subtotal);
+            const finalTotal = Math.max(subtotal - discountAmount, 0);
+            const couponCode = appliedCoupon ? appliedCoupon.code : null;
+
             try {
                 const paymentLabel = payment === 'paymob-card' ? 'بطاقة بنكية (Paymob)' : payment;
                 const orderData = {
                     customerName: name,
                     phone: phone,
                     address: address,
-                    total: subtotal,
+                    total: finalTotal,
                     status: 'قيد التنفيذ',
                     date: new Date().toLocaleString('ar-EG'),
                     items: orderItems
                 };
-                // حقل إضافي لو موجود في الجدول (آمن: لو العمود مش موجود سيتم تجاهل الخطأ)
+                // حقول إضافية لو موجودة في الجدول (آمن: لو الأعمدة مش موجودة هيتم تجاهل الخطأ والمحاولة بدونها)
+                const extraFields = {
+                    payment_method: paymentLabel,
+                    coupon_code: couponCode,
+                    discount_amount: discountAmount
+                };
                 try {
-                    const { error: orderError } = await _supabase.from('orders').insert([{...orderData, payment_method: paymentLabel}]);
+                    const { error: orderError } = await _supabase.from('orders').insert([{ ...orderData, ...extraFields }]);
                     if (orderError) throw orderError;
                 } catch (e2) {
-                    const { error: orderError } = await _supabase.from('orders').insert([orderData]);
-                    if (orderError) throw orderError;
+                    try {
+                        const { error: orderError2 } = await _supabase.from('orders').insert([{ ...orderData, payment_method: paymentLabel }]);
+                        if (orderError2) throw orderError2;
+                    } catch (e3) {
+                        const { error: orderError3 } = await _supabase.from('orders').insert([orderData]);
+                        if (orderError3) throw orderError3;
+                    }
                 }
             } catch (err) {
                 console.error("خطأ صامت في سوبابيز، جاري استكمال التحويل...", err);
@@ -1740,11 +1907,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 message += `▫️ ${item.name} (الكمية: ${item.qty}) = ${priceText}\n`;
             });
 
-            message += `\n💰 *الإجمالي المطلوب:* ${subtotal} ج.م\n`;
+            message += `\n🧾 *الإجمالي الفرعي:* ${subtotal} ج.م\n`;
+            if (discountAmount > 0) {
+                message += `🏷️ *خصم كود (${couponCode}):* -${discountAmount} ج.م\n`;
+            }
+            message += `💰 *الإجمالي المطلوب:* ${finalTotal} ج.م\n`;
             message += `\nشكراً لاختيارك الفرات فارما! 🌺`;
 
            cart = []; 
             saveCart(); // [جديد] مسح المنتجات من التخزين بعد إرسال الطلب بنجاح
+            appliedCoupon = null;
+            saveCoupon(); // مسح الكوبون بعد إتمام الطلب بنجاح
             try {
     const orderSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     orderSound.play().catch(()=>{});
@@ -1859,10 +2032,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const DURATION = 24 * 60 * 60 * 1000;
         let endTime = null;
-        let ip = null;
 
         try {
-            ip = await getVisitorIP();
+            const ip = await getVisitorIP();
             if (ip) {
                 endTime = await getOrCreateEndTimeForIP(ip);
             }
@@ -1912,6 +2084,43 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
+    // 8.5 جلب هوية المتجر (اللوجو + صورة الهيرو) من جدول settings
+    // بيسمح للأدمن يتحكم في اللوجو وصورة الهيرو من لوحة التحكم (صفحة الإعدادات)
+    // من غير ما نحتاج نعدّل ملفات HTML يدوياً - أي صورة موجودة محلياً (logo.png / hero-products.jpg)
+    // هتتستبدل تلقائياً لو الأدمن رفع صورة بديلة، ولو لأ هتفضل الصورة المحلية شغالة عادي.
+    // ==========================================
+    async function applyStoreBranding() {
+        try {
+            const { data, error } = await _supabase
+                .from('settings')
+                .select('data')
+                .eq('id', 1)
+                .maybeSingle();
+
+            if (error || !data || !data.data) return; // مفيش إعدادات محفوظة، نسيب الصور المحلية زي ما هي
+
+            const s = data.data;
+
+            if (s.logo_url) {
+                document.querySelectorAll('img[src="logo.png"]').forEach(el => { el.src = s.logo_url; });
+                const favicon = document.querySelector('link[rel="icon"][href="logo.png"]');
+                if (favicon) favicon.href = s.logo_url;
+            }
+
+            if (s.hero_image_url) {
+                document.querySelectorAll('img[src="hero-products.jpg"]').forEach(el => { el.src = s.hero_image_url; });
+            }
+
+            // اسم المتجر ورقم الواتساب (لو الأدمن غيّرهم من الإعدادات) - تحديث خفيف بدون كسر أي تصميم
+            if (s.store_name) {
+                document.title = document.title.replace(/الفُرات فارما|الفرات فارما/g, s.store_name);
+            }
+        } catch (e) {
+            console.warn('تعذر تحميل هوية المتجر من الإعدادات، هتفضل الصور المحلية الافتراضية:', e);
+        }
+    }
+
+    // ==========================================
     // 9. تشغيل النظام بالكامل
     // ==========================================
 // تسجيل زيارة جديدة في السيرفر
@@ -1924,10 +2133,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
     trackVisitor();
+    applyStoreBranding();
 
     // [جديد] استرجاع السلة وتحديث الرقم في الناف بار فوراً
     checkCartExpiry(); // التحقق من انتهاء صلاحية السلة
     loadCart();
+    loadCoupon(); // استرجاع كود الخصم المطبّق سابقاً (لو لسه صالح هيتحقق منه تاني عند العرض)
     updateBadge();
 
     // إخفاء شاشة التحميل العالمية عند اكتمال التحميل

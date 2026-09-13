@@ -23,8 +23,29 @@ window.PaymobCheckout = (() => {
     } catch { return []; }
   }
 
-  function cartTotal(cart) {
+  /** يقرأ كود الكوبون المطبّق حالياً من المتجر (نفس اللي بيحفظه analysis.js) */
+  function getCoupon() {
+    try {
+      const raw = localStorage.getItem("elforat_coupon");
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+
+  function cartSubtotal(cart) {
     return cart.reduce((s, i) => s + Number(i.price || 0) * Number(i.qty || 1), 0);
+  }
+
+  /** يرجع قيمة الخصم بالجنيه بناءً على الكوبون المطبّق (لو موجود) */
+  function couponDiscount(subtotal, coupon) {
+    if (!coupon || !coupon.discount_percentage) return 0;
+    return Math.round((subtotal * coupon.discount_percentage / 100) * 100) / 100;
+  }
+
+  /** الإجمالي بعد تطبيق الخصم (للتوافق مع أي استدعاء قديم لـ cartTotal) */
+  function cartTotal(cart) {
+    const subtotal = cartSubtotal(cart);
+    const discount = couponDiscount(subtotal, getCoupon());
+    return Math.max(subtotal - discount, 0);
   }
 
   function splitName(full) {
@@ -37,12 +58,18 @@ window.PaymobCheckout = (() => {
     const cart = getCart();
     if (!cart.length) throw new Error("السلة فارغة");
 
-    const total = cartTotal(cart);
+    const coupon = getCoupon();
+    const subtotal = cartSubtotal(cart);
+    const discount = couponDiscount(subtotal, coupon);
+    const total = Math.max(subtotal - discount, 0);
     const merchant_order_id = `elforat-${Date.now()}`;
 
+    // لو فيه خصم مطبّق، نوزّعه بالتناسب على أسعار المنتجات
+    // عشان مجموع الـ items يطابق المبلغ الفعلي المطلوب من Paymob (amount_egp)
+    const ratio = subtotal > 0 && discount > 0 ? total / subtotal : 1;
     const items = cart.map((i) => ({
       name: String(i.name).slice(0, 100),
-      amount: Math.round(Number(i.price) * 100), // بالقروش لكل قطعة
+      amount: Math.round(Number(i.price) * 100 * ratio), // بالقروش لكل قطعة (بعد توزيع الخصم)
       description: String(i.name).slice(0, 200),
       quantity: Number(i.qty || 1),
     }));
@@ -66,6 +93,8 @@ window.PaymobCheckout = (() => {
         customer: { name, phone, address, email },
         merchant_order_id,
         redirection_url,
+        coupon_code: coupon ? coupon.code : null,
+        discount_amount: discount,
       }),
     });
 
@@ -79,6 +108,9 @@ window.PaymobCheckout = (() => {
       merchant_order_id,
       name, phone, address,
       total,
+      subtotal,
+      coupon_code: coupon ? coupon.code : null,
+      discount_amount: discount,
       items: cart.map((i) => ({ id: i.id, name: i.name, qty: i.qty, price: i.price, isGift: !!i.isGift })),
       intention_id: data.intention_id,
       paymob_order_id: data.paymob_order_id,
@@ -101,25 +133,46 @@ window.PaymobCheckout = (() => {
         payment_method: "بطاقة بنكية (Paymob)",
         merchant_order_id: pending.merchant_order_id,
         paymob_order_id: pending.paymob_order_id ? String(pending.paymob_order_id) : null,
+        coupon_code: pending.coupon_code || null,
+        discount_amount: pending.discount_amount || 0,
         date: new Date().toLocaleString("ar-EG"),
         items: pending.items,
       };
       let { data, error } = await supabaseClient.from("orders").insert([full]).select("id").single();
       if (error) {
-        // fallback لو الأعمدة الجديدة لسه متضافتش في الجدول
-        console.warn("savePendingOrder full failed, retry minimal:", error.message);
-        const minimal = {
+        // fallback لو أعمدة الكوبون لسه متضافتش في الجدول
+        console.warn("savePendingOrder full failed, retry without coupon fields:", error.message);
+        const withoutCoupon = {
           customerName: pending.name,
           phone: pending.phone,
           address: pending.address,
           total: pending.total,
           status: "بانتظار الدفع - Paymob",
+          payment_status: "pending",
+          payment_method: "بطاقة بنكية (Paymob)",
+          merchant_order_id: pending.merchant_order_id,
+          paymob_order_id: pending.paymob_order_id ? String(pending.paymob_order_id) : null,
           date: new Date().toLocaleString("ar-EG"),
           items: pending.items,
         };
-        const r2 = await supabaseClient.from("orders").insert([minimal]).select("id").single();
+        const r2 = await supabaseClient.from("orders").insert([withoutCoupon]).select("id").single();
         data = r2.data; error = r2.error;
-        if (error) console.warn("savePendingOrder minimal:", error.message);
+        if (error) {
+          // fallback أخير: أقل حقول ممكنة
+          console.warn("savePendingOrder retry failed, minimal:", error.message);
+          const minimal = {
+            customerName: pending.name,
+            phone: pending.phone,
+            address: pending.address,
+            total: pending.total,
+            status: "بانتظار الدفع - Paymob",
+            date: new Date().toLocaleString("ar-EG"),
+            items: pending.items,
+          };
+          const r3 = await supabaseClient.from("orders").insert([minimal]).select("id").single();
+          data = r3.data; error = r3.error;
+          if (error) console.warn("savePendingOrder minimal:", error.message);
+        }
       }
       return data;
     } catch (e) {
@@ -188,10 +241,13 @@ window.PaymobCheckout = (() => {
       (order.items || []).forEach((item) => {
         message += `▫️ ${item.name} (x${item.qty}) = ${item.price * item.qty} ج.م\n`;
       });
-      message += `\n💰 *الإجمالي المدفوع:* ${order.total} ج.م\nشكراً لاختيارك الفرات فارما! 🌺`;
+      if (order.subtotal) message += `\n🧾 *الإجمالي الفرعي:* ${order.subtotal} ج.م\n`;
+      if (order.discount_amount) message += `🏷️ *خصم كود (${order.coupon_code || ""}):* -${order.discount_amount} ج.م\n`;
+      message += `💰 *الإجمالي المدفوع:* ${order.total} ج.م\nشكراً لاختيارك الفرات فارما! 🌺`;
 
       localStorage.removeItem("elforat_cart");
       localStorage.removeItem("elforat_cart_expiry");
+      localStorage.removeItem("elforat_coupon");
       sessionStorage.removeItem("paymob_pending_order");
       if (window.app?.navigate) { try { window.app.navigate("home"); } catch {} }
 
