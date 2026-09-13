@@ -1051,8 +1051,49 @@ document.addEventListener("DOMContentLoaded", () => {
         const container = document.getElementById('product-details-container');
         if (!container || !p) return;
         
-        // إنشاء معرض صور متعدد (يمكن تعديله لصور حقيقية من قاعدة البيانات)
-        const images = [p.img, p.img, p.img]; // في المستقبل يمكن جلب صور متعددة من سوبابيز
+        // خريطة الصور الإضافية لكل منتج (معرض صور متعدد)
+        const productGalleries = {
+            'كريم لعلاج جلد الوزة': [
+                p.img,
+                'product-gallery/keratosis-1.png',
+                'product-gallery/keratosis-2.png',
+                'product-gallery/keratosis-3.jpg'
+            ],
+            'keratosis': [
+                p.img,
+                'product-gallery/keratosis-1.png',
+                'product-gallery/keratosis-2.png',
+                'product-gallery/keratosis-3.jpg'
+            ],
+            'تنت': [
+                p.img,
+                'product-gallery/lip-tint-1.png',
+                'product-gallery/lip-tint-2.png'
+            ],
+            'مرطب شفايف': [
+                p.img,
+                'product-gallery/lip-tint-1.png',
+                'product-gallery/lip-tint-2.png'
+            ],
+            'lip': [
+                p.img,
+                'product-gallery/lip-tint-1.png',
+                'product-gallery/lip-tint-2.png'
+            ]
+        };
+
+        // فحص ما إذا كان للمنتج معرض صور مخصص بالاسم أو المعرف
+        let extraImgs = null;
+        const pNameLower = (p.name || '').toLowerCase();
+        for (const [key, imgs] of Object.entries(productGalleries)) {
+            if (pNameLower.includes(key.toLowerCase()) || (p.desc && p.desc.toLowerCase().includes(key.toLowerCase()))) {
+                extraImgs = imgs;
+                break;
+            }
+        }
+
+        // إذا لم يكن له صور إضافية خاصة، يتم عرض صورته الرسمية فقط
+        const images = extraImgs ? Array.from(new Set(extraImgs)) : [p.img];
         
         let currentImageIndex = 0;
         
@@ -1060,29 +1101,36 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                 <!-- معرض الصور -->
                 <div class="space-y-4">
-                    <div class="product-visual-glass aspect-square flex items-center justify-center p-8 rounded-3xl overflow-hidden group relative">
-                        <img id="main-product-img" src="${sanitize(p.img)}" loading="lazy" class="max-h-full transition-all duration-700 hover:scale-110 cursor-zoom-in drop-shadow-xl" onerror="this.src='logo.png'" onclick="openImageZoom('${sanitize(p.img)}')">
-                        <!-- أزرار التنقل للمعرض -->
-                        <button onclick="changeProductImage(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    <div class="product-visual-glass aspect-square flex items-center justify-center p-6 md:p-8 rounded-3xl overflow-hidden group relative bg-white/50 border border-purple-100/60 shadow-lg">
+                        <img id="main-product-img" src="${sanitize(images[0])}" loading="lazy" class="max-h-full max-w-full object-contain transition-all duration-500 hover:scale-105 cursor-zoom-in drop-shadow-xl" onerror="this.src='logo.png'" onclick="openImageZoom('${sanitize(images[0])}')">
+                        <!-- أزرار التنقل للمعرض (تظهر فقط عند وجود أكثر من صورة) -->
+                        ${images.length > 1 ? `
+                        <button onclick="changeProductImage(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white active:scale-90 z-20" title="الصورة السابقة">
+                            <i class="fa-solid fa-chevron-left text-sm"></i>
                         </button>
-                        <button onclick="changeProductImage(1)" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        <button onclick="changeProductImage(1)" class="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white active:scale-90 z-20" title="الصورة التالية">
+                            <i class="fa-solid fa-chevron-right text-sm"></i>
                         </button>
+                        <div class="absolute top-4 left-4 bg-darkNavy/70 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full z-10">
+                            <span id="gallery-current-idx">1</span> / ${images.length}
+                        </div>
+                        ` : ''}
                         <!-- زر التكبير -->
-                        <button onclick="openImageZoom('${sanitize(p.img)}')" class="absolute bottom-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white" title="تكبير الصورة">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path></svg>
+                        <button onclick="openImageZoom(window.productImages ? window.productImages[window.currentImageIndex || 0] : '${sanitize(images[0])}')" class="absolute bottom-4 right-4 w-10 h-10 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white z-20" title="تكبير الصورة">
+                            <i class="fa-solid fa-expand text-xs"></i>
                         </button>
                     </div>
-                    <div class="flex gap-3 justify-center">
+                    ${images.length > 1 ? `
+                    <div class="flex gap-3 justify-center flex-wrap pt-2">
                         ${images.map((img, idx) => `
                             <button onclick="changeProductImage(${idx})" 
-                                    class="thumbnail-btn w-20 h-20 bg-[#f9f9f9] rounded-xl p-2 border-2 ${idx === 0 ? 'border-primary' : 'border-transparent'} hover:border-primary/50 transition-all overflow-hidden"
+                                    class="thumbnail-btn w-20 h-20 bg-white/80 rounded-2xl p-1.5 border-2 ${idx === 0 ? 'border-primary shadow-purple-soft scale-105' : 'border-purple-100 hover:border-primary/50'} transition-all overflow-hidden relative group"
                                     data-index="${idx}">
-                                <img src="${sanitize(img)}" loading="lazy" class="w-full h-full object-contain mix-blend-multiply thumbnail-img">
+                                <img src="${sanitize(img)}" loading="lazy" class="w-full h-full object-contain rounded-xl thumbnail-img group-hover:scale-105 transition-transform" onerror="this.src='logo.png'">
                             </button>
                         `).join('')}
                     </div>
+                    ` : ''}
                 </div>
                 
                 <!-- معلومات المنتج مع تابات -->
@@ -1221,14 +1269,17 @@ document.addEventListener("DOMContentLoaded", () => {
                         mainImg.style.transform = 'scale(1)';
                     }, 200);
                     
-                    // تحديث الثمبنيلز
+                    // تحديث الثمبنيلز والعداد
+                    const counter = document.getElementById('gallery-current-idx');
+                    if (counter) counter.textContent = window.currentImageIndex + 1;
+                    
                     document.querySelectorAll('.thumbnail-btn').forEach((btn, idx) => {
                         if (idx === window.currentImageIndex) {
-                            btn.classList.add('border-primary');
-                            btn.classList.remove('border-transparent');
+                            btn.classList.add('border-primary', 'shadow-purple-soft', 'scale-105');
+                            btn.classList.remove('border-purple-100');
                         } else {
-                            btn.classList.remove('border-primary');
-                            btn.classList.add('border-transparent');
+                            btn.classList.remove('border-primary', 'shadow-purple-soft', 'scale-105');
+                            btn.classList.add('border-purple-100');
                         }
                     });
                 }
