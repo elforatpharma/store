@@ -1859,9 +1859,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const DURATION = 24 * 60 * 60 * 1000;
         let endTime = null;
+        let ip = null;
 
         try {
-            const ip = await getVisitorIP();
+            ip = await getVisitorIP();
             if (ip) {
                 endTime = await getOrCreateEndTimeForIP(ip);
             }
