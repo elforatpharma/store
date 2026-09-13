@@ -1065,20 +1065,59 @@ document.addEventListener("DOMContentLoaded", () => {
                 'product-gallery/keratosis-2.png',
                 'product-gallery/keratosis-3.jpg'
             ],
+            'ليب بالم': [
+                p.img,
+                'product-gallery/lip-balm-1.png',
+                'product-gallery/lip-balm-2.png'
+            ],
+            'balm': [
+                p.img,
+                'product-gallery/lip-balm-1.png',
+                'product-gallery/lip-balm-2.png'
+            ],
+            'بالم': [
+                p.img,
+                'product-gallery/lip-balm-1.png',
+                'product-gallery/lip-balm-2.png'
+            ],
             'تنت': [
                 p.img,
-                'product-gallery/lip-tint-1.png',
-                'product-gallery/lip-tint-2.png'
+                'product-gallery/lip-balm-1.png',
+                'product-gallery/lip-balm-2.png'
             ],
             'مرطب شفايف': [
                 p.img,
-                'product-gallery/lip-tint-1.png',
-                'product-gallery/lip-tint-2.png'
+                'product-gallery/lip-balm-1.png',
+                'product-gallery/lip-balm-2.png'
             ],
             'lip': [
                 p.img,
-                'product-gallery/lip-tint-1.png',
-                'product-gallery/lip-tint-2.png'
+                'product-gallery/lip-balm-1.png',
+                'product-gallery/lip-balm-2.png'
+            ],
+            'سيروم': [
+                p.img,
+                'product-gallery/guzel-gold-1.jpg',
+                'product-gallery/guzel-gold-2.jpg',
+                'product-gallery/guzel-gold-3.jpg',
+                'product-gallery/guzel-gold-4.jpg',
+                'product-gallery/guzel-gold-5.jpg'
+            ],
+            'guzel': [
+                p.img,
+                'product-gallery/guzel-gold-1.jpg',
+                'product-gallery/guzel-gold-2.jpg',
+                'product-gallery/guzel-gold-3.jpg',
+                'product-gallery/guzel-gold-4.jpg',
+                'product-gallery/guzel-gold-5.jpg'
+            ],
+            'serum': [
+                p.img,
+                'product-gallery/guzel-gold-1.jpg',
+                'product-gallery/guzel-gold-2.jpg',
+                'product-gallery/guzel-gold-3.jpg',
+                'product-gallery/guzel-gold-4.jpg',
+                'product-gallery/guzel-gold-5.jpg'
             ]
         };
 
