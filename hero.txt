@@ -103,7 +103,7 @@
 <h3 class="text-xl font-black text-darkNavy group-hover:text-primary transition-colors mb-1.5 font-display">العناية بالشعر</h3>
 <p class="text-xs text-slate-500 max-w-xs">زيوت طبيعية وشامبو مقوي لتعزيز نمو وكثافة الشعر</p>
 <div class="mt-5 px-4 py-1.5 rounded-full bg-purple-50 group-hover:bg-primary group-hover:text-white text-primary text-xs font-bold flex items-center gap-1.5 transition-all duration-300">
-<span class="">استكشفي 4 منتجات</span>
+<span class="" data-category-count="العناية بالشعر">استكشفي 4 منتجات</span>
 <i class="fa-solid fa-arrow-left text-[11px] group-hover:-translate-x-1 transition-transform"></i>
 </div>
 </a>
@@ -118,7 +118,7 @@
 <h3 class="text-xl font-black text-darkNavy group-hover:text-secondary transition-colors mb-1.5 font-display">العناية بالبشرة والوجه</h3>
 <p class="text-xs text-slate-500 max-w-xs">سيرومات وكريمات ترطيب وحماية ونضارة لبشرة ناعمة وصحية</p>
 <div class="mt-5 px-4 py-1.5 rounded-full bg-purple-50 group-hover:bg-secondary group-hover:text-white text-secondary text-xs font-bold flex items-center gap-1.5 transition-all duration-300">
-<span class="">استكشفي 8 منتجات</span>
+<span class="" data-category-count="العناية بالبشرة">استكشفي 8 منتجات</span>
 <i class="fa-solid fa-arrow-left text-[11px] group-hover:-translate-x-1 transition-transform"></i>
 </div>
 </a>
@@ -140,4 +140,3 @@
 </div>
 </div>
 </section>
-

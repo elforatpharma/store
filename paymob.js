@@ -59,19 +59,15 @@ window.PaymobCheckout = (() => {
     if (!cart.length) throw new Error("السلة فارغة");
 
     const coupon = getCoupon();
-    const subtotal = cartSubtotal(cart);
-    const discount = couponDiscount(subtotal, coupon);
-    const total = Math.max(subtotal - discount, 0);
     const merchant_order_id = `elforat-${Date.now()}`;
 
-    // لو فيه خصم مطبّق، نوزّعه بالتناسب على أسعار المنتجات
-    // عشان مجموع الـ items يطابق المبلغ الفعلي المطلوب من Paymob (amount_egp)
-    const ratio = subtotal > 0 && discount > 0 ? total / subtotal : 1;
-    const items = cart.map((i) => ({
-      name: String(i.name).slice(0, 100),
-      amount: Math.round(Number(i.price) * 100 * ratio), // بالقروش لكل قطعة (بعد توزيع الخصم)
-      description: String(i.name).slice(0, 200),
-      quantity: Number(i.qty || 1),
+    // [تحديث أمان] بنبعت id/qty/isGift بس - السيرفر هو اللي بيحدد السعر
+    // الحقيقي من جدول products، مش بنبعتله سعر جاهز يقدر حد يتلاعب فيه
+    // عن طريق تعديل localStorage قبل الدفع.
+    const cart_items = cart.map((i) => ({
+      id: i.id,
+      qty: Number(i.qty || 1),
+      isGift: !!i.isGift,
     }));
 
     const { first, last } = splitName(name);
@@ -87,14 +83,12 @@ window.PaymobCheckout = (() => {
         "Authorization": `Bearer ${window.PAYMOB_CONFIG.SUPABASE_ANON_KEY}`,
       },
       body: JSON.stringify({
-        amount_egp: total,
-        items,
+        cart_items,
         billing_data: {},
         customer: { name, phone, address, email },
         merchant_order_id,
         redirection_url,
         coupon_code: coupon ? coupon.code : null,
-        discount_amount: discount,
       }),
     });
 
@@ -103,21 +97,23 @@ window.PaymobCheckout = (() => {
       throw new Error(data?.error || data?.details?.detail || "فشل إنشاء جلسة الدفع (Paymob)");
     }
 
+    // [تحديث أمان] بنستخدم total/discount_amount/coupon_code الراجعين من
+    // السيرفر (الحقيقيين) بدل ما نحسبهم تاني في المتصفح - هما المصدر الموثوق
     // خزّن بيانات الطلب مؤقتاً لاستكماله بعد الرجوع من Paymob
     sessionStorage.setItem("paymob_pending_order", JSON.stringify({
       merchant_order_id,
       name, phone, address,
-      total,
-      subtotal,
-      coupon_code: coupon ? coupon.code : null,
-      discount_amount: discount,
+      total: data.total,
+      subtotal: cartSubtotal(cart),
+      coupon_code: data.coupon_code || null,
+      discount_amount: data.discount_amount || 0,
       items: cart.map((i) => ({ id: i.id, name: i.name, qty: i.qty, price: i.price, isGift: !!i.isGift })),
       intention_id: data.intention_id,
       paymob_order_id: data.paymob_order_id,
       created_at: new Date().toISOString(),
     }));
 
-    return data; // {checkout_url, client_secret, ...}
+    return data; // {checkout_url, client_secret, total, discount_amount, coupon_code, ...}
   }
 
   /** حفظ طلب مبدئي في جدول orders بحالة "بانتظار الدفع" */
@@ -135,6 +131,9 @@ window.PaymobCheckout = (() => {
         paymob_order_id: pending.paymob_order_id ? String(pending.paymob_order_id) : null,
         coupon_code: pending.coupon_code || null,
         discount_amount: pending.discount_amount || 0,
+        session_id: window.ElforatAnalytics?.getVisitorSessionId?.() || null,
+        traffic_source: window.ElforatAnalytics?.getTrafficParams?.()?.source || null,
+        traffic_campaign: window.ElforatAnalytics?.getTrafficParams?.()?.campaign || null,
         date: new Date().toLocaleString("ar-EG"),
         items: pending.items,
       };
@@ -152,6 +151,9 @@ window.PaymobCheckout = (() => {
           payment_method: "بطاقة بنكية (Paymob)",
           merchant_order_id: pending.merchant_order_id,
           paymob_order_id: pending.paymob_order_id ? String(pending.paymob_order_id) : null,
+          session_id: window.ElforatAnalytics?.getVisitorSessionId?.() || null,
+          traffic_source: window.ElforatAnalytics?.getTrafficParams?.()?.source || null,
+          traffic_campaign: window.ElforatAnalytics?.getTrafficParams?.()?.campaign || null,
           date: new Date().toLocaleString("ar-EG"),
           items: pending.items,
         };
@@ -174,6 +176,18 @@ window.PaymobCheckout = (() => {
           if (error) console.warn("savePendingOrder minimal:", error.message);
         }
       }
+      // إرسال إشعار فوري للإدارة عبر بوت تيليجرام
+      try {
+        fetch(`${window.PAYMOB_CONFIG.SUPABASE_URL}/functions/v1/telegram-order-notify`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": window.PAYMOB_CONFIG.SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ record: full, type: "INSERT" }),
+        }).catch(() => {});
+      } catch (_) {}
+
       return data;
     } catch (e) {
       console.warn("savePendingOrder failed:", e);
@@ -187,6 +201,11 @@ window.PaymobCheckout = (() => {
     try {
       if (submitBtn) { submitBtn.disabled = true; submitBtn.innerText = "جاري تحويلك لبوابة الدفع الآمنة..."; }
       const data = await createIntention({ name, phone, address });
+      window.ElforatAnalytics?.trackStoreEvent?.("payment_started", {
+        cart_total: data.total,
+        coupon_code: data.coupon_code || null,
+        metadata: { provider: "paymob" }
+      });
 
       const pending = JSON.parse(sessionStorage.getItem("paymob_pending_order") || "{}");
       if (supabaseClient && pending.merchant_order_id) {
@@ -198,6 +217,9 @@ window.PaymobCheckout = (() => {
       window.location.href = data.checkout_url;
     } catch (err) {
       console.error(err);
+      window.ElforatAnalytics?.trackStoreEvent?.("payment_failed", {
+        metadata: { provider: "paymob", stage: "create_intention", message: err.message || "unknown" }
+      });
       if (window.showToast) window.showToast(err.message || "تعذر بدء الدفع الإلكتروني", "error");
       else alert(err.message || "تعذر بدء الدفع الإلكتروني");
       if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = btnText; }
@@ -222,16 +244,14 @@ window.PaymobCheckout = (() => {
     try { pending = JSON.parse(sessionStorage.getItem("paymob_pending_order") || "null"); } catch {}
 
     if (success) {
-      // حدّث الطلب كمدفوع
-      try {
-        if (supabaseClient && (merchantOrderId || pending?.merchant_order_id)) {
-          await supabaseClient.from("orders").update({
-            status: "مدفوع - Paymob",
-            payment_status: "paid",
-            transaction_id: transactionId ? String(transactionId) : null,
-          }).eq("merchant_order_id", String(merchantOrderId || pending.merchant_order_id));
-        }
-      } catch (e) { console.warn(e); }
+      window.ElforatAnalytics?.trackStoreEvent?.("payment_success", {
+        cart_total: pending?.total || null,
+        coupon_code: pending?.coupon_code || null,
+        metadata: { provider: "paymob", merchant_order_id: merchantOrderId, transaction_id: transactionId }
+      });
+
+      // [أمان] حالة الدفع في قاعدة البيانات يتم تحديثها حصرياً بواسطة الـ Webhook
+      // (paymob-webhook Edge Function) بعد التحقق من توقيع HMAC، ولا يتم السماح للمتصفح بعمل UPDATE.
 
       // ابعت الطلب واتساب زي باقي طرق الدفع + فضّي السلة
       const order = pending || { name: "", phone: "", address: "", total: "", items: [] };
@@ -258,15 +278,12 @@ window.PaymobCheckout = (() => {
         window.open(`https://wa.me/201146809133?text=${encodeURIComponent(message)}`, "_blank");
       }, 2500);
     } else {
+      window.ElforatAnalytics?.trackStoreEvent?.("payment_failed", {
+        cart_total: pending?.total || null,
+        coupon_code: pending?.coupon_code || null,
+        metadata: { provider: "paymob", merchant_order_id: merchantOrderId, transaction_id: transactionId, stage: "return" }
+      });
       showReturnModal(false, merchantOrderId, transactionId);
-      try {
-        if (supabaseClient && (merchantOrderId || pending?.merchant_order_id)) {
-          await supabaseClient.from("orders").update({
-            status: "فشل الدفع",
-            payment_status: "failed",
-          }).eq("merchant_order_id", String(merchantOrderId || pending.merchant_order_id));
-        }
-      } catch (e) { console.warn(e); }
     }
     return true;
   }

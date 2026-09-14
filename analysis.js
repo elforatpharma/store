@@ -372,7 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const today = new Date().toISOString().split('T')[0];
             const { data, error } = await _supabase
                 .from('coupons')
-                .select('*')
+                .select('code,discount_percentage')
                 .eq('code', appliedCoupon.code)
                 .eq('is_active', true)
                 .gte('expiry_date', today)
@@ -429,19 +429,108 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${supabaseUrl}/storage/v1/object/public/products/uploads/${cleanPath}`;
     }
 
+    const PRODUCTS_CACHE_KEY = 'elforat_products_cache_v2';
+    const PRODUCTS_CACHE_TTL = 5 * 60 * 1000;
+
+    // تقييمات متفاوتة وثابتة لكل منتج (بدل ما تبقى كلها 4.9)
+    function computeRatingForId(id) {
+        const ratings = [4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9];
+        const str = String(id);
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = (hash * 31 + str.charCodeAt(i)) % 100000;
+        }
+        return ratings[hash % ratings.length];
+    }
+
+    function normalizeProducts(data) {
+        return (data || []).filter(p => p.is_active !== false).map(p => ({
+            id: p.id,
+            name: p.name,
+            category: p.category || 'عام',
+            price: parseFloat(p.price) || 0,
+            oldPrice: p.oldPrice || null,
+            img: getFullImg(p.img),
+            badge: p.badge || '',
+            desc: p.desc || '',
+            ingredients: p.ingredients || '',
+            size: p.size || '',
+            stock: parseInt(p.stock) || 100,
+            rating: p.rating || computeRatingForId(p.id)
+        }));
+    }
+
+    function readProductsCache() {
+        try {
+            const cached = JSON.parse(localStorage.getItem(PRODUCTS_CACHE_KEY) || 'null');
+            if (!cached || !Array.isArray(cached.data)) return null;
+            if (Date.now() - cached.savedAt > PRODUCTS_CACHE_TTL) return null;
+            return cached.data;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function writeProductsCache(data) {
+        try {
+            localStorage.setItem(PRODUCTS_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), data }));
+        } catch (e) {}
+    }
+
+    function optimizePageImages(root = document) {
+        root.querySelectorAll('img').forEach((img, index) => {
+            if (!img.hasAttribute('loading')) img.loading = index < 3 ? 'eager' : 'lazy';
+            if (!img.hasAttribute('decoding')) img.decoding = 'async';
+            if (index === 0 && !img.hasAttribute('fetchpriority')) img.fetchPriority = 'high';
+        });
+    }
+
+    function arabicProductCountLabel(count) {
+        if (count === 0) return 'استكشفي المنتجات قريباً';
+        if (count === 1) return 'استكشفي منتج واحد';
+        if (count === 2) return 'استكشفي منتجين';
+        if (count >= 3 && count <= 10) return `استكشفي ${count} منتجات`;
+        return `استكشفي ${count} منتج`;
+    }
+
+    function updateCategoryCounts() {
+        const products = productsDB.filter(p => !p.isGift);
+        const counts = {};
+        products.forEach(p => {
+            counts[p.category] = (counts[p.category] || 0) + 1;
+        });
+        document.querySelectorAll('[data-category-count]').forEach(el => {
+            const category = el.getAttribute('data-category-count');
+            el.textContent = arabicProductCountLabel(counts[category] || 0);
+        });
+    }
+
     async function fetchProducts() {
         AppState.setState({ status: 'loading' });
-        
-        // عرض Skeleton Loading أثناء التحميل
-        renderSkeletonLoading();
+        const cachedProducts = readProductsCache();
+        if (cachedProducts) {
+            productsDB = cachedProducts;
+            renderCatalog(null, '');
+            updateCategoryCounts();
+        } else {
+            renderSkeletonLoading();
+        }
         
         try {
             // [تعديل الترتيب]: جلب المنتجات مرتبة حسب الـ ID لضمان الترتيب القديم
             const fetchWithRetry = ErrorHandler.retry(async () => {
-                const { data, error } = await _supabase
+                let { data, error } = await _supabase
                     .from('products')
-                    .select('*')
+                    .select('id,name,category,price,oldPrice,img,badge,desc,ingredients,size,stock,is_active,priority')
                     .order('priority', { ascending: false });
+
+                if (error) {
+                    console.warn('Optimized products query failed, falling back:', error.message);
+                    ({ data, error } = await _supabase
+                        .from('products')
+                        .select('*')
+                        .order('priority', { ascending: false }));
+                }
                 
                 if (error) throw error;
                 return data;
@@ -449,45 +538,42 @@ document.addEventListener("DOMContentLoaded", () => {
             
             const data = await fetchWithRetry();
 
-            // إخفاء المنتجات التي عطّلها الأدمن من لوحة التحكم (عمود is_active)
-            // نستخدم فلترة بالـ JS (مش .eq في الاستعلام) حتى لو العمود مش موجود بعد في القاعدة
-            const visibleData = data.filter(p => p.is_active !== false);
-
-            productsDB = visibleData.map(p => ({
-                id: p.id,
-                name: p.name,
-                category: p.category || 'عام',
-                price: parseFloat(p.price) || 0,
-                oldPrice: p.oldPrice || null,
-                img: getFullImg(p.img),
-                badge: p.badge || '',
-                desc: p.desc || '',
-                ingredients: p.ingredients || '',
-                size: p.size || '',
-                stock: parseInt(p.stock) || 100 // إضافة المخزون
-            }));
+            productsDB = normalizeProducts(data);
+            writeProductsCache(productsDB);
             
             AppState.setState({ status: 'success' });
         } catch (err) {
             ErrorHandler.handle(err, 'fetchProducts');
             console.warn('تعذر الاتصال بالسيرفر، سيتم استخدام البيانات المحلية الاحتياطية.');
+            // ملحوظة: الـ IDs دي (p1/b1/b2/b3) مش موجودة فعلياً في جدول products
+            // وبالتالي أي محاولة شراء منها هتترفض من الـ trigger الأمني على السيرفر.
+            // دي بيانات احتياطية للعرض فقط في حالة انقطاع الاتصال بالكامل بقاعدة البيانات.
             productsDB = [
-                { id: 'p1', name: 'Guzel Gold Serum', category: 'العناية بالشعر', price: 250, oldPrice: 350, img: getFullImg('guzel_gold.png'), badge: 'خصم 28%' }
+                { id: 'p1', name: 'Guzel Gold Serum', category: 'العناية بالشعر', price: 250, oldPrice: 350, img: getFullImg('guzel_gold.png'), badge: 'خصم 28%', rating: 4.8 },
+                { id: 'b1', name: 'مجموعة الديتوكس والترطيب', category: 'مجموعات متكاملة', price: 125, oldPrice: 175, img: getFullImg('group1.png'), badge: 'توفير', rating: 4.5 },
+                { id: 'b2', name: 'مجموعة العناية الفائقة بالمناطق الحساسة', category: 'مجموعات متكاملة', price: 280, oldPrice: 380, img: getFullImg('group2.png'), badge: 'عرض خاص', rating: 4.7 },
+                { id: 'b3', name: 'مجموعة النعومة وعلاج جلد الوزة', category: 'مجموعات متكاملة', price: 350, oldPrice: 470, img: getFullImg('group3.png'), badge: 'الأكثر طلباً', rating: 4.9 }
             ];
         } finally {
-            // دمج المجموعات المتكاملة دايماً
-            const bundles = [
-                { id: 'b1', name: 'مجموعة الديتوكس والترطيب', category: 'مجموعات متكاملة', price: 125, oldPrice: 175, img: getFullImg('group1.png'), badge: 'توفير' },
-                { id: 'b2', name: 'مجموعة العناية الفائقة بالمناطق الحساسة', category: 'مجموعات متكاملة', price: 280, oldPrice: 380, img: getFullImg('group2.png'), badge: 'عرض خاص' },
-                { id: 'b3', name: 'مجموعة النعومة وعلاج جلد الوزة', category: 'مجموعات متكاملة', price: 350, oldPrice: 470, img: getFullImg('group3.png'), badge: 'الأكثر طلباً' }
-            ];
-            productsDB = [...productsDB, ...bundles];
 
             // الهدايا تُجلب ديناميكياً من سوبابيز عبر loadGifts()
             
             renderCatalog(null, '');
+            updateCategoryCounts();
         }
     }
+
+    const imageObserver = new MutationObserver(mutations => {
+        mutations.forEach(m => {
+            m.addedNodes.forEach(node => {
+                if (node.nodeType !== 1) return;
+                if (node.tagName === 'IMG') optimizePageImages(node.parentElement || document);
+                else if (node.querySelectorAll) optimizePageImages(node);
+            });
+        });
+    });
+    imageObserver.observe(document.documentElement, { childList: true, subtree: true });
+    optimizePageImages();
     
     // دالة عرض Skeleton Loading
     function renderSkeletonLoading() {
@@ -733,6 +819,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 doNav();
             }
+            trackStoreEvent('page_view', { metadata: { view: viewId, item: param } });
         },
         handleSearch: function(query) {
             // إلغاء أي توقيت بحث سابق (Debounce)
@@ -788,14 +875,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const suggestionsHTML = `
                 <div class="py-2">
                     ${suggestions.map(p => `
-                        <div onclick="app.navigate('product', '${p.id}'); app.hideSearchSuggestions();" 
+                        <div onclick="app.navigate('product', '${sanitize(p.id)}'); app.hideSearchSuggestions();" 
                              class="flex items-center gap-3 px-4 py-3 hover:bg-primary/5 cursor-pointer transition-colors group">
-                            <img src="${p.img}" loading="lazy" class="w-10 h-10 object-contain rounded-lg bg-gray-50 group-hover:scale-110 transition-transform">
+                            <img src="${sanitize(p.img)}" loading="lazy" class="w-10 h-10 object-contain rounded-lg bg-gray-50 group-hover:scale-110 transition-transform">
                             <div class="flex-1 text-right">
-                                <p class="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">${p.name}</p>
-                                <p class="text-xs text-gray-500">${p.category}</p>
+                                <p class="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">${sanitize(p.name)}</p>
+                                <p class="text-xs text-gray-500">${sanitize(p.category)}</p>
                             </div>
-                            <span class="text-xs font-bold text-primary">${p.price} ج.م</span>
+                            <span class="text-xs font-bold text-primary">${sanitize(p.price)} ج.م</span>
                         </div>
                     `).join('')}
                     <div onclick="app.navigate('catalog'); app.hideSearchSuggestions();" 
@@ -832,13 +919,24 @@ document.addEventListener("DOMContentLoaded", () => {
             checkOffers(); 
             saveCart(); // [جديد] حفظ التحديث
             updateBadge();
+            trackStoreEvent('add_to_cart', {
+                product_id: String(product.id),
+                product_name: product.name,
+                cart_total: getCartSubtotal(),
+                metadata: { qty: Number(qty) || 1 }
+            });
             
             if (!silent) {
                 playCartSound(); 
                 showCartPopup(); 
             }
         },
-        buyNow: function (id, qty = 1) { this.addToCart(id, qty, true); this.navigate('cart'); },
+        buyNow: function (id, qty = 1) {
+            const product = productsDB.find(p => p.id === id);
+            trackStoreEvent('buy_now', { product_id: String(id), product_name: product?.name || null, metadata: { qty: Number(qty) || 1 } });
+            this.addToCart(id, qty, true);
+            this.navigate('cart');
+        },
         // ==========================================
         // تطبيق كود الكوبون في صفحة السلة
         // ==========================================
@@ -864,7 +962,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const today = new Date().toISOString().split('T')[0];
                 const { data, error } = await _supabase
                     .from('coupons')
-                    .select('*')
+                    .select('code,discount_percentage')
                     .eq('code', code)
                     .eq('is_active', true)
                     .gte('expiry_date', today)
@@ -882,6 +980,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 saveCoupon();
                 input.value = '';
                 renderCart();
+                trackStoreEvent('coupon_applied', {
+                    coupon_code: data.code,
+                    cart_total: getCartSubtotal(),
+                    metadata: { discount_percentage: data.discount_percentage }
+                });
                 showMsg(`تم تطبيق خصم ${data.discount_percentage}% بنجاح 🎉`, true);
             } catch (e) {
                 console.error('applyCoupon error:', e);
@@ -1069,65 +1172,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 6. دوال العرض والـ Rendering (بالشكل القديم)
     // ==========================================
-    function renderCatalog(filter = null, searchTerm = '') {
-        const grid = document.getElementById('catalog-grid');
-        let products = productsDB.filter(p => !p.isGift);
-        
-        // تطبيق فلتر الفئة
-        if (filter) {
-            products = products.filter(p => p.category === filter);
-        }
-        
-        // تطبيق البحث الفوري
-        if (searchTerm) {
-            products = products.filter(p => 
-                p.name.toLowerCase().includes(searchTerm) ||
-                p.category.toLowerCase().includes(searchTerm) ||
-                (p.desc && p.desc.toLowerCase().includes(searchTerm))
-            );
-        }
-        
-        // تفضيل عرض المنتجات الفردية قبل المجموعات العلاجية المتكاملة
-        products = [...products].sort((a, b) => {
-            const aBundle = a.category === 'مجموعات متكاملة' ? 1 : 0;
-            const bBundle = b.category === 'مجموعات متكاملة' ? 1 : 0;
-            return aBundle - bBundle;
-        });
-        
-        // تحديث عنوان القسم وتفعيل التبويب المطابق
-        const heading = document.getElementById('catalog-heading');
-        if (heading) {
-            heading.textContent = filter === 'مجموعات متكاملة' ? 'المجموعات العلاجية المتكاملة' : 'منتجاتنا المتميزة';
-        }
-        document.querySelectorAll('.catalog-tab-btn').forEach(btn => {
-            btn.classList.toggle('active', (btn.getAttribute('data-filter') || '') === (filter || ''));
-        });
-        
-        if (grid) {
-            if (products.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center justify-center py-32 text-center animate-fade-in-up">
-                        <div class="w-48 h-48 bg-gradient-to-br from-primary/10 to-secondary rounded-full flex items-center justify-center mb-8 shadow-inner">
-                            <svg class="w-24 h-24 text-primary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-3">لم يتم العثور على نتائج</h3>
-                        <p class="text-gray-500 text-lg mb-6 max-w-md">لا توجد منتجات تطابق بحثك "<span class="font-bold text-primary">${searchTerm}</span>"</p>
-                        <button onclick="app.handleSearch(''); document.getElementById('desktop-search-input').value=''; document.getElementById('mobile-search-input').value='';" 
-                                class="px-8 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-full font-bold hover:brightness-110 transition-all shadow-purple-glow flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
-                            </svg>
-                            عرض كل المنتجات
-                        </button>
-                    </div>`;
-                return;
-            }
-            
-            grid.innerHTML = products.map((p, index) => {
-                const isFavorite = FavoritesManager.isFavorite(p.id);
-                return `
+    function buildProductCard(p, index) {
+        const isFavorite = FavoritesManager.isFavorite(p.id);
+        return `
 <article class="pro-product-card p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group opacity-0 animate-fade-in-up cursor-pointer" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
     <div class="flex items-center justify-between w-full mb-3 z-10">
         ${p.badge ? `<span class="badge-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
@@ -1170,25 +1217,151 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
     </div>
 </article>`;
-            }).join('');
-            
-            // إضافة مستمعي الأحداث لأزرار المفضلة
-            setTimeout(() => {
-                document.querySelectorAll('.favorite-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const productId = btn.getAttribute('data-favorite-btn');
-                        FavoritesManager.toggle(productId);
-                    });
-                });
-            }, 0);
+    }
+
+    function renderCatalog(filter = null, searchTerm = '') {
+        const grid = document.getElementById('catalog-grid');
+        const bundlesSection = document.getElementById('bundles-section');
+        const bundlesGrid = document.getElementById('bundles-grid');
+        let products = productsDB.filter(p => !p.isGift);
+        
+        // تطبيق فلتر الفئة
+        if (filter) {
+            products = products.filter(p => p.category === filter);
         }
+        
+        // تطبيق البحث الفوري
+        if (searchTerm) {
+            products = products.filter(p => 
+                p.name.toLowerCase().includes(searchTerm) ||
+                p.category.toLowerCase().includes(searchTerm) ||
+                (p.desc && p.desc.toLowerCase().includes(searchTerm))
+            );
+        }
+        
+        // تحديث عنوان القسم وتفعيل التبويب المطابق
+        const heading = document.getElementById('catalog-heading');
+        if (heading) {
+            heading.textContent = filter === 'مجموعات متكاملة' ? 'المجموعات العلاجية المتكاملة' : 'منتجاتنا المتميزة';
+        }
+        document.querySelectorAll('.catalog-tab-btn').forEach(btn => {
+            btn.classList.toggle('active', (btn.getAttribute('data-filter') || '') === (filter || ''));
+        });
+        
+        if (products.length === 0) {
+            if (grid) {
+                grid.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center py-32 text-center animate-fade-in-up">
+                        <div class="w-48 h-48 bg-gradient-to-br from-primary/10 to-secondary rounded-full flex items-center justify-center mb-8 shadow-inner">
+                            <svg class="w-24 h-24 text-primary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">لم يتم العثور على نتائج</h3>
+                        <p class="text-gray-500 text-lg mb-6 max-w-md">لا توجد منتجات تطابق بحثك "<span class="font-bold text-primary">${sanitize(searchTerm)}</span>"</p>
+                        <button onclick="app.handleSearch(''); document.getElementById('desktop-search-input').value=''; document.getElementById('mobile-search-input').value='';" 
+                                class="px-8 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-full font-bold hover:brightness-110 transition-all shadow-purple-glow flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                            </svg>
+                            عرض كل المنتجات
+                        </button>
+                    </div>`;
+            }
+            if (bundlesSection) bundlesSection.style.display = 'none';
+            if (bundlesGrid) bundlesGrid.innerHTML = '';
+            return;
+        }
+
+        // عند فلترة المجموعات فقط، تُعرض كلها في الشبكة الرئيسية بدون صف منفصل
+        if (filter === 'مجموعات متكاملة') {
+            if (grid) {
+                grid.innerHTML = products.map((p, index) => buildProductCard(p, index)).join('');
+            }
+            if (bundlesSection) bundlesSection.style.display = 'none';
+            if (bundlesGrid) bundlesGrid.innerHTML = '';
+        } else {
+            // فصل المجموعات المتكاملة (زي مجموعة الديتوكس وما بعدها) عن المنتجات الفردية
+            const individualProducts = products.filter(p => p.category !== 'مجموعات متكاملة');
+            const bundleProducts = products.filter(p => p.category === 'مجموعات متكاملة');
+
+            if (grid) {
+                grid.innerHTML = individualProducts.map((p, index) => buildProductCard(p, index)).join('');
+            }
+
+            if (bundleProducts.length > 0 && bundlesGrid && bundlesSection) {
+                bundlesGrid.innerHTML = bundleProducts.map((p, index) => buildProductCard(p, index)).join('');
+                bundlesSection.style.display = '';
+            } else {
+                if (bundlesGrid) bundlesGrid.innerHTML = '';
+                if (bundlesSection) bundlesSection.style.display = 'none';
+            }
+        }
+
+        // إضافة مستمعي الأحداث لأزرار المفضلة (للشبكتين معاً)
+        setTimeout(() => {
+            document.querySelectorAll('.favorite-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const productId = btn.getAttribute('data-favorite-btn');
+                    FavoritesManager.toggle(productId);
+                });
+            });
+        }, 0);
+    }
+
+    // بنك مراجعات عملاء بالعامية المصرية (أسماء وتقييمات متنوعة)
+    const REVIEW_POOL = [
+        { name: 'نورا أحمد', text: 'المنتج فعلاً روعة، حسيت بالفرق من أول أسبوع، شكراً الفرات فارما 🌸', stars: 5 },
+        { name: 'ياسمين محمد', text: 'بجد ما كنتش متوقعة النتيجة دي، جربت كتير قبل كده ومحدش وصل للنتيجة دي، تسلم إيديكم 🌟', stars: 5 },
+        { name: 'مريم سامي', text: 'حبيته أوي، ريحته حلوة وملمسه خفيف على البشرة، هطلب تاني أكيد 💕', stars: 5 },
+        { name: 'سارة عادل', text: 'المنتج ممتاز والتغليف كان جامد جداً، ووصل بسرعة كمان. تسلموا 🙏', stars: 4 },
+        { name: 'دينا حسن', text: 'من أحسن حاجات جربتها في العناية، حاسة إن بشرتي بقت أنعم بشكل واضح', stars: 5 },
+        { name: 'رنا إبراهيم', text: 'خدمة عملاء محترمة جداً وردوا عليا بسرعة، والمنتج فوق الوصف 👌', stars: 5 },
+        { name: 'إيمان طارق', text: 'كنت خايفة يبوظلي بشرتي بس الحمد لله اتفاجئت بنتيجة حلوة جداً', stars: 4 },
+        { name: 'هبة الله كريم', text: 'تجربتي معاكم كانت جميلة من الأول للآخر، ربنا يبارك في شغلكم 🌸', stars: 5 },
+        { name: 'نهى فؤاد', text: 'حسيت إني لقيت المنتج اللي كنت بدور عليه من زمان، شكراً ليكم ❤️', stars: 5 },
+        { name: 'آية جمال', text: 'الجودة عالية والسعر مناسب جداً بالنسبالها، هرشحه لكل صحابي', stars: 5 },
+        { name: 'منة الله شعبان', text: 'أول مرة أثق في منتج مصري بالشكل ده، فعلاً بيعمل اللي بيقوله', stars: 5 },
+        { name: 'ريهام صلاح', text: 'التوصيل كان سريع والمنتج أحلى من الصور، مبسوطة جداً بيه', stars: 4 },
+        { name: 'شيماء عبد الله', text: 'استخدمته أسبوعين بس وحاسة بفرق حقيقي، ميرسي لتعبكم معانا 🌸', stars: 5 },
+        { name: 'أسماء رمضان', text: 'كل اللي كتبوه في الوصف حقيقي، مش دعاية وبس. شكراً جداً 🙏', stars: 5 },
+        { name: 'جنى وليد', text: 'كنت مترددة أطلب الأول بس بجد يستاهل كل قرش فيه', stars: 4 }
+    ];
+
+    function computeReviewSeed(id) {
+        const str = String(id);
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = (hash * 31 + str.charCodeAt(i)) % 100000;
+        }
+        return hash;
+    }
+
+    function getReviewsForProduct(id, count = 3) {
+        const seed = computeReviewSeed(id);
+        const start = seed % REVIEW_POOL.length;
+        const selected = [];
+        for (let i = 0; i < count; i++) {
+            selected.push(REVIEW_POOL[(start + i) % REVIEW_POOL.length]);
+        }
+        return selected;
+    }
+
+    function computeReviewCountForId(id) {
+        const seed = computeReviewSeed(id);
+        return 42 + (seed % 190); // عدد تقييمات متفاوت بين المنتجات
     }
 
     function renderProductDetails(id) {
         const p = productsDB.find(prod => prod.id == id);
         const container = document.getElementById('product-details-container');
         if (!container || !p) return;
+        trackStoreEvent('product_view', {
+            product_id: String(p.id),
+            product_name: p.name,
+            metadata: { category: p.category, price: p.price, stock: p.stock }
+        });
         
         // خريطة الصور الإضافية لكل منتج (معرض صور متعدد)
         const productGalleries = {
@@ -1376,17 +1549,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div id="tab-reviews" class="tab-content hidden text-gray-600 leading-relaxed">
                         <div class="flex items-center gap-2 mb-4">
                             <div class="flex text-yellow-400 text-lg">★★★★★</div>
-                            <span class="text-sm font-bold">(4.9/5 من 127 تقييم)</span>
+                            <span class="text-sm font-bold">(${p.rating || '4.9'}/5 من ${computeReviewCountForId(p.id)} تقييم)</span>
                         </div>
                         <div class="space-y-4">
+                            ${getReviewsForProduct(p.id, 3).map(r => `
                             <div class="bg-gray-50 p-4 rounded-2xl">
                                 <div class="flex items-center gap-2 mb-2">
-                                    <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-xs">ن</div>
-                                    <span class="font-bold text-sm">نورة أحمد</span>
-                                    <div class="flex text-yellow-400 text-xs mr-auto">★★★★★</div>
+                                    <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-xs">${sanitize(r.name.charAt(0))}</div>
+                                    <span class="font-bold text-sm">${sanitize(r.name)}</span>
+                                    <div class="flex text-yellow-400 text-xs mr-auto">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
                                 </div>
-                                <p class="text-sm text-gray-600">منتج رائع جداً! لاحظت الفرق من أول أسبوع. أنصح به بشدة 💕</p>
-                            </div>
+                                <p class="text-sm text-gray-600">${sanitize(r.text)}</p>
+                            </div>`).join('')}
                         </div>
                         <button class="mt-4 w-full py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-all text-sm">إضافة تقييمك</button>
                     </div>
@@ -1636,6 +1810,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (cart.length === 0) { 
             container.innerHTML = '<div class="py-32 text-center text-gray-400 uppercase tracking-widest">حقيبة التسوق فارغة</div>'; 
             if (summary) summary.innerHTML = ''; 
+            const countLabelEmpty = document.getElementById('cart-summary-count');
+            if (countLabelEmpty) countLabelEmpty.textContent = '';
             renderCouponUI();
             return; 
         }
@@ -1675,12 +1851,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const discount = getCartDiscount(subtotal);
         const finalTotal = Math.max(subtotal - discount, 0);
+        const itemsCount = cart.reduce((s, i) => s + i.qty, 0);
+        const freeShippingLeft = Math.max(500 - subtotal, 0);
+
+        const countLabel = document.getElementById('cart-summary-count');
+        if (countLabel) countLabel.textContent = `${itemsCount} ${itemsCount === 1 ? 'منتج' : 'منتجات'} في الحقيبة`;
 
         if (summary) {
             summary.innerHTML = `
-                <div class="flex justify-between items-center text-sm"><span>الإجمالي الفرعي</span><span>${sanitize(subtotal)} ج.م</span></div>
-                ${discount > 0 ? `<div class="flex justify-between items-center text-sm text-emerald-600 font-bold"><span>خصم كود (${sanitize(appliedCoupon.code)})</span><span>- ${sanitize(discount)} ج.م</span></div>` : ''}
-                <div class="flex justify-between items-center text-xl font-bold pt-2 mt-1 border-t border-purple-100"><span>الإجمالي</span><span class="text-primary">${sanitize(finalTotal)} ج.م</span></div>
+                <div class="flex items-center justify-between text-sm text-slate-600">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-bag-shopping text-slate-300 w-4 text-center"></i> الإجمالي الفرعي</span>
+                    <span class="font-bold text-darkNavy">${sanitize(subtotal)} ج.م</span>
+                </div>
+                ${discount > 0 ? `
+                <div class="flex items-center justify-between text-sm">
+                    <span class="flex items-center gap-2 text-emerald-600 font-bold"><i class="fa-solid fa-tag w-4 text-center"></i> خصم كود <span class="font-mono" dir="ltr">${sanitize(appliedCoupon.code)}</span></span>
+                    <span class="font-bold text-emerald-600">- ${sanitize(discount)} ج.م</span>
+                </div>` : ''}
+                <div class="flex items-center justify-between text-sm text-slate-600">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-truck-fast text-slate-300 w-4 text-center"></i> الشحن</span>
+                    <span class="font-bold text-emerald-600">${freeShippingLeft > 0 ? 'يُحسب لاحقاً' : 'مجاني 🎉'}</span>
+                </div>
+                ${freeShippingLeft > 0 ? `
+                <div class="bg-purple-50/70 border border-purple-100 rounded-xl px-3 py-2 text-[11px] font-bold text-primary flex items-center gap-2">
+                    <i class="fa-solid fa-gift"></i>
+                    أضيفي ${sanitize(freeShippingLeft)} ج.م كمان واحصلي على هدية مجانية
+                </div>` : ''}
+                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-l from-primary to-secondary text-white px-4 py-4 flex items-center justify-between mt-1">
+                    <div class="absolute -top-6 -left-6 w-20 h-20 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <span class="relative font-bold text-sm">الإجمالي</span>
+                    <span class="relative text-xl font-black">${sanitize(finalTotal)} <span class="text-xs font-bold">ج.م</span></span>
+                </div>
             `;
         }
         renderCouponUI();
@@ -1799,9 +2000,19 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const name = nameEl.value;
-            const phone = phoneEl.value;
+            const phone = normalizeEgyptPhone(phoneEl.value);
             const address = addressEl.value;
             const payment = paymentEl.value;
+
+            // [حماية من السبام]: فحص حقل المصيدة (Honeypot) - إذا تم ملؤه فهو روبوت سبام
+            const honeypotEl = document.getElementById('cust-fax-verify');
+            if (honeypotEl && honeypotEl.value.trim() !== '') {
+                console.warn('تم حظر محاولة إرسال روبوتية عبر Honeypot');
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+                return;
+            }
+
 
             if (cart.length === 0) {
                 showCustomAlert('سلة المشتريات فارغة! ضيفي منتجات عشان تقدري تكملي الطلب.', 'error');
@@ -1841,57 +2052,141 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
+            // [تحديث أمان]: إعادة جلب الأسعار الحقيقية من قاعدة البيانات والتحقق من الكوبون
+            // لمنع أي تلاعب محتمل في localStorage أو أدوات المطور (DevTools)
+            const dbPriceMap = new Map();
+            if (Array.isArray(productsDB)) {
+                productsDB.forEach(p => {
+                    if (p && p.id != null) dbPriceMap.set(String(p.id), Number(p.price) || 0);
+                });
+            }
+
+            try {
+                const itemIds = cart.filter(i => !i.isGift && i.id).map(i => i.id);
+                if (itemIds.length) {
+                    const { data: verifiedProducts, error: pErr } = await _supabase
+                        .from('products')
+                        .select('id, price')
+                        .in('id', itemIds);
+                    if (!pErr && Array.isArray(verifiedProducts)) {
+                        verifiedProducts.forEach(p => {
+                            if (p && p.id != null) dbPriceMap.set(String(p.id), Number(p.price) || 0);
+                        });
+                    }
+                }
+            } catch (pFetchErr) {
+                console.warn('تعذر جلب الأسعار الحية، الاعتماد على productsDB الموثوقة:', pFetchErr);
+            }
+
             let subtotal = 0;
             const orderItems = [];
             
             cart.forEach(item => {
-                const itemTotal = item.price * item.qty;
+                let verifiedPrice = Number(item.price || 0);
+                if (!item.isGift && item.id != null && dbPriceMap.has(String(item.id))) {
+                    verifiedPrice = dbPriceMap.get(String(item.id));
+                }
+                const qty = Math.max(1, parseInt(item.qty) || 1);
+                const itemTotal = item.isGift ? 0 : (verifiedPrice * qty);
                 subtotal += itemTotal;
                 orderItems.push({
                     id: item.id,
                     name: item.name,
-                    qty: item.qty,
-                    price: item.price,
+                    qty: qty,
+                    price: item.isGift ? 0 : verifiedPrice,
                     isGift: item.isGift || false
                 });
             });
 
-            // ===== تطبيق خصم الكوبون (لو موجود) على الإجمالي =====
-            const discountAmount = getCartDiscount(subtotal);
+            // ===== التحقق من الكوبون مباشرة من قاعدة البيانات =====
+            let verifiedDiscountAmount = 0;
+            let verifiedCouponCode = null;
+            if (appliedCoupon && appliedCoupon.code) {
+                try {
+                    const today = new Date().toISOString().split('T')[0];
+                    const { data: dbCoupon } = await _supabase
+                        .from('coupons')
+                        .select('code, discount_percentage')
+                        .eq('code', String(appliedCoupon.code).trim())
+                        .eq('is_active', true)
+                        .gte('expiry_date', today)
+                        .maybeSingle();
+
+                    if (dbCoupon && Number(dbCoupon.discount_percentage) > 0) {
+                        verifiedCouponCode = dbCoupon.code;
+                        const pct = Number(dbCoupon.discount_percentage);
+                        verifiedDiscountAmount = Math.round(((subtotal * pct) / 100) * 100) / 100;
+                    }
+                } catch (cErr) {
+                    console.warn('تعذر التحقق من الكوبون من السيرفر:', cErr);
+                    verifiedDiscountAmount = getCartDiscount(subtotal);
+                    verifiedCouponCode = appliedCoupon.code;
+                }
+            }
+
+            const discountAmount = verifiedDiscountAmount;
             const finalTotal = Math.max(subtotal - discountAmount, 0);
-            const couponCode = appliedCoupon ? appliedCoupon.code : null;
+            const couponCode = verifiedCouponCode;
+            const traffic = getTrafficParams();
 
             try {
+                trackStoreEvent('checkout_started', {
+                    coupon_code: couponCode,
+                    cart_total: finalTotal,
+                    metadata: { payment, items_count: orderItems.length }
+                });
                 const paymentLabel = payment === 'paymob-card' ? 'بطاقة بنكية (Paymob)' : payment;
+                const merchantId = 'elforat-' + Date.now();
                 const orderData = {
                     customerName: name,
                     phone: phone,
                     address: address,
                     total: finalTotal,
                     status: 'قيد التنفيذ',
+                    payment_status: 'pending',
                     date: new Date().toLocaleString('ar-EG'),
-                    items: orderItems
-                };
-                // حقول إضافية لو موجودة في الجدول (آمن: لو الأعمدة مش موجودة هيتم تجاهل الخطأ والمحاولة بدونها)
-                const extraFields = {
+                    items: orderItems,
                     payment_method: paymentLabel,
+                    merchant_order_id: merchantId,
                     coupon_code: couponCode,
-                    discount_amount: discountAmount
+                    discount_amount: discountAmount,
+                    session_id: getVisitorSessionId(),
+                    traffic_source: traffic.source,
+                    traffic_campaign: traffic.campaign
                 };
-                try {
-                    const { error: orderError } = await _supabase.from('orders').insert([{ ...orderData, ...extraFields }]);
-                    if (orderError) throw orderError;
-                } catch (e2) {
-                    try {
-                        const { error: orderError2 } = await _supabase.from('orders').insert([{ ...orderData, payment_method: paymentLabel }]);
-                        if (orderError2) throw orderError2;
-                    } catch (e3) {
-                        const { error: orderError3 } = await _supabase.from('orders').insert([orderData]);
-                        if (orderError3) throw orderError3;
-                    }
+
+                const { data: insertedOrder, error: orderError } = await _supabase
+                    .from('orders')
+                    .insert([orderData])
+                    .select('id')
+                    .single();
+
+                if (!orderError && insertedOrder) {
+                    orderData.id = insertedOrder.id;
+                    trackStoreEvent('order_created', { coupon_code: couponCode, cart_total: finalTotal, metadata: { payment, items_count: orderItems.length } });
+                } else if (orderError) {
+                    console.warn('فشل إدخال الطلب بالحقول الكاملة، جاري المحاولة بالحد الأدنى:', orderError.message);
+                    const minimalData = {
+                        customerName: name,
+                        phone: phone,
+                        address: address,
+                        total: finalTotal,
+                        status: 'قيد التنفيذ',
+                        date: new Date().toLocaleString('ar-EG'),
+                        items: orderItems
+                    };
+                    const { data: minOrder, error: minError } = await _supabase.from('orders').insert([minimalData]).select('id').single();
+                    if (!minError && minOrder) orderData.id = minOrder.id;
                 }
+
+                // إرسال إشعار فوري للإدارة عبر بوت تيليجرام
+                fetch(`${supabaseUrl}/functions/v1/telegram-order-notify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'apikey': supabaseKey },
+                    body: JSON.stringify({ record: orderData, type: 'INSERT' })
+                }).catch(() => {});
             } catch (err) {
-                console.error("خطأ صامت في سوبابيز، جاري استكمال التحويل...", err);
+                console.error("خطأ في تسجيل الطلب بسوبابيز، جاري استكمال التحويل للواتساب...", err);
             }
 
             let message = `*طلب جديد من موقع Elforat Pharma* 🛍️\n\n`;
@@ -2032,9 +2327,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const DURATION = 24 * 60 * 60 * 1000;
         let endTime = null;
+        let ip = null;
 
         try {
-            const ip = await getVisitorIP();
+            ip = await getVisitorIP();
             if (ip) {
                 endTime = await getOrCreateEndTimeForIP(ip);
             }
@@ -2053,24 +2349,25 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        setInterval(async () => {
+        // بيخفي عنصر العداد وبطاقات العروض المرتبطة بيه لما الوقت يخلص
+        function hideOfferCountdown() {
+            const countdownWrap = document.getElementById('offer-countdown-wrap');
+            const offersWrap = document.getElementById('offer-badges-wrap');
+            if (countdownWrap) countdownWrap.style.display = 'none';
+            if (offersWrap) offersWrap.style.display = 'none';
+        }
+
+        const countdownTimer = setInterval(() => {
             const now = Date.now();
-            let timeRemaining = Math.floor((endTime - now) / 1000);
+            const timeRemaining = Math.floor((endTime - now) / 1000);
 
             if (timeRemaining <= 0) {
-                endTime = Date.now() + DURATION;
-                if (ip) {
-                    await _supabase
-                        .from('offer_countdowns')
-                        .upsert({ ip: ip, end_time: endTime }, { onConflict: 'ip' });
-                } else {
-                    localStorage.setItem('elforat_offer_end', endTime);
-                }
-                timeRemaining = Math.floor((endTime - now) / 1000);
-
-                checkOffers();
-                renderCart();
-                updateBadge();
+                hoursEl.textContent = '00';
+                minutesEl.textContent = '00';
+                secondsEl.textContent = '00';
+                hideOfferCountdown();
+                clearInterval(countdownTimer);
+                return;
             }
 
             const h = Math.floor(timeRemaining / 3600);
@@ -2081,6 +2378,12 @@ document.addEventListener("DOMContentLoaded", () => {
             minutesEl.textContent = m.toString().padStart(2, '0');
             secondsEl.textContent = s.toString().padStart(2, '0');
         }, 1000);
+
+        // لو الوقت كان خلص فعلاً وقت تحميل الصفحة (مثلاً الزائر رجع بعد يوم كامل)
+        if (Math.floor((endTime - Date.now()) / 1000) <= 0) {
+            hideOfferCountdown();
+            clearInterval(countdownTimer);
+        }
     }
 
     // ==========================================
@@ -2091,6 +2394,31 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     async function applyStoreBranding() {
         try {
+            const cacheKey = 'elforat_store_settings_cache_v1';
+            const applySettings = (s) => {
+                if (!s) return;
+                if (s.logo_url) {
+                    document.querySelectorAll('img[src="logo.png"]').forEach(el => { el.src = s.logo_url; });
+                    const favicon = document.querySelector('link[rel="icon"][href="logo.png"]');
+                    if (favicon) favicon.href = s.logo_url;
+                }
+
+                if (s.hero_image_url) {
+                    document.querySelectorAll('img[src="hero-products.webp"], img[src="hero-products.jpg"]').forEach(el => { el.src = s.hero_image_url; });
+                }
+
+                if (s.store_name) {
+                    document.title = document.title.replace(/الفُرات فارما|الفرات فارما/g, s.store_name);
+                }
+            };
+
+            try {
+                const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+                if (cached && cached.data && Date.now() - cached.savedAt < 10 * 60 * 1000) {
+                    applySettings(cached.data);
+                }
+            } catch (e) {}
+
             const { data, error } = await _supabase
                 .from('settings')
                 .select('data')
@@ -2099,22 +2427,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (error || !data || !data.data) return; // مفيش إعدادات محفوظة، نسيب الصور المحلية زي ما هي
 
-            const s = data.data;
-
-            if (s.logo_url) {
-                document.querySelectorAll('img[src="logo.png"]').forEach(el => { el.src = s.logo_url; });
-                const favicon = document.querySelector('link[rel="icon"][href="logo.png"]');
-                if (favicon) favicon.href = s.logo_url;
-            }
-
-            if (s.hero_image_url) {
-                document.querySelectorAll('img[src="hero-products.jpg"]').forEach(el => { el.src = s.hero_image_url; });
-            }
-
-            // اسم المتجر ورقم الواتساب (لو الأدمن غيّرهم من الإعدادات) - تحديث خفيف بدون كسر أي تصميم
-            if (s.store_name) {
-                document.title = document.title.replace(/الفُرات فارما|الفرات فارما/g, s.store_name);
-            }
+            applySettings(data.data);
+            try { localStorage.setItem(cacheKey, JSON.stringify({ savedAt: Date.now(), data: data.data })); } catch (e) {}
         } catch (e) {
             console.warn('تعذر تحميل هوية المتجر من الإعدادات، هتفضل الصور المحلية الافتراضية:', e);
         }
@@ -2123,15 +2437,94 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 9. تشغيل النظام بالكامل
     // ==========================================
-// تسجيل زيارة جديدة في السيرفر
-    async function trackVisitor() {
-        const { data } = await _supabase.from('visitors').select('*').limit(1).single();
-        if (data) {
-            await _supabase.from('visitors').update({ count: data.count + 1 }).eq('id', data.id);
-        } else {
-            await _supabase.from('visitors').insert([{ count: 1 }]);
+    function getVisitorSessionId() {
+        let id = sessionStorage.getItem('elforat_session_id');
+        if (!id) {
+            id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : `sess_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+            sessionStorage.setItem('elforat_session_id', id);
+        }
+        return id;
+    }
+
+    function getDeviceType() {
+        const w = window.innerWidth;
+        if (w < 768) return 'mobile';
+        if (w < 1024) return 'tablet';
+        return 'desktop';
+    }
+
+    function getTrafficParams() {
+        const params = new URLSearchParams(location.search);
+        const ref = document.referrer || '';
+        const host = (() => { try { return ref ? new URL(ref).hostname : ''; } catch (e) { return ''; } })();
+        return {
+            source: params.get('utm_source') || (host.includes('facebook') ? 'facebook' : host.includes('google') ? 'google' : host || 'direct'),
+            medium: params.get('utm_medium') || (ref ? 'referral' : 'direct'),
+            campaign: params.get('utm_campaign') || null
+        };
+    }
+
+    function normalizeEgyptPhone(phone) {
+        let value = String(phone || '').replace(/\D/g, '');
+        if (value.startsWith('20') && value.length === 12) value = '0' + value.slice(2);
+        return value;
+    }
+
+    async function trackStoreEvent(eventName, payload = {}) {
+        try {
+            const traffic = getTrafficParams();
+            await _supabase.from('store_events').insert([{
+                session_id: getVisitorSessionId(),
+                event_name: eventName,
+                product_id: payload.product_id || null,
+                product_name: payload.product_name || null,
+                coupon_code: payload.coupon_code || null,
+                cart_total: payload.cart_total == null ? null : Number(payload.cart_total),
+                page_path: location.pathname + location.hash,
+                source: traffic.source,
+                medium: traffic.medium,
+                campaign: traffic.campaign,
+                device_type: getDeviceType(),
+                metadata: payload.metadata || {}
+            }]);
+        } catch (e) {
+            console.warn('analytics event skipped:', eventName, e.message || e);
         }
     }
+    window.ElforatAnalytics = { getVisitorSessionId, getTrafficParams, getDeviceType, trackStoreEvent };
+
+// تسجيل زيارة جديدة في السيرفر
+    async function trackVisitor() {
+        try {
+            const alreadyTracked = sessionStorage.getItem('elforat_visitor_event_tracked');
+            const traffic = getTrafficParams();
+            if (!alreadyTracked) {
+                const eventPayload = {
+                    session_id: getVisitorSessionId(),
+                    page_path: location.pathname || '/',
+                    referrer: document.referrer || null,
+                    source: traffic.source,
+                    medium: traffic.medium,
+                    campaign: traffic.campaign,
+                    device_type: getDeviceType(),
+                    user_agent: navigator.userAgent || null
+                };
+                const { error: eventError } = await _supabase.from('visitor_events').insert([eventPayload]);
+                if (!eventError) sessionStorage.setItem('elforat_visitor_event_tracked', 'true');
+            }
+
+            const { data, error } = await _supabase.from('visitors').select('id,count').limit(1).maybeSingle();
+            if (error) throw error;
+            if (data) {
+                await _supabase.from('visitors').update({ count: (Number(data.count) || 0) + 1 }).eq('id', data.id);
+            } else {
+                await _supabase.from('visitors').insert([{ count: 1 }]);
+            }
+        } catch (e) {
+            console.warn('visitor tracking skipped:', e.message || e);
+        }
+    }
+
     trackVisitor();
     applyStoreBranding();
 

@@ -5,8 +5,39 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>متجر الفُرات فارما الإلكتروني | ELFORAT PHARMA STORE</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="متجر الفرات فارما الرسمي لمستحضرات التجميل والعناية بالبشرة والشعر - منتجات طبيعية وطبية أصلية، شحن سريع لجميع المحافظات، ودفع آمن عند الاستلام أو أونلاين.">
+    <meta name="keywords" content="الفرات فارما, عناية بالبشرة, عناية بالشعر, مستحضرات تجميل, منتجات طبيعية, سيروم, كريمات ترطيب">
+    <meta name="author" content="Elforat Pharma">
+    <link rel="canonical" href="https://elforatpharma.github.io/store/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ar_EG">
+    <meta property="og:site_name" content="الفرات فارما">
+    <meta property="og:title" content="متجر الفُرات فارما الإلكتروني | العناية بالبشرة والشعر">
+    <meta property="og:description" content="منتجات طبيعية وطبية أصلية للعناية بالبشرة والشعر، شحن سريع لجميع المحافظات ودفع آمن.">
+    <meta property="og:image" content="https://elforatpharma.github.io/store/hero-products.jpg">
+    <meta property="og:url" content="https://elforatpharma.github.io/store/">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="متجر الفُرات فارما الإلكتروني">
+    <meta name="twitter:description" content="منتجات طبيعية وطبية أصلية للعناية بالبشرة والشعر، شحن سريع لجميع المحافظات ودفع آمن.">
+    <meta name="twitter:image" content="https://elforatpharma.github.io/store/hero-products.jpg">
+
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="stylesheet" href="style.css">
+
+    <!-- PWA & Mobile Meta -->
+    <meta name="theme-color" content="#3312d5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="الفرات فارما">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="manifest" href="manifest.json">
+
     
     <!-- Google Fonts: Cairo & Tajawal -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
@@ -16,7 +47,7 @@
     <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     
     <script>
@@ -126,7 +157,7 @@
 <div class="bg-gradient-to-r from-[#3312D5] via-[#4D3CEB] to-[#8536FF] text-white py-2 px-4 text-xs font-medium shadow-md">
 <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
 <!-- Live dynamic announcement badge -->
-<div class="flex items-center gap-2.5 overflow-hidden">
+<div id="offer-badges-wrap" class="flex items-center gap-2.5 overflow-hidden">
 <span class="badge-shimmer text-white px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase shadow-sm flex items-center gap-1.5">
 <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
         عرض حصري ومحدود 🔥
@@ -139,13 +170,13 @@
 </div>
 <!-- Contact & Quick stats -->
 <div class="flex items-center gap-4 text-xs text-white/95">
-<div class="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-2.5 py-0.5 rounded-full">
+<div id="offer-countdown-wrap" class="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-2.5 py-0.5 rounded-full">
 <span class="text-[10px] text-purple-200">ينتهي العرض خلال:</span>
 <span class="font-mono font-bold text-amber-300"><span id="hours">23</span>:<span id="minutes">59</span>:<span id="seconds">49</span></span>
 </div>
 <a class="flex items-center gap-1.5 hover:text-amber-300 transition-colors bg-emerald-500/30 hover:bg-emerald-500/50 px-2.5 py-0.5 rounded-full" href="https://wa.me/201146809133" target="_blank">
 <i class="fa-brands fa-whatsapp text-emerald-300 text-xs"></i>
-<span class="font-mono text-xs">+20 114 680 9133</span>
+<span class="font-mono text-xs" dir="ltr">+20 114 680 9133</span>
 </a>
 <span class="hidden md:inline text-white/30">|</span>
 <span class="hidden md:flex items-center gap-1.5"><i class="fa-solid fa-truck-fast text-purple-200"></i> شحن سريع لجميع المحافظات</span>
@@ -311,7 +342,7 @@
 </div>
 <div class="flex flex-col border-r border-slate-200 pr-4">
 <span class="text-2xl font-black text-darkNavy font-display flex items-center gap-1">
-              +15,000
+              +2,000
               <i class="fa-solid fa-heart text-rose-500 text-sm"></i>
 </span>
 <span class="text-xs text-slate-500 font-bold mt-0.5">عميلة تثق بمنتجاتنا</span>
@@ -325,7 +356,7 @@
 <!-- Main Showcase Card -->
 <div class="relative rounded-3xl p-1.5 shadow-2xl bg-white/40 backdrop-blur-md border border-white/60">
 <div class="aspect-square max-h-[520px] rounded-2xl overflow-hidden relative group flex items-center justify-center shadow-inner bg-slate-100">
-<img alt="منتجات العناية بالبشرة والجمال الفرات فارما" class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" src="hero-products.jpg">
+<img alt="منتجات العناية بالبشرة والجمال الفرات فارما" class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" src="hero-products.webp">
 <div class="absolute inset-0 bg-gradient-to-t from-darkNavy/25 via-transparent to-transparent pointer-events-none"></div>
 </div>
 <div class="absolute -bottom-3 -right-3 text-white z-10">
@@ -373,7 +404,7 @@
 <h3 class="text-xl font-black text-darkNavy group-hover:text-primary transition-colors mb-1.5 font-display">العناية بالشعر</h3>
 <p class="text-xs text-slate-500 max-w-xs">زيوت طبيعية وشامبو مقوي لتعزيز نمو وكثافة الشعر</p>
 <div class="mt-5 px-4 py-1.5 rounded-full bg-purple-50 group-hover:bg-primary group-hover:text-white text-primary text-xs font-bold flex items-center gap-1.5 transition-all duration-300">
-<span class="">استكشفي 4 منتجات</span>
+<span class="" data-category-count="العناية بالشعر">استكشفي 4 منتجات</span>
 <i class="fa-solid fa-arrow-left text-[11px] group-hover:-translate-x-1 transition-transform"></i>
 </div>
 </a>
@@ -388,7 +419,7 @@
 <h3 class="text-xl font-black text-darkNavy group-hover:text-secondary transition-colors mb-1.5 font-display">العناية بالبشرة والوجه</h3>
 <p class="text-xs text-slate-500 max-w-xs">سيرومات وكريمات ترطيب وحماية ونضارة لبشرة ناعمة وصحية</p>
 <div class="mt-5 px-4 py-1.5 rounded-full bg-purple-50 group-hover:bg-secondary group-hover:text-white text-secondary text-xs font-bold flex items-center gap-1.5 transition-all duration-300">
-<span class="">استكشفي 8 منتجات</span>
+<span class="" data-category-count="العناية بالبشرة">استكشفي 8 منتجات</span>
 <i class="fa-solid fa-arrow-left text-[11px] group-hover:-translate-x-1 transition-transform"></i>
 </div>
 </a>
@@ -411,6 +442,7 @@
 </div>
 </section>
 
+
 <section id="catalog" class="max-w-7xl mx-auto px-4 md:px-8 py-20 border-t border-purple-100">
                 <div class="mb-6 text-right">
                     <span class="text-xs font-black text-primary uppercase tracking-widest">المنتجات المعتمدة 100%</span>
@@ -425,7 +457,312 @@
                 </div>
                 <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 text-right">
                     </div>
+
+                <!-- قسم المجموعات المتكاملة -->
+                <div id="bundles-section" class="mt-16 pt-12 border-t-2 border-purple-100" style="display:none;">
+                    <div class="mb-8 text-right">
+                        <span class="text-xs font-black text-primary uppercase tracking-widest">عروض حصرية 🔥</span>
+                        <h2 class="text-3xl font-black tracking-tight text-darkNavy font-display mt-1">المجموعات المتكاملة</h2>
+                        <p class="text-gray-500 text-sm mt-2">وفّري أكتر مع مجموعاتنا المتكاملة المختارة بعناية</p>
+                    </div>
+                    <div id="bundles-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 text-right">
+                    </div>
+                </div>
             </section>
+
+<!-- Customer Testimonials Section (Real messages from clients) -->
+<section id="testimonials" class="py-16 relative overflow-hidden">
+<div class="absolute top-10 left-1/4 w-72 h-72 bg-secondary/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="max-w-md mx-auto mb-10 text-center">
+<span class="text-xs font-black text-primary uppercase tracking-widest bg-purple-50 px-3 py-1 rounded-full border border-purple-100">
+        ثقة عملائنا
+      </span>
+<h2 class="text-2xl sm:text-3xl font-black font-display text-darkNavy mt-2">آراء عملائنا</h2>
+<p class="text-xs sm:text-sm text-slate-500 mt-1.5">رسايل حقيقية وصلتنا من عميلاتنا بعد تجربة منتجات الفرات فارما</p>
+<div class="w-16 h-1 bg-gradient-to-r from-primary to-secondary mx-auto mt-3 rounded-full"></div>
+</div>
+
+<div class="testimonials-marquee-wrapper overflow-hidden" dir="ltr">
+<div class="testimonials-track flex gap-6 w-max" dir="ltr">
+
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
+<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed flex-1">
+                    "حلو أوي بجد، بينظف البشرة من أي دهون من غير ما يجففها، بيخلي البشرة منورة. تسلم إيدكم."
+                </p>
+<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
+<div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">ع</div>
+<div>
+<div class="text-xs font-black text-darkNavy">عميلة</div>
+<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
+</div>
+</div>
+</div>
+
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
+<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed flex-1">
+                    "هو حقيقي خطير، أنا جربت واحد وأختي جربت واحد، واللي باعته لمرات أخويا كمان هيجيبه لصاحبتها إن شاء الله."
+                </p>
+<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
+<div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">ع</div>
+<div>
+<div class="text-xs font-black text-darkNavy">عميلة</div>
+<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
+</div>
+</div>
+</div>
+
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
+<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed flex-1">
+                    "السيروم كويس ومختلف فعلاً عن أي سيروم استخدمته قبل كده، ملمسه ناعم جميل ومبيلزقش زي الباقي، وبيطري الشعر ورائحته جميلة."
+                </p>
+<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
+<div class="w-9 h-9 rounded-full bg-purple-50 text-secondary flex items-center justify-center font-black text-sm">A</div>
+<div>
+<div class="text-xs font-black text-darkNavy">Amany</div>
+<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
+</div>
+</div>
+</div>
+
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
+<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed flex-1">
+                    "أنا من دوقات النهاردة، والله أنا مبسوطة جداً إن المنتج عجبك واستفدتي منه فرق كبير. ربنا يبارك فيكم ويحفظكم."
+                </p>
+<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
+<div class="w-9 h-9 rounded-full bg-purple-50 text-secondary flex items-center justify-center font-black text-sm">ع</div>
+<div>
+<div class="text-xs font-black text-darkNavy">عميلة</div>
+<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
+</div>
+</div>
+</div>
+
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
+<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed flex-1">
+                    "عايزة أشكرك على آخر منتجين خدتهم، لوشن جلد الوزة جميل جداً ويفضل مرطب الجسم فترة طويلة، وفعلاً جلد الوزة بدأ يقل عندي الحمدلله. بصراحة جربت منتجات كتير فيها يوريا بس ده عجبني أكتر، كمية قليلة منه بترطب جزء كبير."
+                </p>
+<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
+<div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">أ</div>
+<div>
+<div class="text-xs font-black text-darkNavy">Alaa Ashraf</div>
+<div class="text-[10px] text-slate-400">رسالة فيسبوك موثقة</div>
+</div>
+</div>
+</div>
+
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
+<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed flex-1">
+                    "الكريمات جميلة، خصوصاً إنها تقيلة وأنا بشرتي جافة، بترطب كويس أوي. السيروم كويس برضه من التجربة."
+                </p>
+<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
+<div class="w-9 h-9 rounded-full bg-purple-50 text-secondary flex items-center justify-center font-black text-sm">أ</div>
+<div>
+<div class="text-xs font-black text-darkNavy">أسماء عبدالله</div>
+<div class="text-[10px] text-slate-400">رسالة فيسبوك موثقة</div>
+</div>
+</div>
+</div>
+
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
+<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed flex-1">
+                    "الغسول ماشاء الله حلو خالص، بينظف الوش ويخليه في نضارة كده."
+                </p>
+<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
+<div class="w-9 h-9 rounded-full bg-purple-50 text-secondary flex items-center justify-center font-black text-sm">م</div>
+<div>
+<div class="text-xs font-black text-darkNavy">Mai Mahrous</div>
+<div class="text-[10px] text-slate-400">رسالة فيسبوك موثقة</div>
+</div>
+</div>
+</div>
+
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
+<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed flex-1">
+                    "بالنسبة لكريم الهالات، ماشاء الله لاحظت إن فيه تفتيح بسيط تحت العين، ودي حاجة كويسة جداً في أول أيام. ربنا يحسنلك، ويديكي العافية."
+                </p>
+<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
+<div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">أ</div>
+<div>
+<div class="text-xs font-black text-darkNavy">الأميرة جودي</div>
+<div class="text-[10px] text-slate-400">رسالة فيسبوك موثقة</div>
+</div>
+</div>
+</div>
+
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
+<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed flex-1">
+                    "حلو أوي بجد، بينظف البشرة من أي دهون من غير ما يجففها، بيخلي البشرة منورة. تسلم إيدكم."
+                </p>
+<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
+<div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">ع</div>
+<div>
+<div class="text-xs font-black text-darkNavy">عميلة</div>
+<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
+</div>
+</div>
+</div>
+
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
+<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed flex-1">
+                    "هو حقيقي خطير، أنا جربت واحد وأختي جربت واحد، واللي باعته لمرات أخويا كمان هيجيبه لصاحبتها إن شاء الله."
+                </p>
+<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
+<div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">ع</div>
+<div>
+<div class="text-xs font-black text-darkNavy">عميلة</div>
+<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
+</div>
+</div>
+</div>
+
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
+<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed flex-1">
+                    "السيروم كويس ومختلف فعلاً عن أي سيروم استخدمته قبل كده، ملمسه ناعم جميل ومبيلزقش زي الباقي، وبيطري الشعر ورائحته جميلة."
+                </p>
+<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
+<div class="w-9 h-9 rounded-full bg-purple-50 text-secondary flex items-center justify-center font-black text-sm">A</div>
+<div>
+<div class="text-xs font-black text-darkNavy">Amany</div>
+<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
+</div>
+</div>
+</div>
+
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
+<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed flex-1">
+                    "أنا من دوقات النهاردة، والله أنا مبسوطة جداً إن المنتج عجبك واستفدتي منه فرق كبير. ربنا يبارك فيكم ويحفظكم."
+                </p>
+<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
+<div class="w-9 h-9 rounded-full bg-purple-50 text-secondary flex items-center justify-center font-black text-sm">ع</div>
+<div>
+<div class="text-xs font-black text-darkNavy">عميلة</div>
+<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
+</div>
+</div>
+</div>
+
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
+<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed flex-1">
+                    "عايزة أشكرك على آخر منتجين خدتهم، لوشن جلد الوزة جميل جداً ويفضل مرطب الجسم فترة طويلة، وفعلاً جلد الوزة بدأ يقل عندي الحمدلله. بصراحة جربت منتجات كتير فيها يوريا بس ده عجبني أكتر، كمية قليلة منه بترطب جزء كبير."
+                </p>
+<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
+<div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">أ</div>
+<div>
+<div class="text-xs font-black text-darkNavy">Alaa Ashraf</div>
+<div class="text-[10px] text-slate-400">رسالة فيسبوك موثقة</div>
+</div>
+</div>
+</div>
+
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
+<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed flex-1">
+                    "الكريمات جميلة، خصوصاً إنها تقيلة وأنا بشرتي جافة، بترطب كويس أوي. السيروم كويس برضه من التجربة."
+                </p>
+<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
+<div class="w-9 h-9 rounded-full bg-purple-50 text-secondary flex items-center justify-center font-black text-sm">أ</div>
+<div>
+<div class="text-xs font-black text-darkNavy">أسماء عبدالله</div>
+<div class="text-[10px] text-slate-400">رسالة فيسبوك موثقة</div>
+</div>
+</div>
+</div>
+
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
+<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed flex-1">
+                    "الغسول ماشاء الله حلو خالص، بينظف الوش ويخليه في نضارة كده."
+                </p>
+<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
+<div class="w-9 h-9 rounded-full bg-purple-50 text-secondary flex items-center justify-center font-black text-sm">م</div>
+<div>
+<div class="text-xs font-black text-darkNavy">Mai Mahrous</div>
+<div class="text-[10px] text-slate-400">رسالة فيسبوك موثقة</div>
+</div>
+</div>
+</div>
+
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
+<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed flex-1">
+                    "بالنسبة لكريم الهالات، ماشاء الله لاحظت إن فيه تفتيح بسيط تحت العين، ودي حاجة كويسة جداً في أول أيام. ربنا يحسنلك، ويديكي العافية."
+                </p>
+<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
+<div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">أ</div>
+<div>
+<div class="text-xs font-black text-darkNavy">الأميرة جودي</div>
+<div class="text-[10px] text-slate-400">رسالة فيسبوك موثقة</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+</section>
 
             <!-- Payment & Shipping Promo Banner -->
             <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -443,10 +780,10 @@
                                 <span class="flex items-center gap-2 bg-white/15 px-3.5 py-2 rounded-full text-xs font-bold"><i class="fa-solid fa-mobile-screen text-amber-200"></i> إنستاباي InstaPay</span>
                                 <span class="flex items-center gap-2 bg-white/15 px-3.5 py-2 rounded-full text-xs font-bold"><i class="fa-solid fa-money-bill-wave text-amber-200"></i> فودافون كاش</span>
                                 <span class="flex items-center gap-2 bg-white/15 px-3.5 py-2 rounded-full text-xs font-bold"><i class="fa-solid fa-hand-holding-dollar text-amber-200"></i> الدفع عند الاستلام</span>
-                                <a href="https://wa.me/201146809133" target="_blank" class="lg:mr-auto flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 transition-colors px-5 py-2.5 rounded-full text-xs font-black shadow-lg">
-                                    <i class="fa-brands fa-whatsapp text-base"></i> اطلبي الآن عبر واتساب: 01146809133
-                                </a>
                             </div>
+                            <a href="https://wa.me/201146809133" target="_blank" class="mt-4 inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 transition-colors px-5 py-2.5 rounded-full text-xs font-black shadow-lg w-fit">
+                                <i class="fa-brands fa-whatsapp text-base"></i> اطلبي الآن عبر واتساب: 01146809133
+                            </a>
                         </div>
                         <!-- Coupon Card -->
                         <div class="lg:col-span-4">
@@ -479,7 +816,7 @@
                     <div class="flex items-center gap-3 bg-white border border-purple-100 rounded-2xl p-4 shadow-purple-soft">
                         <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-primary to-secondary text-white flex items-center justify-center text-base shrink-0"><i class="fa-solid fa-shield-heart"></i></div>
                         <div>
-                            <div class="text-xs font-black text-darkNavy">جودة مضمونة +15,000</div>
+                            <div class="text-xs font-black text-darkNavy">جودة مضمونة +2,000</div>
                             <div class="text-[10px] text-slate-500 font-semibold">منتجات اختارتها آلاف العميلات</div>
                         </div>
                     </div>
@@ -527,22 +864,39 @@
             <h1 class="text-3xl font-black font-display text-darkNavy mb-8">حقيبة التسوق</h1>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div id="cart-items-container" class="lg:col-span-2 space-y-4"></div>
-                <aside class="p-6 bg-white border border-purple-100 shadow-purple-soft rounded-2xl h-fit">
-                    <h2 class="font-black text-darkNavy mb-6 border-b border-purple-100 pb-4">ملخص الطلب</h2>
-                    <div id="cart-summary-totals" class="mb-6 space-y-2 text-slate-600"></div>
+                <aside class="lg:sticky lg:top-24 h-fit rounded-3xl bg-white shadow-purple-card border border-purple-100/80 overflow-hidden">
+                    <!-- Summary Header -->
+                    <div class="relative px-6 py-5 bg-gradient-to-l from-primary to-secondary text-white overflow-hidden">
+                        <div class="absolute -top-8 -left-8 w-28 h-28 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                        <div class="relative flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-receipt text-base"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-black text-base">ملخص الطلب</h2>
+                                <p id="cart-summary-count" class="text-[11px] text-white/80 font-bold"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                    <div id="cart-summary-totals" class="mb-5 space-y-3"></div>
 
                     <!-- كود الخصم (كوبون) -->
-                    <div class="mb-6 pb-6 border-b border-purple-100">
+                    <div class="mb-6 pb-6 border-b border-dashed border-purple-100">
                         <div id="coupon-input-wrap" class="flex gap-2">
-                            <input type="text" id="coupon-code-input" placeholder="لديكِ كود خصم؟" dir="ltr"
-                                class="flex-1 p-3 border border-slate-200 rounded-2xl text-center font-bold uppercase focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
+                            <div class="relative flex-1">
+                                <i class="fa-solid fa-tag absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 text-xs"></i>
+                                <input type="text" id="coupon-code-input" placeholder="لديكِ كود خصم؟" dir="ltr"
+                                    class="w-full pr-10 pl-3 py-3 border border-slate-200 rounded-2xl text-center font-bold uppercase focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all bg-slate-50/60">
+                            </div>
                             <button type="button" id="apply-coupon-btn" onclick="app.applyCoupon()"
                                 class="px-5 py-3 bg-darkNavy text-white rounded-2xl font-bold text-sm hover:bg-black transition-all whitespace-nowrap">تطبيق</button>
                         </div>
-                        <div id="coupon-applied-wrap" class="hidden items-center justify-between bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-3">
+                        <div id="coupon-applied-wrap" class="hidden items-center justify-between bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-3 mt-3">
                             <span class="text-sm font-bold text-emerald-700 flex items-center gap-2">
-                                <i class="fa-solid fa-tag"></i>
-                                كود <span data-coupon-code class="font-mono" dir="ltr"></span> مُفعّل ✅
+                                <i class="fa-solid fa-circle-check"></i>
+                                كود <span data-coupon-code class="font-mono" dir="ltr"></span> مُفعّل
                             </span>
                             <button type="button" onclick="app.removeCoupon()" class="text-xs font-bold text-red-500 hover:underline">إزالة</button>
                         </div>
@@ -550,6 +904,12 @@
                     </div>
 
                     <form id="checkout-form" class="space-y-4">
+
+                        <!-- Honeypot Field for Bot/Spam Protection (Hidden from real users) -->
+                        <div style="display:none !important; opacity:0; position:absolute; left:-9999px; width:0; height:0;" aria-hidden="true">
+                            <input type="text" id="cust-fax-verify" name="cust_fax_verify" tabindex="-1" autocomplete="off" value="">
+                        </div>
+
                         <input type="text" id="cust-name" placeholder="الاسم" required class="w-full p-3 border border-slate-200 rounded-2xl text-right focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
                         <input type="tel" id="cust-phone" placeholder="رقم الهاتف" required class="w-full p-3 border border-slate-200 rounded-2xl text-right focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all" dir="ltr">
                         <textarea id="cust-address" placeholder="العنوان بالتفصيل" required class="w-full p-3 border border-slate-200 rounded-2xl text-right h-24 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"></textarea>
@@ -563,6 +923,12 @@
                         <p id="paymob-hint" class="hidden text-[11px] text-slate-500 leading-relaxed bg-purple-50 border border-purple-100 rounded-xl px-3 py-2">🔒 الدفع بالبطاقة يتم عبر بوابة Paymob الآمنة (تشفير كامل + 3D Secure) — سيتم تحويلك لصفحة الدفع لإتمام الطلب.</p>
                         <button type="submit" class="w-full py-4 bg-gradient-to-r from-primary to-secondary text-white rounded-full font-black shadow-purple-glow hover:shadow-lg hover:brightness-110 transition-all active:scale-95">تأكيد الطلب</button>
                     </form>
+
+                    <p class="flex items-center justify-center gap-2 text-[11px] text-slate-400 font-bold mt-4">
+                        <i class="fa-solid fa-lock text-emerald-500"></i>
+                        بياناتك ومعاملاتك محمية بالكامل
+                    </p>
+                    </div>
                 </aside>
             </div>
         </div>
@@ -604,7 +970,9 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-8 text-right">
           <div class="flex flex-col items-start space-y-4 md:order-3">
             <div class="flex items-center gap-3">
-              <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/logo.png" alt="Elforat Pharma Logo" class="h-12 w-auto object-contain" loading="lazy">
+              <div class="bg-white rounded-xl p-1.5 flex items-center justify-center shrink-0">
+                <img src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/logo.png" alt="Elforat Pharma Logo" class="h-9 w-auto object-contain" loading="lazy">
+              </div>
               <div class="flex items-baseline gap-1">
                 <span class="text-2xl font-black font-display text-[#eef0ff]">الفُرات <span class="text-gradient">فارما</span></span>
               </div>
@@ -655,8 +1023,8 @@
         <div class="border-t border-white/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-[#8a89a0]">
           <p>© 2026 Elforat Pharma. جميع الحقوق محفوظة.</p>
           <div class="flex gap-6">
-            <a href="#" class="hover:text-[#c4c0ff] transition-colors">سياسة الخصوصية</a>
-            <a href="#" class="hover:text-[#c4c0ff] transition-colors">الشروط والأحكام</a>
+            <a href="javascript:void(0)" onclick="openPrivacyModal('privacy')" class="hover:text-[#c4c0ff] transition-colors font-medium cursor-pointer">سياسة الخصوصية</a>
+            <a href="javascript:void(0)" onclick="openPrivacyModal('terms')" class="hover:text-[#c4c0ff] transition-colors font-medium cursor-pointer">الشروط والأحكام</a>
           </div>
         </div>
         </div>
@@ -762,6 +1130,288 @@
                     hint.classList.toggle('hidden', sel.value !== 'paymob-card');
                 });
             }
+        });
+    </script>
+
+
+    <!-- PWA Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('PWA Service Worker registered:', reg.scope))
+            .catch(err => console.warn('PWA Service Worker registration failed:', err));
+        });
+      }
+    </script>
+
+    <!-- ======================================================== -->
+    <!-- 🍪 Cookie Consent Banner (إشعار ملفات تعريف الارتباط) -->
+    <!-- ======================================================== -->
+    <div id="cookie-consent-banner" class="fixed bottom-4 right-4 left-4 md:left-auto md:max-w-md z-50 transform translate-y-24 opacity-0 pointer-events-none transition-all duration-500 ease-out" dir="rtl">
+        <div class="bg-white/95 backdrop-blur-md rounded-3xl p-5 shadow-2xl border border-primary/20 text-right">
+            <div class="flex items-start gap-3.5">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center shrink-0 shadow-md">
+                    <i class="fa-solid fa-cookie-bite text-xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-black text-slate-900 text-sm font-display mb-1 flex items-center gap-1.5">
+                        ملفات تعريف الارتباط (Cookies)
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    </h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        نستخدم ملفات الارتباط لتحسين تجربة التسوق وحفظ محتويات سلة مشترياتك وتقديم خدمة سريعة وآمنة.
+                        تصفحك للمتجر يعني موافقتك على 
+                        <a href="javascript:void(0)" onclick="openPrivacyModal('privacy')" class="text-primary font-bold underline hover:text-secondary">سياسة الخصوصية</a>.
+                    </p>
+                </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2 justify-end">
+                <button onclick="acceptCookies('necessary')" class="px-3.5 py-2 rounded-full text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                    الضرورية فقط
+                </button>
+                <button onclick="acceptCookies('all')" class="px-5 py-2 rounded-full text-xs font-black text-white bg-gradient-to-r from-primary to-secondary hover:brightness-110 shadow-purple-glow transition-all active:scale-95">
+                    موافق على الكل ✅
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- 📄 Privacy Policy & Terms Modal (نافذة سياسة الخصوصية) -->
+    <!-- ======================================================== -->
+    <div id="privacy-policy-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0 pointer-events-none" dir="rtl">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] shadow-2xl flex flex-col overflow-hidden border border-slate-100 transform scale-95 transition-transform duration-300">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                        <i class="fa-solid fa-shield-halved text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 id="privacy-modal-title" class="font-black text-slate-900 text-base font-display">سياسة الخصوصية وحماية البيانات</h3>
+                        <p class="text-[11px] text-slate-500">متجر الفرات فارما | Elforat Pharma Store</p>
+                    </div>
+                </div>
+                <button onclick="closePrivacyModal()" class="w-9 h-9 rounded-full bg-slate-200/70 hover:bg-slate-300 text-slate-700 flex items-center justify-center transition-colors text-sm font-bold" title="إغلاق">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="flex border-b border-slate-100 px-6 pt-2 bg-slate-50/50">
+                <button id="tab-privacy-btn" onclick="switchPrivacyTab('privacy')" class="px-4 py-2.5 text-xs font-black border-b-2 border-primary text-primary transition-all">
+                    🔒 سياسة الخصوصية
+                </button>
+                <button id="tab-terms-btn" onclick="switchPrivacyTab('terms')" class="px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-all">
+                    📜 الشروط والأحكام وسياسة الاسترجاع
+                </button>
+            </div>
+
+            <!-- Modal Content (Scrollable) -->
+            <div class="p-6 overflow-y-auto space-y-6 text-sm text-slate-700 leading-relaxed text-right flex-1">
+                <!-- Privacy Section -->
+                <div id="section-privacy" class="space-y-4">
+                    <div class="bg-primary/5 p-4 rounded-2xl border border-primary/15">
+                        <p class="font-bold text-primary text-xs">
+                            نحن في <b>الفرات فارما</b> نضع خصوصية وأمان بياناتك في قمة أولوياتنا. توضح هذه السياسة كيف نجمع ونستخدم ونحمي بياناتك الشخصية عند زيارة متجرنا.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-black text-slate-900 text-sm mb-1.5 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-primary"></span> 1. البيانات التي نجمعها
+                        </h4>
+                        <p class="text-xs text-slate-600">
+                            نجمع فقط البيانات الضرورية لتجهيز وتوصيل طلباتكم:
+                        </p>
+                        <ul class="list-disc list-inside text-xs text-slate-600 mt-1 space-y-1 pr-2">
+                            <li><b>بيانات التواصل والتوصيل:</b> الاسم، رقم الهاتف، وعنوان الشحن بالتفصيل.</li>
+                            <li><b>بيانات الطلب:</b> المنتجات المختارة، إجمالي الحساب، وطريقة الدفع المفضلة.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 class="font-black text-slate-900 text-sm mb-1.5 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-primary"></span> 2. ملفات تعريف الارتباط (Cookies)
+                        </h4>
+                        <p class="text-xs text-slate-600">
+                            نستخدم ملفات الارتباط والتخزين المحلي (<code class="bg-slate-100 px-1 py-0.5 rounded text-[11px]">localStorage</code>) للأغراض الآتية فقط:
+                        </p>
+                        <ul class="list-disc list-inside text-xs text-slate-600 mt-1 space-y-1 pr-2">
+                            <li>الاحتفاظ بمحتويات سلة مشترياتك وقائمة المنتجات المفضلة حتى بعد إغلاق المتصفح.</li>
+                            <li>تذكر كود الكوبون المطبق وتفضيلات العرض لتسهيل زيارتك القادمة.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 class="font-black text-slate-900 text-sm mb-1.5 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-primary"></span> 3. أمان المعاملات المالية والدفع
+                        </h4>
+                        <p class="text-xs text-slate-600">
+                            عند اختيار الدفع بالبطاقة، يتم الدفع عبر بوابة <b>Paymob</b> المعتمدة بتشفير كامل (3D Secure). 
+                            <b>نحن لا نرى ولا نخزن أي أرقام بطاقات أو رموز سرية</b> على خوادمنا نهائياً.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-black text-slate-900 text-sm mb-1.5 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-primary"></span> 4. عدم مشاركة البيانات مع أطراف خارجية
+                        </h4>
+                        <p class="text-xs text-slate-600">
+                            نلتزم بعدم بيع أو تأجير أو مشاركة بياناتك الشخصية مع أي طرف لأغراض دعائية. تُشارك بيانات الاسم والهاتف والعنوان فقط مع مندوب التوصيل لإيصال طلبك.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-black text-slate-900 text-sm mb-1.5 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-primary"></span> 5. حقوقك وحذف البيانات
+                        </h4>
+                        <p class="text-xs text-slate-600">
+                            يحق لك في أي وقت طلب مراجعة أو تعديل أو حذف بياناتك المسجلة لدينا عبر التواصل مباشرة مع خدمة العملاء.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Terms Section (Hidden by default) -->
+                <div id="section-terms" class="space-y-4 hidden">
+                    <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200">
+                        <p class="font-bold text-amber-800 text-xs">
+                            تخضع جميع الطلبات والمعاملات في متجر الفرات فارما لأحكام التجارة الإلكترونية وقانون حماية المستهلك المصري.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-black text-slate-900 text-sm mb-1.5 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-amber-600"></span> 1. سياسة الاستبدال والاسترجاع
+                        </h4>
+                        <ul class="list-disc list-inside text-xs text-slate-600 space-y-1.5 pr-2">
+                            <li>يحق للعميل استبدال أو إرجاع المنتج خلال <b>14 يوماً</b> من تاريخ الاستلام.</li>
+                            <li>يشترط أن يكون المنتج بحالته الأصلية، غير مستخدم، وبغلافه ومختومه الطبي السليم حفاظاً على الصحة العامة.</li>
+                            <li>في حال وجود تلف أو خطأ في الصنف المستلم، تتحمل الفرات فارما مصاريف الشحن بالكامل ويتم استبدال المنتج فوراً.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 class="font-black text-slate-900 text-sm mb-1.5 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-amber-600"></span> 2. الشحن والتوصيل
+                        </h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            يتم شحن وتوصيل الطلبات خلال 24 إلى 48 ساعة داخل القاهرة والجيزة، وخلال 2 إلى 4 أيام لباقي المحافظات، مع إمكانية معاينة الطرد والتأكد من المنتجات عند الاستلام.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-black text-slate-900 text-sm mb-1.5 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-amber-600"></span> 3. الأسعار والعروض
+                        </h4>
+                        <p class="text-xs text-slate-600">
+                            الأسعار المعلنة بالجنيه المصري وشاملة للضريبة. الهدايا المرفقة مع العروض سارية حتى نفاد الكمية المخصصة للعرض.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                <a href="https://wa.me/201146809133" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-bold text-[#075E54] hover:underline">
+                    <i class="fa-brands fa-whatsapp text-sm text-[#25D366]"></i>
+                    للاستفسارات: 01146809133
+                </a>
+                <button onclick="closePrivacyModal()" class="px-6 py-2 rounded-full text-xs font-black text-white bg-slate-900 hover:bg-primary transition-colors">
+                    فهمت ذلك
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script for Cookie Banner and Privacy Modal -->
+    <script>
+        // Cookie Consent Logic
+        function initCookieConsent() {
+            const consent = localStorage.getItem('elforat_cookie_consent');
+            if (!consent) {
+                setTimeout(() => {
+                    const banner = document.getElementById('cookie-consent-banner');
+                    if (banner) {
+                        banner.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+                    }
+                }, 800);
+            }
+        }
+
+        function acceptCookies(type) {
+            localStorage.setItem('elforat_cookie_consent', type || 'all');
+            const banner = document.getElementById('cookie-consent-banner');
+            if (banner) {
+                banner.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+            }
+        }
+
+        // Privacy Modal Logic
+        function openPrivacyModal(tab) {
+            const modal = document.getElementById('privacy-policy-modal');
+            const modalContent = modal?.firstElementChild;
+            if (modal) {
+                modal.classList.remove('hidden', 'pointer-events-none');
+                requestAnimationFrame(() => {
+                    modal.classList.remove('opacity-0');
+                    if (modalContent) modalContent.classList.remove('scale-95');
+                });
+                switchPrivacyTab(tab || 'privacy');
+            }
+        }
+
+        function closePrivacyModal() {
+            const modal = document.getElementById('privacy-policy-modal');
+            const modalContent = modal?.firstElementChild;
+            if (modal) {
+                modal.classList.add('opacity-0');
+                if (modalContent) modalContent.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden', 'pointer-events-none');
+                }, 300);
+            }
+        }
+
+        function switchPrivacyTab(tab) {
+            const secPriv = document.getElementById('section-privacy');
+            const secTerms = document.getElementById('section-terms');
+            const btnPriv = document.getElementById('tab-privacy-btn');
+            const btnTerms = document.getElementById('tab-terms-btn');
+            const title = document.getElementById('privacy-modal-title');
+
+            if (tab === 'terms') {
+                secPriv?.classList.add('hidden');
+                secTerms?.classList.remove('hidden');
+                btnPriv?.classList.remove('border-primary', 'text-primary');
+                btnPriv?.classList.add('border-transparent', 'text-slate-500');
+                btnTerms?.classList.add('border-primary', 'text-primary');
+                btnTerms?.classList.remove('border-transparent', 'text-slate-500');
+                if (title) title.innerText = 'الشروط والأحكام وسياسة الاسترجاع';
+            } else {
+                secTerms?.classList.add('hidden');
+                secPriv?.classList.remove('hidden');
+                btnTerms?.classList.remove('border-primary', 'text-primary');
+                btnTerms?.classList.add('border-transparent', 'text-slate-500');
+                btnPriv?.classList.add('border-primary', 'text-primary');
+                btnPriv?.classList.remove('border-transparent', 'text-slate-500');
+                if (title) title.innerText = 'سياسة الخصوصية وحماية البيانات';
+            }
+        }
+
+        // Close on backdrop click & ESC key
+        document.addEventListener('DOMContentLoaded', () => {
+            initCookieConsent();
+            const modal = document.getElementById('privacy-policy-modal');
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closePrivacyModal();
+                });
+            }
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closePrivacyModal();
+            });
         });
     </script>
 
