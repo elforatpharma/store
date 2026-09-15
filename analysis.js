@@ -372,7 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const today = new Date().toISOString().split('T')[0];
             const { data, error } = await _supabase
                 .from('coupons')
-                .select('code,discount_percentage')
+                .select('code,discount_percentage,min_amount,max_uses,used_count,expiry_date')
                 .eq('code', appliedCoupon.code)
                 .eq('is_active', true)
                 .gte('expiry_date', today)
@@ -381,9 +381,18 @@ document.addEventListener("DOMContentLoaded", () => {
             if (error || !data) {
                 appliedCoupon = null;
                 saveCoupon();
-            } else if (data.discount_percentage !== appliedCoupon.discount_percentage) {
-                appliedCoupon = { code: data.code, discount_percentage: data.discount_percentage };
-                saveCoupon();
+            } else {
+                const subtotal = typeof getCartSubtotal === 'function' ? getCartSubtotal() : 0;
+                const minOk = (data.min_amount == null) || subtotal >= Number(data.min_amount);
+                const usesOk = (data.max_uses == null) || (Number(data.used_count) || 0) < Number(data.max_uses);
+                const pctOk = data.discount_percentage === appliedCoupon.discount_percentage;
+                if (!minOk || !usesOk || !pctOk) {
+                    appliedCoupon = null;
+                    saveCoupon();
+                } else {
+                    appliedCoupon = { code: data.code, discount_percentage: data.discount_percentage };
+                    saveCoupon();
+                }
             }
             renderCart();
         } catch (e) {
@@ -962,7 +971,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const today = new Date().toISOString().split('T')[0];
                 const { data, error } = await _supabase
                     .from('coupons')
-                    .select('code,discount_percentage')
+                    .select('code,discount_percentage,min_amount,max_uses,used_count')
                     .eq('code', code)
                     .eq('is_active', true)
                     .gte('expiry_date', today)
@@ -974,6 +983,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     showMsg('كود الكوبون غير صالح أو منتهي الصلاحية', false);
                     renderCart();
                     return;
+                }
+
+                if (data.max_uses != null && (Number(data.used_count) || 0) >= Number(data.max_uses)) {
+                    showMsg('تم استنفاد استخدامات هذا الكوبون ❌', false);
+                    renderCart();
+                    return;
+                }
+
+                if (data.min_amount != null && Number(data.min_amount) > 0) {
+                    const subtotal = getCartSubtotal();
+                    if (subtotal < Number(data.min_amount)) {
+                        showMsg(`الحد الأدنى للطلب ${Number(data.min_amount)} ج.م لاستخدام هذا الكوبون`, false);
+                        renderCart();
+                        return;
+                    }
                 }
 
                 appliedCoupon = { code: data.code, discount_percentage: data.discount_percentage };
@@ -2106,16 +2130,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     const today = new Date().toISOString().split('T')[0];
                     const { data: dbCoupon } = await _supabase
                         .from('coupons')
-                        .select('code, discount_percentage')
+                        .select('code, discount_percentage, min_amount, max_uses, used_count')
                         .eq('code', String(appliedCoupon.code).trim())
                         .eq('is_active', true)
                         .gte('expiry_date', today)
                         .maybeSingle();
 
                     if (dbCoupon && Number(dbCoupon.discount_percentage) > 0) {
-                        verifiedCouponCode = dbCoupon.code;
-                        const pct = Number(dbCoupon.discount_percentage);
-                        verifiedDiscountAmount = Math.round(((subtotal * pct) / 100) * 100) / 100;
+                        const usesOk = (dbCoupon.max_uses == null) || (Number(dbCoupon.used_count) || 0) < Number(dbCoupon.max_uses);
+                        const minOk = (dbCoupon.min_amount == null) || subtotal >= Number(dbCoupon.min_amount);
+                        if (usesOk && minOk) {
+                            verifiedCouponCode = dbCoupon.code;
+                            const pct = Number(dbCoupon.discount_percentage);
+                            verifiedDiscountAmount = Math.round(((subtotal * pct) / 100) * 100) / 100;
+                        }
                     }
                 } catch (cErr) {
                     console.warn('تعذر التحقق من الكوبون من السيرفر:', cErr);
@@ -2177,6 +2205,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     };
                     const { data: minOrder, error: minError } = await _supabase.from('orders').insert([minimalData]).select('id').single();
                     if (!minError && minOrder) orderData.id = minOrder.id;
+                }
+
+                // زيادة عداد استخدام الكوبون بعد نجاح الطلب
+                if (couponCode) {
+                    _supabase.rpc('increment_coupon_use', { p_code: couponCode })
+                        .then(() => {})
+                        .catch((e) => console.warn('زيادة استخدام الكوبون فشلت:', e));
                 }
 
                 // إرسال إشعار فوري للإدارة عبر بوت تيليجرام
