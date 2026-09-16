@@ -1648,107 +1648,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.productImages = ${JSON.stringify(images)};
                 window.zoomImageIndex = 0;
                 
-                function changeProductImage(newIndex) {
-                    window.currentImageIndex = newIndex;
-                    
-                    const mainImg = document.getElementById('main-product-img');
-                    mainImg.style.opacity = '0';
-                    mainImg.style.transform = 'scale(0.95)';
-                    
-                    setTimeout(() => {
-                        mainImg.src = window.productImages[window.currentImageIndex];
-                        mainImg.style.opacity = '1';
-                        mainImg.style.transform = 'scale(1)';
-                    }, 200);
-                    
-                    // تحديث الثمبنيلز والعداد
-                    const counter = document.getElementById('gallery-current-idx');
-                    if (counter) counter.textContent = window.currentImageIndex + 1;
-                    
-                    document.querySelectorAll('.thumbnail-btn').forEach((btn, idx) => {
-                        if (idx === window.currentImageIndex) {
-                            btn.classList.add('border-primary', 'shadow-purple-soft', 'scale-105');
-                            btn.classList.remove('border-purple-100');
-                        } else {
-                            btn.classList.remove('border-primary', 'shadow-purple-soft', 'scale-105');
-                            btn.classList.add('border-purple-100');
-                        }
-                    });
-                }
-                
-                function openImageZoom(imgSrc) {
-                    const modal = document.getElementById('image-zoom-modal');
-                    const zoomedImg = document.getElementById('zoomed-image');
-                    const counter = document.getElementById('zoom-counter');
-                    
-                    // البحث عن индекс الصورة الحالية
-                    window.zoomImageIndex = window.productImages.indexOf(imgSrc);
-                    if (window.zoomImageIndex === -1) window.zoomImageIndex = 0;
-                    
-                    zoomedImg.src = window.productImages[window.zoomImageIndex];
-                    counter.textContent = (window.zoomImageIndex + 1) + ' / ' + window.productImages.length;
-                    modal.classList.remove('hidden');
-                    modal.classList.add('flex');
-                    document.body.style.overflow = 'hidden';
-                }
-                
-                function closeImageZoom() {
-                    const modal = document.getElementById('image-zoom-modal');
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
-                    document.body.style.overflow = '';
-                }
-                
-                function changeZoomImage(direction) {
-                    const zoomedImg = document.getElementById('zoomed-image');
-                    const counter = document.getElementById('zoom-counter');
-                    
-                    if (direction === -1) {
-                        window.zoomImageIndex = (window.zoomImageIndex - 1 + window.productImages.length) % window.productImages.length;
-                    } else {
-                        window.zoomImageIndex = (window.zoomImageIndex + 1) % window.productImages.length;
-                    }
-                    
-                    zoomedImg.style.opacity = '0';
-                    zoomedImg.style.transform = 'scale(0.95)';
-                    
-                    setTimeout(() => {
-                        zoomedImg.src = window.productImages[window.zoomImageIndex];
-                        zoomedImg.style.opacity = '1';
-                        zoomedImg.style.transform = 'scale(1)';
-                        counter.textContent = (window.zoomImageIndex + 1) + ' / ' + window.productImages.length;
-                    }, 150);
-                }
-                
-                // دعم لوحة المفاتيح للتنقل في المعرض المكبر
-                document.addEventListener('keydown', function(e) {
-                    const modal = document.getElementById('image-zoom-modal');
-                    if (!modal || modal.classList.contains('hidden')) return;
-                    
-                    if (e.key === 'ArrowLeft') changeZoomImage(1);
-                    if (e.key === 'ArrowRight') changeZoomImage(-1);
-                    if (e.key === 'Escape') closeImageZoom();
-                });
-                
-                function switchTab(tabName) {
-                    // إخفاء كل المحتوى
-                    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-                    // إظهار المحتوى المطلوب
-                    document.getElementById('tab-' + tabName).classList.remove('hidden');
-                    
-                    // تحديث حالة الأزرار
-                    document.querySelectorAll('.tab-btn').forEach(btn => {
-                        btn.classList.remove('border-primary', 'text-primary');
-                        btn.classList.add('border-transparent', 'text-gray-500');
-                        btn.setAttribute('aria-selected', 'false');
-                    });
-                    
-                    const activeBtn = document.getElementById('tab-btn-' + tabName);
-                    activeBtn.classList.remove('border-transparent', 'text-gray-500');
-                    activeBtn.classList.add('border-primary', 'text-primary');
-                    activeBtn.setAttribute('aria-selected', 'true');
-                }
-                
                 // تحديث Breadcrumb
                 const breadcrumbCategory = document.getElementById('breadcrumb-category');
                 if (breadcrumbCategory) {
@@ -1757,6 +1656,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 // عرض المنتجات ذات الصلة
                 renderRelatedProducts('${p.id}', '${p.category}');
+                
+                // تفعيل دعم لوحة المفاتيح للمعرض المكبر
+                initProductGalleryKeyboard();
                 
                 // إضافة مستمعي الأحداث لأزرار المفضلة
                 setTimeout(() => {
@@ -1770,6 +1672,127 @@ document.addEventListener("DOMContentLoaded", () => {
                 }, 0);
             <\/script>`;
     }
+
+    // ==========================================
+    // دوال معرض منتج واحدة (Global scope) لتجنب مشاكل السكربتات المضمّنة
+    // ==========================================
+    function changeProductImage(newIndex) {
+        if (!Array.isArray(window.productImages) || window.productImages.length === 0) return;
+        window.currentImageIndex = newIndex;
+
+        const mainImg = document.getElementById('main-product-img');
+        if (!mainImg) return;
+        mainImg.style.opacity = '0';
+        mainImg.style.transform = 'scale(0.95)';
+
+        setTimeout(() => {
+            mainImg.src = window.productImages[window.currentImageIndex];
+            mainImg.style.opacity = '1';
+            mainImg.style.transform = 'scale(1)';
+        }, 200);
+
+        // تحديث الثمبنيلز والعداد
+        const counter = document.getElementById('gallery-current-idx');
+        if (counter) counter.textContent = (window.currentImageIndex % window.productImages.length) + 1;
+
+        document.querySelectorAll('.thumbnail-btn').forEach((btn, idx) => {
+            if (idx === window.currentImageIndex) {
+                btn.classList.add('border-primary', 'shadow-purple-soft', 'scale-105');
+                btn.classList.remove('border-purple-100');
+            } else {
+                btn.classList.remove('border-primary', 'shadow-purple-soft', 'scale-105');
+                btn.classList.add('border-purple-100');
+            }
+        });
+    }
+
+    function openImageZoom(imgSrc) {
+        const modal = document.getElementById('image-zoom-modal');
+        const zoomedImg = document.getElementById('zoomed-image');
+        const counter = document.getElementById('zoom-counter');
+        if (!modal || !zoomedImg || !Array.isArray(window.productImages) || window.productImages.length === 0) return;
+
+        // البحث عن индекс الصورة الحالية
+        window.zoomImageIndex = window.productImages.indexOf(imgSrc);
+        if (window.zoomImageIndex === -1) window.zoomImageIndex = 0;
+
+        zoomedImg.src = window.productImages[window.zoomImageIndex];
+        counter.textContent = (window.zoomImageIndex + 1) + ' / ' + window.productImages.length;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeImageZoom() {
+        const modal = document.getElementById('image-zoom-modal');
+        if (!modal) return;
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = '';
+    }
+
+    function changeZoomImage(direction) {
+        const zoomedImg = document.getElementById('zoomed-image');
+        const counter = document.getElementById('zoom-counter');
+        if (!zoomedImg || !Array.isArray(window.productImages) || window.productImages.length === 0) return;
+
+        if (direction === -1) {
+            window.zoomImageIndex = (window.zoomImageIndex - 1 + window.productImages.length) % window.productImages.length;
+        } else {
+            window.zoomImageIndex = (window.zoomImageIndex + 1) % window.productImages.length;
+        }
+
+        zoomedImg.style.opacity = '0';
+        zoomedImg.style.transform = 'scale(0.95)';
+
+        setTimeout(() => {
+            zoomedImg.src = window.productImages[window.zoomImageIndex];
+            zoomedImg.style.opacity = '1';
+            zoomedImg.style.transform = 'scale(1)';
+            counter.textContent = (window.zoomImageIndex + 1) + ' / ' + window.productImages.length;
+        }, 150);
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.getElementById('tab-' + tabName).classList.remove('hidden');
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('border-primary', 'text-primary');
+            btn.classList.add('border-transparent', 'text-gray-500');
+            btn.setAttribute('aria-selected', 'false');
+        });
+
+        const activeBtn = document.getElementById('tab-btn-' + tabName);
+        if (activeBtn) {
+            activeBtn.classList.remove('border-transparent', 'text-gray-500');
+            activeBtn.classList.add('border-primary', 'text-primary');
+            activeBtn.setAttribute('aria-selected', 'true');
+        }
+    }
+
+    function initProductGalleryKeyboard() {
+        document.removeEventListener('keydown', productGalleryKeyHandler);
+        document.addEventListener('keydown', productGalleryKeyHandler);
+    }
+
+    function productGalleryKeyHandler(e) {
+        const modal = document.getElementById('image-zoom-modal');
+        if (!modal || modal.classList.contains('hidden')) return;
+
+        if (e.key === 'ArrowLeft') changeZoomImage(1);
+        if (e.key === 'ArrowRight') changeZoomImage(-1);
+        if (e.key === 'Escape') closeImageZoom();
+    }
+
+    // تصدير دوال المعرض للاستخدام في onclicks المضمّنة داخل innerHTML
+    window.changeProductImage = changeProductImage;
+    window.openImageZoom = openImageZoom;
+    window.closeImageZoom = closeImageZoom;
+    window.changeZoomImage = changeZoomImage;
+    window.switchTab = switchTab;
+    window.initProductGalleryKeyboard = initProductGalleryKeyboard;
+    window.renderRelatedProducts = renderRelatedProducts;
 
     // دالة عرض المنتجات ذات الصلة
     function renderRelatedProducts(currentId, category) {
