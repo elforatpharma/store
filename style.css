@@ -1376,3 +1376,57 @@ body {
   padding-left: 2.75rem;
   padding-right: 1rem;
 }
+
+/* ==========================================
+   تظبيط عرض الموبايل - شبكات المنتجات 2 عمود
+   ========================================== */
+
+/* السماح للأسعار بالالتفاف داخل الكروت الضيقة على الشاشات الصغيرة */
+#catalog-grid .pro-product-card .flex.items-baseline.justify-between,
+#bundles-grid .pro-product-card .flex.items-baseline.justify-between,
+#related-products-grid .pro-product-card .flex.items-baseline.justify-between,
+#favorites-grid .pro-product-card .flex.items-baseline.justify-between {
+  flex-wrap: wrap;
+  row-gap: 3px;
+}
+
+/* تكديس زرا "اشتري الآن / أضف للسلة" عمودياً على الشاشات الصغيرة جداً */
+@media (max-width: 479.98px) {
+  #catalog-grid .pro-product-card .grid-cols-2,
+  #bundles-grid .pro-product-card .grid-cols-2,
+  #related-products-grid .pro-product-card .grid-cols-2,
+  #favorites-grid .pro-product-card .grid-cols-2 {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+  #catalog-grid .pro-product-card .grid-cols-2 .btn-dark,
+  #bundles-grid .pro-product-card .grid-cols-2 .btn-dark,
+  #related-products-grid .pro-product-card .grid-cols-2 .btn-dark,
+  #favorites-grid .pro-product-card .grid-cols-2 .btn-dark,
+  #catalog-grid .pro-product-card .grid-cols-2 .btn-outline,
+  #bundles-grid .pro-product-card .grid-cols-2 .btn-outline,
+  #related-products-grid .pro-product-card .grid-cols-2 .btn-outline,
+  #favorites-grid .pro-product-card .grid-cols-2 .btn-outline {
+    padding: 0.65rem 0;
+  }
+}
+
+/* ==========================================
+   شريط الشراء الثابت للموبايل (صفحة المنتج)
+   ========================================== */
+
+/* إضافة مساحة سفلية كي لا يخفي الشريط محتوى الصفحة */
+body.show-mobile-bar #view-product {
+  padding-bottom: 84px;
+}
+
+/* رفع الإشعارات فوق الشريط الثابت */
+body.show-mobile-bar .toast-container {
+  bottom: 92px;
+}
+
+@media (max-width: 480px) {
+  body.show-mobile-bar .toast-container {
+    bottom: 88px;
+  }
+}
