@@ -2650,8 +2650,46 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (e) { console.warn('Paymob return handler:', e); }
     fetchProducts().then(() => {
         hideGlobalLoader();
+        restoreViewFromHash();
     }).catch(() => {
         hideGlobalLoader();
+    });
+
+    // [جديد] استعادة الصفحة التي كان عليها الزائر عند إعادة التحميل من رابط الصفحة
+    function parseHash() {
+        const raw = location.hash.slice(1);
+        if (!raw) return null;
+        const [viewId, queryPart] = raw.split('?');
+        if (!viewId) return null;
+        let param = null;
+        if (queryPart) {
+            const params = new URLSearchParams(queryPart);
+            param = params.get('item') || params.get('category');
+        }
+        return { viewId, param };
+    }
+
+    function restoreViewFromHash() {
+        const target = parseHash();
+        if (!target || !['home', 'catalog', 'about', 'product', 'cart', 'favorites'].includes(target.viewId)) return;
+        if (target.viewId === 'home' || target.viewId === 'about') {
+            app.navigate(target.viewId, null, false);
+        } else if (target.viewId === 'catalog') {
+            app.navigate('catalog', target.param, false);
+        } else if (target.viewId === 'product') {
+            if (target.param) app.navigate('product', target.param, false);
+        } else {
+            app.navigate(target.viewId, null, false);
+        }
+    }
+    window.restoreViewFromHash = restoreViewFromHash;
+
+    // دعم أزرار الرجوع والتقدم في المتصفح
+    window.addEventListener('popstate', () => {
+        const target = parseHash();
+        if (target && target.viewId) {
+            app.navigate(target.viewId, target.param, false);
+        }
     });
 
     // Timeout احتياطي لإخفاء اللودر حتى لو حدث خطأ
