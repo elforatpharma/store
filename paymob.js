@@ -12,6 +12,8 @@ window.PAYMOB_CONFIG = window.PAYMOB_CONFIG || {
   // مثال: https://sidtdxchiqiogfkwbdui.supabase.co/functions/v1/paymob-create-intention
   FUNCTION_URL: "https://sidtdxchiqiogfkwbdui.supabase.co/functions/v1/paymob-create-intention",
   PAYMOB_PUBLIC_KEY: "egy_pk_test_sUkeX09sfj2qssvSdPyfglMJFj7m2N62",
+  // سر المشاركة بين الفرونت والدالة (يرسل في هيدر x-store-secret)
+  ORDER_NOTIFY_SECRET: "Elforat-Hook-2026-e9f2c1a7b4d0",
 };
 
 window.PaymobCheckout = (() => {
@@ -176,17 +178,9 @@ window.PaymobCheckout = (() => {
           if (error) console.warn("savePendingOrder minimal:", error.message);
         }
       }
-      // إرسال إشعار فوري للإدارة عبر بوت تيليجرام
-      try {
-        fetch(`${window.PAYMOB_CONFIG.SUPABASE_URL}/functions/v1/telegram-order-notify`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": window.PAYMOB_CONFIG.SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify({ record: full, type: "INSERT" }),
-        }).catch(() => {});
-      } catch (_) {}
+      // لا يوجد نداء مباشر للدالة هنا — الإشعار يتم تلقائياً عبر DB Trigger
+      // (INSERT في orders يطلق Webhook/Trigger بِـ Authorization: Bearer service_role،
+      //  ولا يتم كشف أي سر في الكود الأمامي).
 
       return data;
     } catch (e) {

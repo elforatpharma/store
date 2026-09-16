@@ -6,7 +6,7 @@
 // ==========================================
 // نظام الرسائل المنبثقة (Toast) - بديل جميل لـ alert() الافتراضي
 // ==========================================
-(function() {
+(function () {
     let toastContainer = null;
 
     function getToastContainer() {
@@ -20,13 +20,13 @@
     }
 
     // النوع: 'success' (افتراضي) / 'error' / 'info'
-    window.showToast = function(message, type = 'success') {
+    window.showToast = function (message, type = 'success') {
         const container = getToastContainer();
 
         const styles = {
             success: { bg: 'from-primary to-secondary', icon: 'fa-circle-check', iconColor: 'text-emerald-300' },
-            error:   { bg: 'from-rose-500 to-rose-600',   icon: 'fa-circle-exclamation', iconColor: 'text-white' },
-            info:    { bg: 'from-emerald-500 to-emerald-600', icon: 'fa-circle-info', iconColor: 'text-white' },
+            error: { bg: 'from-rose-500 to-rose-600', icon: 'fa-circle-exclamation', iconColor: 'text-white' },
+            info: { bg: 'from-emerald-500 to-emerald-600', icon: 'fa-circle-info', iconColor: 'text-white' },
         };
         const s = styles[type] || styles.success;
 
@@ -55,7 +55,7 @@
     };
 
     // استبدال alert() الافتراضي في كل الموقع برسالة منبثقة أنيقة
-    window.alert = function(message) {
+    window.alert = function (message) {
         window.showToast(message, 'success');
     };
 })();
@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const supabaseUrl = 'https://sidtdxchiqiogfkwbdui.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZHRkeGNoaXFpb2dma3diZHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTEyMTAsImV4cCI6MjA4OTY4NzIxMH0.QF1-67Qu2HfWJt3ANSegM87fykOYQBwqC7ggLG8LTVU';
     const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
-    
+
     // ==========================================
     // نمط تصميم: State Manager لإدارة الحالات
     // ==========================================
@@ -77,31 +77,31 @@ document.addEventListener("DOMContentLoaded", () => {
         retryCount: 0,
         maxRetries: 3,
         listeners: [],
-        
+
         setState(newState) {
             this.status = newState.status ?? this.status;
             this.error = newState.error ?? null;
             this.retryCount = newState.retryCount ?? this.retryCount;
             this.notifyListeners();
         },
-        
+
         subscribe(callback) {
             this.listeners.push(callback);
         },
-        
+
         notifyListeners() {
             this.listeners.forEach(cb => cb(this));
         },
-        
+
         reset() {
             this.setState({ status: 'idle', error: null, retryCount: 0 });
         }
     };
-    
+
     // ==========================================
     // نمط تصميم: Notification System موحد (متطور)
     // ==========================================
-    
+
     // ==========================================
     // دالة Sanitize للحماية من XSS
     // ==========================================
@@ -110,12 +110,12 @@ document.addEventListener("DOMContentLoaded", () => {
         el.textContent = str ?? '';
         return el.innerHTML;
     }
-    
+
     const ToastManager = {
         container: null,
         toastQueue: [],
         maxToasts: 4,
-        
+
         init() {
             if (!this.container) {
                 this.container = document.createElement('div');
@@ -123,24 +123,24 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.body.appendChild(this.container);
             }
         },
-        
+
         show(message, type = 'info', duration = 4000, title = '') {
             this.init();
-            
+
             const icons = {
                 success: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>',
                 error: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>',
                 warning: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>',
                 info: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
             };
-            
+
             const titles = {
                 success: '',
                 error: '',
                 warning: '',
                 info: ''
             };
-            
+
             const toast = document.createElement('div');
             toast.className = `toast-notification toast-${type}`;
             toast.innerHTML = `
@@ -153,89 +153,89 @@ document.addEventListener("DOMContentLoaded", () => {
                 </button>
                 <div class="toast-progress" style="animation-duration: ${duration}ms"></div>
             `;
-            
+
             this.container.appendChild(toast);
-            
+
             requestAnimationFrame(() => {
                 toast.classList.add('slide-in');
             });
-            
+
             const timeoutId = setTimeout(() => {
                 this.dismiss(toast);
             }, duration);
-            
+
             toast.timeoutId = timeoutId;
-            
+
             return toast;
         },
-        
+
         dismiss(toast) {
             if (!toast || !toast.parentNode) return;
-            
+
             if (toast.timeoutId) {
                 clearTimeout(toast.timeoutId);
             }
-            
+
             toast.classList.remove('slide-in');
             toast.classList.add('slide-out');
-            
+
             setTimeout(() => {
                 if (toast.parentNode) {
                     toast.parentNode.removeChild(toast);
                 }
             }, 400);
         },
-        
+
         dismissAll() {
             if (this.container) {
                 const toasts = this.container.querySelectorAll('.toast-notification');
                 toasts.forEach(toast => this.dismiss(toast));
             }
         },
-        
-        showError(message, duration = 4000, title = '') { 
-            return this.show(message, 'error', duration, title); 
+
+        showError(message, duration = 4000, title = '') {
+            return this.show(message, 'error', duration, title);
         },
-        showSuccess(message, duration = 4000, title = '') { 
-            return this.show(message, 'success', duration, title); 
+        showSuccess(message, duration = 4000, title = '') {
+            return this.show(message, 'success', duration, title);
         },
-        showWarning(message, duration = 4000, title = '') { 
-            return this.show(message, 'warning', duration, title); 
+        showWarning(message, duration = 4000, title = '') {
+            return this.show(message, 'warning', duration, title);
         },
-        showInfo(message, duration = 4000, title = '') { 
-            return this.show(message, 'info', duration, title); 
+        showInfo(message, duration = 4000, title = '') {
+            return this.show(message, 'info', duration, title);
         }
     };
-    
+
     // Alias for backward compatibility
     const NotificationManager = ToastManager;
-    
+
     // ==========================================
     // نمط تصميم: Error Handler مركزي
     // ==========================================
     const ErrorHandler = {
         handle(error, context = '') {
             console.error(`[Error in ${context}]:`, error);
-            
-            AppState.setState({ 
-                status: 'error', 
+
+            AppState.setState({
+                status: 'error',
                 error: error.message || 'حدث خطأ غير متوقع'
             });
-            
+
             let userMessage = 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.';
-            
+
             if (error.message?.includes('network')) {
                 userMessage = 'يبدو أنك غير متصل بالإنترنت. يرجى التحقق من اتصالك.';
             } else if (error.message?.includes('timeout')) {
                 userMessage = 'انتهت مهلة الاتصال. يرجى المحاولة مرة أخرى.';
             }
-            
+
             ToastManager.showError(userMessage, 5000);
-            
+
             // تسجيل الخطأ للتحليل لاحقاً
             this.logError(error, context);
         },
-        
+
         async logError(error, context) {
             try {
                 await _supabase.from('error_logs').insert([{
@@ -249,7 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.warn('فشل تسجيل الخطأ:', e);
             }
         },
-        
+
         retry(operation, maxRetries = 3) {
             return async (...args) => {
                 for (let i = 0; i < maxRetries; i++) {
@@ -269,18 +269,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     const FavoritesManager = {
         favorites: [],
-        
+
         init() {
             const saved = localStorage.getItem('elforat_favorites');
             if (saved) {
                 this.favorites = JSON.parse(saved);
             }
         },
-        
+
         save() {
             localStorage.setItem('elforat_favorites', JSON.stringify(this.favorites));
         },
-        
+
         toggle(productId) {
             const index = this.favorites.indexOf(productId);
             if (index > -1) {
@@ -293,27 +293,27 @@ document.addEventListener("DOMContentLoaded", () => {
             this.save();
             this.updateUI(productId);
         },
-        
+
         isFavorite(productId) {
             return this.favorites.includes(productId);
         },
-        
+
         updateUI(productId) {
             const btn = document.querySelector(`[data-favorite-btn="${productId}"]`);
             if (btn) {
                 const isFav = this.isFavorite(productId);
-                btn.innerHTML = isFav 
+                btn.innerHTML = isFav
                     ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
                     : `<i class="fa-regular fa-heart text-xs"></i>`;
             }
         },
-        
+
         getCount() {
             return this.favorites.length;
         }
     };
 
-  let productsDB = [];
+    let productsDB = [];
     let cart = [];
     let appliedCoupon = null; // { code, discount_percentage }
 
@@ -419,7 +419,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (msg) { msg.classList.add('hidden'); msg.textContent = ''; }
     }
-    
+
     // التحقق من انتهاء صلاحية السلة
     function checkCartExpiry() {
         const expiry = localStorage.getItem('elforat_cart_expiry');
@@ -483,7 +483,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function writeProductsCache(data) {
         try {
             localStorage.setItem(PRODUCTS_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), data }));
-        } catch (e) {}
+        } catch (e) { }
     }
 
     function optimizePageImages(root = document) {
@@ -524,13 +524,13 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             renderSkeletonLoading();
         }
-        
+
         try {
             // [تعديل الترتيب]: جلب المنتجات مرتبة حسب الـ ID لضمان الترتيب القديم
             const fetchWithRetry = ErrorHandler.retry(async () => {
                 let { data, error } = await _supabase
                     .from('products')
-                    .select('id,name,category,price,oldPrice,img,badge,desc,ingredients,size,stock,is_active,priority')
+                    .select('*')
                     .order('priority', { ascending: false });
 
                 if (error) {
@@ -540,16 +540,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         .select('*')
                         .order('priority', { ascending: false }));
                 }
-                
+
                 if (error) throw error;
                 return data;
             }, AppState.maxRetries);
-            
+
             const data = await fetchWithRetry();
 
             productsDB = normalizeProducts(data);
             writeProductsCache(productsDB);
-            
+
             AppState.setState({ status: 'success' });
         } catch (err) {
             ErrorHandler.handle(err, 'fetchProducts');
@@ -566,7 +566,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } finally {
 
             // الهدايا تُجلب ديناميكياً من سوبابيز عبر loadGifts()
-            
+
             renderCatalog(null, '');
             updateCategoryCounts();
         }
@@ -583,12 +583,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     imageObserver.observe(document.documentElement, { childList: true, subtree: true });
     optimizePageImages();
-    
+
     // دالة عرض Skeleton Loading
     function renderSkeletonLoading() {
         const grid = document.getElementById('catalog-grid');
         if (!grid) return;
-        
+
         grid.innerHTML = Array(8).fill(0).map((_, i) => `
             <div class="product-card opacity-0 animate-fade-in-up" style="animation-delay: ${i * 50}ms">
                 <div class="product-visual-glass mb-6 skeleton-img aspect-square"></div>
@@ -607,7 +607,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `).join('');
     }
 
-        // ==========================================
+    // ==========================================
     // دوال الإشعارات والصوت (Custom Alert & Snackbar)
     // ==========================================
     function showCustomAlert(message, type = 'error') {
@@ -623,7 +623,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function showCartPopup() {
         // استخدام Toast Manager للإشعار
         ToastManager.showSuccess('تم إضافة المنتج للحقيبة 🛍️', 3500);
-        
+
         // تشغيل الصوت
         playCartSound();
     }
@@ -645,7 +645,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     const firstLink = document.querySelector('.nav-link');
     let morphLine;
-    
+
     if (firstLink) {
         const navContainer = firstLink.parentElement;
         navContainer.style.position = 'relative';
@@ -666,7 +666,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (linkTarget === activeKey || (!activeParam && linkTarget === activeId)) {
                 link.classList.add('text-primary');
                 link.classList.remove('text-gray-900');
-                
+
                 if (morphLine) {
                     morphLine.style.width = `${link.offsetWidth}px`;
                     morphLine.style.left = `${link.offsetLeft}px`;
@@ -703,10 +703,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (error) throw error;
                 return data;
             }, 2);
-            
+
             const data = await fetchGiftsWithRetry();
             if (data) activeGifts = data;
-            
+
             AppState.setState({ status: "success" });
         } catch (e) {
             ErrorHandler.handle(e, "loadGifts");
@@ -718,30 +718,30 @@ document.addEventListener("DOMContentLoaded", () => {
     // دالة التحقق من المخزون المنخفض وإظهار الإشعارات
     function checkLowStock() {
         const lowStockProducts = productsDB.filter(p => p.stock <= LOW_STOCK_THRESHOLD && p.stock > 0);
-        
+
         if (lowStockProducts.length > 0) {
             const productNames = lowStockProducts.slice(0, 3).map(p => p.name).join("، ");
             const moreCount = lowStockProducts.length - 3;
-            
+
             let message = "⚠️ تنبيه: الكمية المتبقية قليلة لـ: " + productNames;
             if (moreCount > 0) {
                 message += " و" + moreCount + " منتجات أخرى";
             }
-            
+
             if (!sessionStorage.getItem("lowStockShown")) {
                 ToastManager.showWarning(message, 5000);
                 sessionStorage.setItem("lowStockShown", "true");
             }
         }
     }
-    
+
     // ==========================================
     // شريط الإشعارات العلوي للعروض
     // ==========================================
     function showPromotionBanner() {
         const existingBanner = document.getElementById("promo-banner");
         if (existingBanner) existingBanner.remove();
-        
+
         const banner = document.createElement("div");
         banner.id = "promo-banner";
         banner.className = "fixed top-0 left-0 right-0 bg-gradient-to-r from-primary via-secondary to-primary text-white py-3 px-4 z-[9998] flex items-center justify-center gap-4 overflow-hidden shadow-purple-glow";
@@ -754,16 +754,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 </svg>
             </button>
         `;
-        
+
         document.body.insertBefore(banner, document.body.firstChild);
-        
+
         const nav = document.querySelector("nav");
         if (nav) {
             nav.style.top = "48px";
             nav.style.transition = "top 0.3s ease";
         }
-        
-        document.getElementById("close-promo-btn").addEventListener("click", function() {
+
+        document.getElementById("close-promo-btn").addEventListener("click", function () {
             banner.remove();
             if (nav) {
                 nav.style.top = "0";
@@ -800,14 +800,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 4. نظام التنقل والسلة (App Logic)
     // ==========================================
-  window.app = {
+    window.app = {
         searchTerm: '',
         navigate: function (viewId, param = null, addToHistory = true) {
             const doNav = () => {
                 if (addToHistory) history.pushState({ viewId, param }, "", param ? `#${viewId}?item=${param}` : `#${viewId}`);
                 document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-                
-                updateNavMorph(viewId, viewId === 'catalog' ? param : null); 
+
+                updateNavMorph(viewId, viewId === 'catalog' ? param : null);
 
                 if (['home', 'catalog', 'about'].includes(viewId)) {
                     document.getElementById('view-main').classList.add('active');
@@ -830,23 +830,23 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             trackStoreEvent('page_view', { metadata: { view: viewId, item: param } });
         },
-        handleSearch: function(query) {
+        handleSearch: function (query) {
             // إلغاء أي توقيت بحث سابق (Debounce)
             clearTimeout(this.searchTimer);
-            
+
             // بدء توقيت جديد - البحث سيتم بعد توقف المستخدم عن الكتابة لمدة 300 مللي ثانية
             this.searchTimer = setTimeout(() => {
                 this.searchTerm = query.trim().toLowerCase();
-                
+
                 // تحديث حقول البحث الأخرى لتتزامن
                 const desktopInput = document.getElementById('desktop-search-input');
                 const mobileInput = document.getElementById('mobile-search-input');
                 if (desktopInput && desktopInput !== event?.target) desktopInput.value = query;
                 if (mobileInput && mobileInput !== event?.target) mobileInput.value = query;
-                
+
                 // إظهار/إخفاء قائمة الاقتراحات
                 this.showSearchSuggestions(query);
-                
+
                 // إذا كنا في صفحة الكتالوج، أعد العرض مع الفلتر
                 if (document.getElementById('catalog')) {
                     renderCatalog(null, this.searchTerm);
@@ -857,30 +857,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log("تم تنفيذ البحث عن: " + this.searchTerm);
             }, 300);
         },
-        
+
         // دالة إظهار اقتراحات البحث التلقائية
-        showSearchSuggestions: function(query) {
+        showSearchSuggestions: function (query) {
             const desktopContainer = document.getElementById('search-suggestions-desktop');
             const mobileContainer = document.getElementById('search-suggestions-mobile');
-            
+
             if (!query || query.length < 2) {
                 if (desktopContainer) desktopContainer.classList.add('hidden');
                 if (mobileContainer) mobileContainer.classList.add('hidden');
                 return;
             }
-            
+
             // تصفية المنتجات المطابقة
-            const suggestions = productsDB.filter(p => 
+            const suggestions = productsDB.filter(p =>
                 p.name.toLowerCase().includes(query) ||
                 p.category.toLowerCase().includes(query)
             ).slice(0, 5); // عرض أول 5 نتائج فقط
-            
+
             if (suggestions.length === 0) {
                 if (desktopContainer) desktopContainer.classList.add('hidden');
                 if (mobileContainer) mobileContainer.classList.add('hidden');
                 return;
             }
-            
+
             const suggestionsHTML = `
                 <div class="py-2">
                     ${suggestions.map(p => `
@@ -900,7 +900,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 </div>
             `;
-            
+
             if (desktopContainer) {
                 desktopContainer.innerHTML = suggestionsHTML;
                 desktopContainer.classList.remove('hidden');
@@ -910,9 +910,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 mobileContainer.classList.remove('hidden');
             }
         },
-        
+
         // إخفاء قائمة الاقتراحات
-        hideSearchSuggestions: function() {
+        hideSearchSuggestions: function () {
             const desktopContainer = document.getElementById('search-suggestions-desktop');
             const mobileContainer = document.getElementById('search-suggestions-mobile');
             if (desktopContainer) desktopContainer.classList.add('hidden');
@@ -924,8 +924,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const existing = cart.find(item => item.id === id);
             if (existing) existing.qty += parseInt(qty); else cart.push({ ...product, qty: parseInt(qty) });
-            
-            checkOffers(); 
+
+            checkOffers();
             saveCart(); // [جديد] حفظ التحديث
             updateBadge();
             trackStoreEvent('add_to_cart', {
@@ -934,10 +934,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 cart_total: getCartSubtotal(),
                 metadata: { qty: Number(qty) || 1 }
             });
-            
+
             if (!silent) {
-                playCartSound(); 
-                showCartPopup(); 
+                playCartSound();
+                showCartPopup();
             }
         },
         buyNow: function (id, qty = 1) {
@@ -1024,27 +1024,27 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         updateQty: function (id, change) {
             const item = cart.find(item => item.id === id);
-            if (item) { 
-                item.qty += change; 
-                if (item.qty <= 0) cart = cart.filter(i => i.id !== id); 
-                checkOffers(); 
+            if (item) {
+                item.qty += change;
+                if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+                checkOffers();
                 saveCart(); // [جديد] حفظ التحديث
-                renderCart(); 
-                updateBadge(); 
+                renderCart();
+                updateBadge();
             }
         },
-        removeItem: function (id) { 
-            cart = cart.filter(i => i.id !== id); 
-            checkOffers(); 
+        removeItem: function (id) {
+            cart = cart.filter(i => i.id !== id);
+            checkOffers();
             saveCart(); // [جديد] حفظ التحديث
-            renderCart(); 
-            updateBadge(); 
+            renderCart();
+            updateBadge();
         },
-        toggleMobileMenu: function() {
+        toggleMobileMenu: function () {
             const panel = document.getElementById('mobile-menu-panel');
             const overlay = document.getElementById('mobile-menu-overlay');
             if (!panel || !overlay) return;
-            
+
             const isClosed = panel.classList.contains('translate-x-full');
             if (isClosed) {
                 // فتح القائمة
@@ -1060,44 +1060,44 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.body.style.overflow = '';
             }
         },
-        
+
         // ==========================================
         // Hero Carousel Functions - وظائف الكاروسيل
         // ==========================================
-        initCarousel: function() {
+        initCarousel: function () {
             this.carouselIndex = 0;
             this.carouselSlides = document.querySelectorAll('.carousel-slide');
             this.carouselDots = document.querySelectorAll('.carousel-dot');
             this.carouselProgress = document.getElementById('carousel-progress');
             this.carouselInterval = null;
             this.carouselPauseTime = 5000; // 5 seconds per slide
-            
+
             if (this.carouselSlides.length === 0) return;
-            
+
             // Initialize first slide and dot
             this.updateCarousel(0);
-            
+
             // Start auto-rotation
             this.startCarousel();
-            
+
             // Event listeners for navigation buttons
             const prevBtn = document.getElementById('carousel-prev');
             const nextBtn = document.getElementById('carousel-next');
-            
+
             if (prevBtn) {
                 prevBtn.addEventListener('click', () => {
                     this.prevSlide();
                     this.resetCarouselTimer();
                 });
             }
-            
+
             if (nextBtn) {
                 nextBtn.addEventListener('click', () => {
                     this.nextSlide();
                     this.resetCarouselTimer();
                 });
             }
-            
+
             // Event listeners for dots
             this.carouselDots.forEach((dot, index) => {
                 dot.addEventListener('click', () => {
@@ -1105,7 +1105,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     this.resetCarouselTimer();
                 });
             });
-            
+
             // Pause on hover
             const carouselContainer = document.getElementById('hero-carousel');
             if (carouselContainer) {
@@ -1113,8 +1113,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 carouselContainer.addEventListener('mouseleave', () => this.startCarousel());
             }
         },
-        
-        updateCarousel: function(index) {
+
+        updateCarousel: function (index) {
             // Update slides
             this.carouselSlides.forEach((slide, i) => {
                 slide.classList.remove('active', 'prev');
@@ -1124,7 +1124,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     slide.classList.add('prev');
                 }
             });
-            
+
             // Update dots
             this.carouselDots.forEach((dot, i) => {
                 dot.classList.remove('active');
@@ -1136,7 +1136,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     dot.classList.add('bg-primary/60', 'border-primary');
                 }
             });
-            
+
             // Reset and restart progress bar animation
             if (this.carouselProgress) {
                 this.carouselProgress.style.animation = 'none';
@@ -1145,49 +1145,49 @@ document.addEventListener("DOMContentLoaded", () => {
                 }, 10);
             }
         },
-        
-        nextSlide: function() {
+
+        nextSlide: function () {
             const newIndex = (this.carouselIndex + 1) % this.carouselSlides.length;
             this.goToSlide(newIndex);
         },
-        
-        prevSlide: function() {
+
+        prevSlide: function () {
             const newIndex = (this.carouselIndex - 1 + this.carouselSlides.length) % this.carouselSlides.length;
             this.goToSlide(newIndex);
         },
-        
-        goToSlide: function(index) {
+
+        goToSlide: function (index) {
             this.carouselIndex = index;
             this.updateCarousel(index);
         },
-        
-        startCarousel: function() {
+
+        startCarousel: function () {
             if (this.carouselInterval) clearInterval(this.carouselInterval);
             this.carouselInterval = setInterval(() => this.nextSlide(), this.carouselPauseTime);
         },
-        
-        pauseCarousel: function() {
+
+        pauseCarousel: function () {
             if (this.carouselInterval) clearInterval(this.carouselInterval);
             if (this.carouselProgress) {
                 this.carouselProgress.style.animationPlayState = 'paused';
             }
         },
-        
-        resetCarouselTimer: function() {
+
+        resetCarouselTimer: function () {
             this.startCarousel();
             if (this.carouselProgress) {
                 this.carouselProgress.style.animationPlayState = 'running';
             }
         }
     };
-    
+
     // Initialize carousel when DOM is ready
     setTimeout(() => {
         if (window.app && typeof window.app.initCarousel === 'function') {
             window.app.initCarousel();
         }
     }, 100);
-    
+
     // إضافة مستمع لزر القائمة في الجوال
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     if (mobileMenuBtn) {
@@ -1203,7 +1203,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <div class="flex items-center justify-between w-full mb-3 z-10">
         ${p.badge ? `<span class="badge-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
         <button onclick="event.stopPropagation();" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20">
-            ${isFavorite 
+            ${isFavorite
                 ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
                 : `<i class="fa-regular fa-heart text-xs"></i>`
             }
@@ -1248,21 +1248,21 @@ document.addEventListener("DOMContentLoaded", () => {
         const bundlesSection = document.getElementById('bundles-section');
         const bundlesGrid = document.getElementById('bundles-grid');
         let products = productsDB.filter(p => !p.isGift);
-        
+
         // تطبيق فلتر الفئة
         if (filter) {
             products = products.filter(p => p.category === filter);
         }
-        
+
         // تطبيق البحث الفوري
         if (searchTerm) {
-            products = products.filter(p => 
+            products = products.filter(p =>
                 p.name.toLowerCase().includes(searchTerm) ||
                 p.category.toLowerCase().includes(searchTerm) ||
                 (p.desc && p.desc.toLowerCase().includes(searchTerm))
             );
         }
-        
+
         // تحديث عنوان القسم وتفعيل التبويب المطابق
         const heading = document.getElementById('catalog-heading');
         if (heading) {
@@ -1271,7 +1271,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll('.catalog-tab-btn').forEach(btn => {
             btn.classList.toggle('active', (btn.getAttribute('data-filter') || '') === (filter || ''));
         });
-        
+
         if (products.length === 0) {
             if (grid) {
                 grid.innerHTML = `
@@ -1386,7 +1386,7 @@ document.addEventListener("DOMContentLoaded", () => {
             product_name: p.name,
             metadata: { category: p.category, price: p.price, stock: p.stock }
         });
-        
+
         // خريطة الصور الإضافية لكل منتج (معرض صور متعدد)
         const productGalleries = {
             'كريم لعلاج جلد الوزة': [
@@ -1468,10 +1468,28 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // إذا لم يكن له صور إضافية خاصة، يتم عرض صورته الرسمية فقط
-        const images = extraImgs ? Array.from(new Set(extraImgs)) : [p.img];
-        
+        let dbImgs = [];
+        if (p.images) {
+            if (Array.isArray(p.images)) dbImgs = p.images;
+            else if (typeof p.images === 'string') {
+                try {
+                    const parsed = JSON.parse(p.images);
+                    if (Array.isArray(parsed)) dbImgs = parsed;
+                } catch (e) {
+                    if (p.images.trim().startsWith('http')) dbImgs = [p.images.trim()];
+                }
+            }
+        }
+        const candidateImgs = dbImgs.length > 0 ? dbImgs : (extraImgs || []);
+        let mergedImgs = [];
+        if (p.img) mergedImgs.push(p.img);
+        candidateImgs.forEach(im => {
+            if (im && typeof im === 'string' && !mergedImgs.includes(im)) mergedImgs.push(im);
+        });
+        const images = mergedImgs.length > 0 ? mergedImgs : (p.img ? [p.img] : ['logo.png']);
+
         let currentImageIndex = 0;
-        
+
         container.innerHTML = `
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                 <!-- معرض الصور -->
@@ -1754,38 +1772,38 @@ document.addEventListener("DOMContentLoaded", () => {
                 }, 0);
             <\/script>`;
     }
-    
+
     // دالة عرض المنتجات ذات الصلة
     function renderRelatedProducts(currentId, category) {
         const relatedSection = document.getElementById('related-products');
         const relatedGrid = document.getElementById('related-products-grid');
-        
+
         if (!relatedSection || !relatedGrid) return;
-        
+
         // جلب منتجات من نفس الفئة باستثناء المنتج الحالي
         const relatedProducts = productsDB
             .filter(p => p.category === category && p.id !== currentId)
             .slice(0, 4);
-        
+
         if (relatedProducts.length === 0) {
             relatedSection.classList.add('hidden');
             return;
         }
-        
+
         relatedSection.classList.remove('hidden');
         relatedGrid.innerHTML = relatedProducts.map((p, index) => {
             const isFav = FavoritesManager.isFavorite(p.id);
             const isOutOfStock = p.stock <= 0;
-            
+
             return `
 <article class="pro-product-card p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group opacity-0 animate-fade-in-up cursor-pointer" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
     <div class="flex items-center justify-between w-full mb-3 z-10">
         ${p.badge ? `<span class="badge-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
         <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
             ${isFav
-                ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
-                : `<i class="fa-regular fa-heart text-xs"></i>`
-            }
+                    ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
+                    : `<i class="fa-regular fa-heart text-xs"></i>`
+                }
         </button>
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-4 mb-3.5 flex items-center justify-center overflow-hidden">
@@ -1796,11 +1814,11 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="flex items-center justify-between mb-1">
             <span class="text-[11px] font-bold text-primary">${sanitize(p.category || 'العناية')}</span>
             ${isOutOfStock
-                ? '<span class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">نفذت الكمية</span>'
-                : p.stock <= LOW_STOCK_THRESHOLD
-                    ? `<span class="text-[10px] bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-bold">متبقي ${p.stock}</span>`
-                    : ''
-            }
+                    ? '<span class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">نفذت الكمية</span>'
+                    : p.stock <= LOW_STOCK_THRESHOLD
+                        ? `<span class="text-[10px] bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-bold">متبقي ${p.stock}</span>`
+                        : ''
+                }
         </div>
         <h3 class="font-extrabold text-darkNavy text-sm line-clamp-2 leading-snug mb-2 group-hover:text-primary transition-colors">
             ${sanitize(p.name)}
@@ -1831,13 +1849,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const container = document.getElementById('cart-items-container');
         const summary = document.getElementById('cart-summary-totals');
         if (!container) return;
-        if (cart.length === 0) { 
-            container.innerHTML = '<div class="py-32 text-center text-gray-400 uppercase tracking-widest">حقيبة التسوق فارغة</div>'; 
-            if (summary) summary.innerHTML = ''; 
+        if (cart.length === 0) {
+            container.innerHTML = '<div class="py-32 text-center text-gray-400 uppercase tracking-widest">حقيبة التسوق فارغة</div>';
+            if (summary) summary.innerHTML = '';
             const countLabelEmpty = document.getElementById('cart-summary-count');
             if (countLabelEmpty) countLabelEmpty.textContent = '';
             renderCouponUI();
-            return; 
+            return;
         }
         let subtotal = getCartSubtotal();
         container.innerHTML = cart.map(item => {
@@ -1911,10 +1929,10 @@ document.addEventListener("DOMContentLoaded", () => {
         renderCouponUI();
     }
 
-    function updateBadge() { 
-        const b = document.getElementById('cart-badge'); 
+    function updateBadge() {
+        const b = document.getElementById('cart-badge');
         if (b) b.innerText = cart.reduce((s, i) => s + i.qty, 0);
-        
+
         // تحديث شارة المفضلة
         const favBadge = document.getElementById('favorites-badge');
         if (favBadge) favBadge.innerText = FavoritesManager.getCount();
@@ -1926,11 +1944,11 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderFavorites() {
         const grid = document.getElementById('favorites-grid');
         const emptyState = document.getElementById('favorites-empty');
-        
+
         if (!grid) return;
-        
+
         const favoriteProducts = productsDB.filter(p => FavoritesManager.isFavorite(p.id));
-        
+
         if (favoriteProducts.length === 0) {
             grid.innerHTML = '';
             emptyState.classList.remove('hidden');
@@ -1947,9 +1965,9 @@ document.addEventListener("DOMContentLoaded", () => {
         ${p.badge ? `<span class="badge-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
         <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
             ${isFav
-                ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
-                : `<i class="fa-regular fa-heart text-xs"></i>`
-            }
+                    ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
+                    : `<i class="fa-regular fa-heart text-xs"></i>`
+                }
         </button>
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-4 mb-3.5 flex items-center justify-center overflow-hidden">
@@ -1995,15 +2013,15 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }, 0);
     }
-        
 
 
-     // ==========================================
+
+    // ==========================================
     // 6. كود إرسال الطلب للسيرفر والتحويل الفوري للواتساب 🔥
     // ==========================================
     const checkoutForm = document.getElementById('checkout-form');
-    if(checkoutForm) {
-        checkoutForm.onsubmit = async (e) => { 
+    if (checkoutForm) {
+        checkoutForm.onsubmit = async (e) => {
             e.preventDefault();
 
             const submitBtn = checkoutForm.querySelector('button[type="submit"]');
@@ -2050,7 +2068,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 showCustomAlert('عفواً، برجاء إدخال رقم هاتف صحيح يتكون من 11 رقم ويبدأ بـ 01', 'error');
                 submitBtn.innerText = originalBtnText;
                 submitBtn.disabled = false;
-                return; 
+                return;
             }
 
             // ===== Paymob: الدفع بالبطاقة أونلاين =====
@@ -2104,7 +2122,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             let subtotal = 0;
             const orderItems = [];
-            
+
             cart.forEach(item => {
                 let verifiedPrice = Number(item.price || 0);
                 if (!item.isGift && item.id != null && dbPriceMap.has(String(item.id))) {
@@ -2210,7 +2228,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // زيادة عداد استخدام الكوبون بعد نجاح الطلب
                 if (couponCode) {
                     _supabase.rpc('increment_coupon_use', { p_code: couponCode })
-                        .then(() => {})
+                        .then(() => { })
                         .catch((e) => console.warn('زيادة استخدام الكوبون فشلت:', e));
                 }
 
@@ -2219,7 +2237,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'apikey': supabaseKey },
                     body: JSON.stringify({ record: orderData, type: 'INSERT' })
-                }).catch(() => {});
+                }).catch(() => { });
             } catch (err) {
                 console.error("خطأ في تسجيل الطلب بسوبابيز، جاري استكمال التحويل للواتساب...", err);
             }
@@ -2244,31 +2262,31 @@ document.addEventListener("DOMContentLoaded", () => {
             message += `💰 *الإجمالي المطلوب:* ${finalTotal} ج.م\n`;
             message += `\nشكراً لاختيارك الفرات فارما! 🌺`;
 
-           cart = []; 
+            cart = [];
             saveCart(); // [جديد] مسح المنتجات من التخزين بعد إرسال الطلب بنجاح
             appliedCoupon = null;
             saveCoupon(); // مسح الكوبون بعد إتمام الطلب بنجاح
             try {
-    const orderSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-    orderSound.play().catch(()=>{});
-} catch(e) {}
-            updateBadge(); 
+                const orderSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+                orderSound.play().catch(() => { });
+            } catch (e) { }
+            updateBadge();
             checkoutForm.reset();
-            
+
             submitBtn.innerText = originalBtnText;
             submitBtn.disabled = false;
 
             const encodedMessage = encodeURIComponent(message);
-            const whatsappNumber = "201146809133"; 
-            
+            const whatsappNumber = "201146809133";
+
             window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
-            
+
             setTimeout(() => {
                 app.navigate('home');
             }, 1000);
         };
     }
-       // ==========================================
+    // ==========================================
     // 7. كود الـ Scroll Spy مع الخط المتحرك
     // ==========================================
     const sections = document.querySelectorAll('#home, #catalog, #about');
@@ -2336,7 +2354,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // نحاول نزامنها تاني مع السيرفر (بدون ما نوقف لو فشلت)
             _supabase.from('offer_countdowns')
                 .upsert({ ip: ip, end_time: cachedEndTime }, { onConflict: 'ip' })
-                .then(() => {});
+                .then(() => { });
             return cachedEndTime;
         }
 
@@ -2452,7 +2470,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (cached && cached.data && Date.now() - cached.savedAt < 10 * 60 * 1000) {
                     applySettings(cached.data);
                 }
-            } catch (e) {}
+            } catch (e) { }
 
             const { data, error } = await _supabase
                 .from('settings')
@@ -2463,7 +2481,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (error || !data || !data.data) return; // مفيش إعدادات محفوظة، نسيب الصور المحلية زي ما هي
 
             applySettings(data.data);
-            try { localStorage.setItem(cacheKey, JSON.stringify({ savedAt: Date.now(), data: data.data })); } catch (e) {}
+            try { localStorage.setItem(cacheKey, JSON.stringify({ savedAt: Date.now(), data: data.data })); } catch (e) { }
         } catch (e) {
             console.warn('تعذر تحميل هوية المتجر من الإعدادات، هتفضل الصور المحلية الافتراضية:', e);
         }
@@ -2528,7 +2546,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     window.ElforatAnalytics = { getVisitorSessionId, getTrafficParams, getDeviceType, trackStoreEvent };
 
-// تسجيل زيارة جديدة في السيرفر
+    // تسجيل زيارة جديدة في السيرفر
     async function trackVisitor() {
         try {
             const alreadyTracked = sessionStorage.getItem('elforat_visitor_event_tracked');
@@ -2594,23 +2612,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }).catch(() => {
         hideGlobalLoader();
     });
-    
+
     // Timeout احتياطي لإخفاء اللودر حتى لو حدث خطأ
     setTimeout(hideGlobalLoader, 5000);
-    
+
     checkLowStock();
     startCountdown();
-    
+
     /* تم إلغاء إظهار شريط العروض الترويجية بناءً على طلب العميل */
-    
+
     // دالة معالجة زر المفضلة الرئيسي في صفحة المنتج
-    window.handleMainFavorite = function(id) {
+    window.handleMainFavorite = function (id) {
         // 1. تغيير الحالة في التخزين المحلي
-        const isNowFavorite = FavoritesManager.favorites.includes(id) 
-            ? (FavoritesManager.favorites = FavoritesManager.favorites.filter(fid => fid !== id), false) 
+        const isNowFavorite = FavoritesManager.favorites.includes(id)
+            ? (FavoritesManager.favorites = FavoritesManager.favorites.filter(fid => fid !== id), false)
             : (FavoritesManager.favorites.push(id), true);
         FavoritesManager.save();
-        
+
         // 2. تحديث شكل الزر في الصفحة الحالية فوراً
         const btn = document.getElementById('main-fav-btn');
         if (btn) {
@@ -2627,17 +2645,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 ToastManager.showSuccess('تمت الإزالة من المفضلة', 3000);
             }
         }
-        
+
         // 3. تحديث أيقونات المنتجات في الخلفية (الكتالوج)
         const otherBtns = document.querySelectorAll(`[data-favorite-btn="${id}"]`);
         otherBtns.forEach(b => {
             const isFav = FavoritesManager.isFavorite(id);
             b.classList.toggle('favorite-active', isFav);
-            b.innerHTML = isFav 
+            b.innerHTML = isFav
                 ? `<svg class="heart-icon w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
                 : `<svg class="heart-icon w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`;
         });
-        
+
         updateBadge();
         return isNowFavorite;
     };
