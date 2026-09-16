@@ -1505,10 +1505,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         <img id="main-product-img" src="${sanitize(images[0])}" loading="lazy" class="max-h-full max-w-full object-contain transition-all duration-500 hover:scale-105 cursor-zoom-in drop-shadow-xl" onerror="this.src='logo.png'" onclick="openImageZoom('${sanitize(images[0])}')">
                         <!-- أزرار التنقل للمعرض (تظهر فقط عند وجود أكثر من صورة) -->
                         ${images.length > 1 ? `
-                        <button onclick="changeProductImage((window.currentImageIndex - 1 + window.productImages.length) % window.productImages.length)" class="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white active:scale-90 z-20" title="الصورة السابقة">
+                        <button onclick="changeProductImage('prev')" class="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white active:scale-90 z-20" title="الصورة السابقة">
                             <i class="fa-solid fa-chevron-left text-sm"></i>
                         </button>
-                        <button onclick="changeProductImage((window.currentImageIndex + 1) % window.productImages.length)" class="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white active:scale-90 z-20" title="الصورة التالية">
+                        <button onclick="changeProductImage('next')" class="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white active:scale-90 z-20" title="الصورة التالية">
                             <i class="fa-solid fa-chevron-right text-sm"></i>
                         </button>
                         <div class="absolute top-4 left-4 bg-darkNavy/70 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full z-10">
@@ -1673,9 +1673,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // دوال معرض منتج واحدة (Global scope) لتجنب مشاكل السكربتات المضمّنة
     // ==========================================
-    function changeProductImage(newIndex) {
-        if (!Array.isArray(window.productImages) || window.productImages.length === 0) return;
-        window.currentImageIndex = newIndex;
+    function changeProductImage(arg) {
+        const imgs = Array.isArray(window.productImages) ? window.productImages : [];
+        if (imgs.length === 0) return;
+
+        if (arg === 'prev') {
+            window.currentImageIndex = (window.currentImageIndex - 1 + imgs.length) % imgs.length;
+        } else if (arg === 'next') {
+            window.currentImageIndex = (window.currentImageIndex + 1) % imgs.length;
+        } else {
+            window.currentImageIndex = Number(arg) % imgs.length;
+        }
 
         const mainImg = document.getElementById('main-product-img');
         if (!mainImg) return;
