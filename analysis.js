@@ -438,7 +438,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${supabaseUrl}/storage/v1/object/public/products/uploads/${cleanPath}`;
     }
 
-    const PRODUCTS_CACHE_KEY = 'elforat_products_cache_v2';
+    const PRODUCTS_CACHE_KEY = 'elforat_products_cache_v3';
     const PRODUCTS_CACHE_TTL = 5 * 60 * 1000;
 
     // تقييمات متفاوتة وثابتة لكل منتج (بدل ما تبقى كلها 4.9)
@@ -465,7 +465,8 @@ document.addEventListener("DOMContentLoaded", () => {
             ingredients: p.ingredients || '',
             size: p.size || '',
             stock: parseInt(p.stock) || 100,
-            rating: p.rating || computeRatingForId(p.id)
+            rating: p.rating || computeRatingForId(p.id),
+            images: p.images || []
         }));
     }
 
@@ -1482,11 +1483,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const candidateImgs = dbImgs.length > 0 ? dbImgs : (extraImgs || []);
         let mergedImgs = [];
-        if (p.img) mergedImgs.push(p.img);
+        if (p.img) mergedImgs.push(getFullImg(p.img));
         candidateImgs.forEach(im => {
-            if (im && typeof im === 'string' && !mergedImgs.includes(im)) mergedImgs.push(im);
+            if (im && typeof im === 'string') {
+                const full = getFullImg(im);
+                if (!mergedImgs.includes(full)) mergedImgs.push(full);
+            }
         });
-        const images = mergedImgs.length > 0 ? mergedImgs : (p.img ? [p.img] : ['logo.png']);
+        const images = mergedImgs.length > 0 ? mergedImgs : (p.img ? [getFullImg(p.img)] : ['logo.png']);
 
         let currentImageIndex = 0;
 
