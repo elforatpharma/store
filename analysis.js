@@ -1502,10 +1502,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         <img id="main-product-img" src="${sanitize(images[0])}" loading="lazy" class="max-h-full max-w-full object-contain transition-all duration-500 hover:scale-105 cursor-zoom-in drop-shadow-xl" onerror="this.src='logo.png'" onclick="openImageZoom('${sanitize(images[0])}')">
                         <!-- أزرار التنقل للمعرض (تظهر فقط عند وجود أكثر من صورة) -->
                         ${images.length > 1 ? `
-                        <button onclick="changeProductImage(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white active:scale-90 z-20" title="الصورة السابقة">
+                        <button onclick="changeProductImage((window.currentImageIndex - 1 + window.productImages.length) % window.productImages.length)" class="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white active:scale-90 z-20" title="الصورة السابقة">
                             <i class="fa-solid fa-chevron-left text-sm"></i>
                         </button>
-                        <button onclick="changeProductImage(1)" class="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white active:scale-90 z-20" title="الصورة التالية">
+                        <button onclick="changeProductImage((window.currentImageIndex + 1) % window.productImages.length)" class="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white active:scale-90 z-20" title="الصورة التالية">
                             <i class="fa-solid fa-chevron-right text-sm"></i>
                         </button>
                         <div class="absolute top-4 left-4 bg-darkNavy/70 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full z-10">
@@ -1648,14 +1648,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.productImages = ${JSON.stringify(images)};
                 window.zoomImageIndex = 0;
                 
-                function changeProductImage(direction) {
-                    if (typeof direction === 'number') {
-                        if (direction >= 0) {
-                            window.currentImageIndex = direction;
-                        } else {
-                            window.currentImageIndex = (window.currentImageIndex - 1 + window.productImages.length) % window.productImages.length;
-                        }
-                    }
+                function changeProductImage(newIndex) {
+                    window.currentImageIndex = newIndex;
                     
                     const mainImg = document.getElementById('main-product-img');
                     mainImg.style.opacity = '0';
