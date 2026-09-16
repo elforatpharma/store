@@ -1492,7 +1492,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         const images = mergedImgs.length > 0 ? mergedImgs : (p.img ? [getFullImg(p.img)] : ['logo.png']);
 
-        let currentImageIndex = 0;
+        // تهيئة حالة المعرض مباشرة (بدون الاعتماد على سكربت مضمّن داخل innerHTML)
+        window.productImages = images;
+        window.currentImageIndex = 0;
+        window.zoomImageIndex = 0;
 
         container.innerHTML = `
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
@@ -1641,36 +1644,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-4 py-2 rounded-full">
                     <span id="zoom-counter">1 / 3</span>
                 </div>
-            </div>
-            
-            <script>
-                window.currentImageIndex = 0;
-                window.productImages = ${JSON.stringify(images)};
-                window.zoomImageIndex = 0;
-                
-                // تحديث Breadcrumb
-                const breadcrumbCategory = document.getElementById('breadcrumb-category');
-                if (breadcrumbCategory) {
-                    breadcrumbCategory.textContent = '${p.category}';
-                }
-                
-                // عرض المنتجات ذات الصلة
-                renderRelatedProducts('${p.id}', '${p.category}');
-                
-                // تفعيل دعم لوحة المفاتيح للمعرض المكبر
-                initProductGalleryKeyboard();
-                
-                // إضافة مستمعي الأحداث لأزرار المفضلة
-                setTimeout(() => {
-                    document.querySelectorAll('.favorite-btn').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            const productId = btn.getAttribute('data-favorite-btn');
-                            FavoritesManager.toggle(productId);
-                        });
-                    });
-                }, 0);
-            <\/script>`;
+            </div>`;
+
+        // تحديث Breadcrumb
+        const breadcrumbCategory = document.getElementById('breadcrumb-category');
+        if (breadcrumbCategory) {
+            breadcrumbCategory.textContent = p.category;
+        }
+
+        // عرض المنتجات ذات الصلة
+        renderRelatedProducts(p.id, p.category);
+
+        // تفعيل دعم لوحة المفاتيح للمعرض المكبر
+        initProductGalleryKeyboard();
+
+        // إضافة مستمعي الأحداث لأزرار المفضلة
+        setTimeout(() => {
+            document.querySelectorAll('.favorite-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const productId = btn.getAttribute('data-favorite-btn');
+                    FavoritesManager.toggle(productId);
+                });
+            });
+        }, 0);
     }
 
     // ==========================================
