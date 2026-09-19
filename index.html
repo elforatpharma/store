@@ -31,7 +31,7 @@
     <link rel="stylesheet" href="style.css">
 
     <!-- PWA & Mobile Meta -->
-    <meta name="theme-color" content="#0c4a34">
+    <meta name="theme-color" content="#c59b3f">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="الفرات فارما">
@@ -68,14 +68,14 @@
                 surfaceContainerHigh: '#e1e8fd',
                 surfaceContainerHighest: '#dce2f7',
                 onSurface: '#141b2b',
-                primary: '#0c4a34',
+                primary: '#c59b3f',
                 onPrimary: '#ffffff',
-                primaryContainer: '#003221',
-                onPrimaryContainer: '#7fb99c',
-                secondary: '#c59b3f',
+                primaryContainer: '#9a731c',
+                onPrimaryContainer: '#fcf8ee',
+                secondary: '#0c4a34',
                 onSecondary: '#ffffff',
-                secondaryContainer: '#9a731c',
-                onSecondaryContainer: '#fcf8ee',
+                secondaryContainer: '#003221',
+                onSecondaryContainer: '#7fb99c',
                 tertiary: '#00321e',
                 onTertiary: '#ffffff',
                 tertiaryContainer: '#004b30',
@@ -87,8 +87,8 @@
                 background: '#f9f9ff',
                 onBackground: '#141b2b',
                 surfaceVariant: '#dce2f7',
-                brandGradient: 'linear-gradient(90deg, #0c4a34 0%, #1e7b54 100%)',
-                brandGradientHover: 'linear-gradient(90deg, #083324 0%, #156344 100%)',
+                brandGradient: 'linear-gradient(90deg, #c59b3f 0%, #1e7b54 100%)',
+                brandGradientHover: 'linear-gradient(90deg, #9a731c 0%, #7a5900 100%)',
                 primarySurface: '#f3f6f4',
                 primaryBorder: '#eadbb6',
                 accentGlow: 'rgba(197, 155, 63, 0.35)',
@@ -101,9 +101,9 @@
                 softBg: '#F3F6F4',
               },
               boxShadow: {
-                'purple-soft': '0 10px 25px -5px rgba(12, 74, 52, 0.08)',
-                'purple-glow': '0 8px 30px rgba(12, 74, 52, 0.32)',
-                'purple-card': '0 20px 40px -15px rgba(12, 74, 52, 0.16)',
+                'purple-soft': '0 10px 25px -5px rgba(197, 155, 63, 0.08)',
+                'purple-glow': '0 8px 30px rgba(197, 155, 63, 0.32)',
+                'purple-card': '0 20px 40px -15px rgba(197, 155, 63, 0.16)',
                 'glass-glow': '0 0 25px rgba(197, 155, 63, 0.25)',
               },
               animation: {
@@ -154,7 +154,7 @@
     <!-- Sticky wrapper: marquee + navbar stick together with no gap between them -->
     <div class="sticky top-0 z-50">
     <!-- Top Announcement Marquee Bar with Shimmer & Live Countdown -->
-<div class="bg-gradient-to-r from-[#0c4a34] via-[#0c4a34] to-[#1e7b54] text-white py-2 px-4 text-xs font-medium shadow-md">
+<div class="bg-gradient-to-r from-[#c59b3f] via-[#c59b3f] to-[#1e7b54] text-white py-2 px-4 text-xs font-medium shadow-md">
 <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
 <!-- Live dynamic announcement badge -->
 <div id="offer-badges-wrap" class="flex items-center gap-2.5 overflow-hidden">
@@ -307,8 +307,8 @@
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-10 items-center">
 <!-- Right Column: Hero Content -->
 <div class="lg:col-span-7 flex flex-col items-start text-right">
-<h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display text-darkNavy leading-tight sm:leading-tight lg:leading-tight mb-5 tracking-tight">
-          اصنعي <span class="text-gradient drop-shadow-sm">جمالكِ الخاص</span>
+<h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display text-primary leading-tight sm:leading-tight lg:leading-tight mb-5 tracking-tight">
+          اصنعي <span class="drop-shadow-sm">جمالكِ الخاص</span>
 </h1>
 <p class="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mb-8 font-normal">
           نقدم لكِ أفضل المنتجات الطبيعية والعلاجية للعناية بالبشرة. حلول آمنة ومختبرة طبياً لتتألقي بإشراقة طبيعية تدوم طويلاً من خبراء التجميل في عالم الجمال.
@@ -807,28 +807,28 @@
             <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="flex items-center gap-3 bg-white border border-purple-100 rounded-2xl p-4 shadow-purple-soft">
-                        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-primary to-secondary text-white flex items-center justify-center text-base shrink-0"><i class="fa-solid fa-user-doctor"></i></div>
+                        <div class="w-11 h-11 rounded-xl bg-primary text-white flex items-center justify-center text-base shrink-0"><i class="fa-solid fa-user-doctor"></i></div>
                         <div>
                             <div class="text-xs font-black text-darkNavy">استشارة صيدلانية مجانية</div>
                             <div class="text-[10px] text-slate-500 font-semibold">فريق متخصص لمساعدتك</div>
                         </div>
                     </div>
                     <div class="flex items-center gap-3 bg-white border border-purple-100 rounded-2xl p-4 shadow-purple-soft">
-                        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-primary to-secondary text-white flex items-center justify-center text-base shrink-0"><i class="fa-solid fa-shield-heart"></i></div>
+                        <div class="w-11 h-11 rounded-xl bg-primary text-white flex items-center justify-center text-base shrink-0"><i class="fa-solid fa-shield-heart"></i></div>
                         <div>
                             <div class="text-xs font-black text-darkNavy">جودة مضمونة +2,000</div>
                             <div class="text-[10px] text-slate-500 font-semibold">منتجات اختارتها آلاف العميلات</div>
                         </div>
                     </div>
                     <div class="flex items-center gap-3 bg-white border border-purple-100 rounded-2xl p-4 shadow-purple-soft">
-                        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-primary to-secondary text-white flex items-center justify-center text-base shrink-0"><i class="fa-solid fa-truck-fast"></i></div>
+                        <div class="w-11 h-11 rounded-xl bg-primary text-white flex items-center justify-center text-base shrink-0"><i class="fa-solid fa-truck-fast"></i></div>
                         <div>
                             <div class="text-xs font-black text-darkNavy">شحن سريع ومجاني</div>
                             <div class="text-[10px] text-slate-500 font-semibold">لجميع المحافظات فوق 500 ج.م</div>
                         </div>
                     </div>
                     <div class="flex items-center gap-3 bg-white border border-purple-100 rounded-2xl p-4 shadow-purple-soft">
-                        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-primary to-secondary text-white flex items-center justify-center text-base shrink-0"><i class="fa-solid fa-leaf"></i></div>
+                        <div class="w-11 h-11 rounded-xl bg-primary text-white flex items-center justify-center text-base shrink-0"><i class="fa-solid fa-leaf"></i></div>
                         <div>
                             <div class="text-xs font-black text-darkNavy">تركيبات آمنة وطبية</div>
                             <div class="text-[10px] text-slate-500 font-semibold">مدروسة من خبراء العناية</div>

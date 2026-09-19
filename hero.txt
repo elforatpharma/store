@@ -6,8 +6,8 @@
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-10 items-center">
 <!-- Right Column: Hero Content -->
 <div class="lg:col-span-7 flex flex-col items-start text-right">
-<h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display text-darkNavy leading-tight sm:leading-tight lg:leading-tight mb-5 tracking-tight">
-          اصنعي <span class="text-gradient drop-shadow-sm">جمالكِ الخاص</span>
+<h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display text-primary leading-tight sm:leading-tight lg:leading-tight mb-5 tracking-tight">
+          اصنعي <span class="drop-shadow-sm">جمالكِ الخاص</span>
 </h1>
 <p class="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mb-8 font-normal">
           نقدم لكِ أفضل المنتجات الطبيعية والعلاجية للعناية بالبشرة. حلول آمنة ومختبرة طبياً لتتألقي بإشراقة طبيعية تدوم طويلاً من خبراء التجميل في عالم الجمال.

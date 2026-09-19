@@ -1237,7 +1237,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="grid grid-cols-2 gap-2">
                 <button onclick="event.stopPropagation(); app.buyNow('${sanitize(p.id)}')" class="btn-dark py-2.5 text-xs font-bold shadow-sm">اشتري الآن</button>
-                <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}')" class="btn-outline py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
+                <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}')" class="btn-add-cart py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
                     <i class="fa-solid fa-cart-plus text-xs"></i>
                     <span>أضف للسلة</span>
                 </button>
@@ -1625,9 +1625,9 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <input id="product-qty" type="number" value="1" min="1" max="${p.stock}" class="w-12 text-center font-bold border-x-2 border-gray-200 focus:outline-none" readonly>
                                 <button onclick="const qtyInput = document.getElementById('product-qty'); const newVal = Math.min(${p.stock}, parseInt(qtyInput.value) + 1); qtyInput.value = newVal;" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-r-full active:scale-95">+</button>
                             </div>
-                            <button onclick="app.addToCart('${p.id}', document.getElementById('product-qty').value)" class="flex-1 bg-primary text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:bg-black transition-all shadow-lg shadow-primary/30 active:scale-95">أضف للحقيبة</button>
+                            <button onclick="app.addToCart('${p.id}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">أضف للحقيبة</button>
                         </div>
-                        <button onclick="app.buyNow('${p.id}', document.getElementById('product-qty').value)" class="w-full bg-black text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:bg-primary transition-all active:scale-95">اشتري الآن</button>
+                        <button onclick="app.buyNow('${p.id}', document.getElementById('product-qty').value)" class="btn-dark w-full text-white font-bold uppercase text-sm tracking-widest py-4 active:scale-95">اشتري الآن</button>
                     </div>
                 </div>
             </div>
@@ -1639,8 +1639,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span class="text-base font-extrabold text-primary leading-tight">${sanitize(p.price)} <span class="text-[11px] font-bold text-slate-500">ج.م</span></span>
                         ${p.oldPrice ? `<span class="text-[11px] text-slate-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
                     </div>
-                    <button onclick="app.addToCart('${p.id}', document.getElementById('product-qty').value)" class="flex-1 bg-primary text-white font-bold text-xs uppercase tracking-widest py-3.5 rounded-full hover:bg-black transition-all shadow-lg shadow-primary/30 active:scale-95">أضف للحقيبة</button>
-                    <button onclick="app.buyNow('${p.id}', document.getElementById('product-qty').value)" class="bg-black text-white font-bold text-xs uppercase tracking-widest py-3.5 px-5 rounded-full hover:bg-primary transition-all active:scale-95">اشتري الآن</button>
+                    <button onclick="app.addToCart('${p.id}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold text-xs uppercase tracking-widest py-3.5 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">أضف للحقيبة</button>
+                    <button onclick="app.buyNow('${p.id}', document.getElementById('product-qty').value)" class="btn-dark text-white font-bold text-xs uppercase tracking-widest py-3.5 px-5 active:scale-95">اشتري الآن</button>
                 </div>
             </div>
             
@@ -1874,7 +1874,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ${!isOutOfStock ? `
                 <div class="grid grid-cols-2 gap-2">
                     <button onclick="event.stopPropagation(); app.buyNow('${sanitize(p.id)}')" class="btn-dark py-2.5 text-xs font-bold shadow-sm">اشتري الآن</button>
-                    <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}', 1)" class="btn-outline py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
+                    <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}', 1)" class="btn-add-cart py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
                         <i class="fa-solid fa-cart-plus text-xs"></i>
                         <span>أضف للحقيبة</span>
                     </button>
@@ -2031,7 +2031,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="grid grid-cols-2 gap-2">
                 <button onclick="event.stopPropagation(); app.buyNow('${sanitize(p.id)}')" class="btn-dark py-2.5 text-xs font-bold shadow-sm">اشتري الآن</button>
-                <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}', 1)" class="btn-outline py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
+                <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}', 1)" class="btn-add-cart py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
                     <i class="fa-solid fa-cart-plus text-xs"></i>
                     <span>أضف للسلة</span>
                 </button>
