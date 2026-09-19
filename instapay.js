@@ -10,6 +10,8 @@
  * الإعدادات بتتقرأ من جدول settings (الصف id = 1، عمود data) — نفس مكان اللوجو وصورة الهيرو:
  *   instapay_phone : رقم الهاتف اللي العميل يحوّل عليه (لو مش موجود بنستخدم DEFAULT_PHONE تحت)
  *   store_whatsapp : رقم واتساب المتجر (اختياري - لو مش موجود بنستخدم الرقم الافتراضي تحت)
+ *   instapay_link  : رابط الدفع الخاص بحسابك من تطبيق InstaPay (https://ipn.eg/S/.../instapay/...)
+ *                    اختياري، لكنه بيخلي زر "فتح تطبيق InstaPay" يفتح التطبيق فعلاً على الموبايل
  */
 window.InstaPayCheckout = (() => {
   const PAYMENT_VALUE = "instapay";
@@ -17,6 +19,7 @@ window.InstaPayCheckout = (() => {
   const ORDER_STATUS = "بانتظار تأكيد الدفع - InstaPay";
 
   const DEFAULT_WHATSAPP = "201146809133";
+  const DEFAULT_LINK = ""; // رابط الدفع الافتراضي (https://ipn.eg/S/.../instapay/...) لو عايزة تثبّتيه في الكود
   const DEFAULT_PHONE = "01065863803"; // رقم التحويل الافتراضي (لو مفيش instapay_phone صالح في الإعدادات)
   const ANDROID_PACKAGE = "com.egyptianbanks.instapay";
   const PLAY_URL = "https://play.google.com/store/apps/details?id=" + ANDROID_PACKAGE;
@@ -37,6 +40,13 @@ window.InstaPayCheckout = (() => {
     if (/^01[0-9]{9}$/.test(d)) return "2" + d;
     if (/^20[0-9]{10}$/.test(d)) return d;
     return "";
+  }
+
+  // بنقبل بس روابط InstaPay الرسمية (دومين ipn.eg) عشان محدش يقدر يوجّه العميل لموقع تاني
+  const LINK_RE = /^https:\/\/ipn\.eg\/S\/[A-Za-z0-9._-]+\/instapay\/[A-Za-z0-9]+$/;
+  function normalizeLink(v) {
+    const t = String(v || "").trim();
+    return LINK_RE.test(t) ? t : "";
   }
 
   function formatAmount(n) {
@@ -68,6 +78,7 @@ window.InstaPayCheckout = (() => {
     return {
       phone,
       whatsapp: normalizeWhatsApp(row.store_whatsapp) || DEFAULT_WHATSAPP,
+      link: normalizeLink(row.instapay_link) || normalizeLink(DEFAULT_LINK),
     };
   }
 
@@ -83,24 +94,37 @@ window.InstaPayCheckout = (() => {
   }
 
   /* ---------- فتح تطبيق InstaPay ----------
-   * أندرويد: Intent بالـ package بيفتح التطبيق، ولو مش منزّل بيروح لصفحته في Play Store.
-   * آيفون: مفيش رابط فتح مباشر منشور للتطبيق، فبنفتح صفحته في App Store (فيها زر "فتح" لو منزّل).
-   * الكمبيوتر: موقع InstaPay الرسمي. */
-  function openInstaPayApp() {
+   * ليه مش بنفتح التطبيق بالـ package لوحده: متصفح أندرويد بيرفض يشغّل أي Activity من صفحة ويب
+   * إلا لو التطبيق معلن إنه بيستقبل روابط (BROWSABLE)، وشاشة التشغيل العادية مش كده -> كان بيروح لـ Play Store.
+   * الحل: نبعت للتطبيق رابط ipn.eg (الدومين بتاع InstaPay) مع تحديد الـ package بتاعه.
+   *  - لو فيه instapay_link: بنفتح رابط الدفع نفسه، ولو التطبيق مش منزّل بيفتح الرابط في المتصفح.
+   *  - لو مفيش: بنجرب ipn.eg عموماً، ولو التطبيق مش بيستقبله بنروح لـ Play Store.
+   * آيفون: رابط الدفع (Universal Link) أو App Store. الكمبيوتر: رابط الدفع أو موقع InstaPay. */
+  function detectPlatform() {
     const ua = navigator.userAgent || "";
-    const isAndroid = /android/i.test(ua);
-    const isIOS = /iphone|ipad|ipod/i.test(ua) ||
-      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    if (/android/i.test(ua)) return "android";
+    if (/iphone|ipad|ipod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) return "ios";
+    return "desktop";
+  }
 
-    if (isAndroid) {
-      window.location.href =
-        "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;" +
-        `package=${ANDROID_PACKAGE};S.browser_fallback_url=${encodeURIComponent(PLAY_URL)};end`;
-    } else if (isIOS) {
-      window.open(IOS_URL, "_blank", "noopener");
-    } else {
-      window.open(WEB_URL, "_blank", "noopener");
+  function getOpenAppTarget(link, platform) {
+    if (platform === "android") {
+      const u = new URL(link || "https://ipn.eg/");
+      const fallback = link || PLAY_URL;
+      return {
+        mode: "navigate",
+        url: `intent://${u.host}${u.pathname}#Intent;scheme=https;package=${ANDROID_PACKAGE};` +
+             `S.browser_fallback_url=${encodeURIComponent(fallback)};end`,
+      };
     }
+    if (platform === "ios") return { mode: "open", url: link || IOS_URL };
+    return { mode: "open", url: link || WEB_URL };
+  }
+
+  function openInstaPayApp(config) {
+    const t = getOpenAppTarget(config && config.link, detectPlatform());
+    if (t.mode === "navigate") window.location.href = t.url;
+    else window.open(t.url, "_blank", "noopener");
   }
 
   async function copyText(text) {
@@ -295,7 +319,7 @@ window.InstaPayCheckout = (() => {
 
     // مقصود: الضغط على الخلفية مبيقفلش الـ Popup، عشان العميل ميضيعش بيانات التحويل بالغلط.
     overlay.querySelector(".ipx-close").onclick = close;
-    overlay.querySelector(".ipx-btn-app").onclick = openInstaPayApp;
+    overlay.querySelector(".ipx-btn-app").onclick = () => openInstaPayApp(config);
 
     const copyBtn = overlay.querySelector(".ipx-copy");
     const copyLive = overlay.querySelector(".ipx-phone .ipx-sr");
@@ -326,5 +350,5 @@ window.InstaPayCheckout = (() => {
     return { close };
   }
 
-  return { PAYMENT_VALUE, PAYMENT_LABEL, ORDER_STATUS, loadConfig, showPopup, buildWhatsAppUrl };
+  return { PAYMENT_VALUE, PAYMENT_LABEL, ORDER_STATUS, loadConfig, showPopup, buildWhatsAppUrl, getOpenAppTarget, normalizeLink };
 })();
