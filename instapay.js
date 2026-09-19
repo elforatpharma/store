@@ -19,7 +19,8 @@ window.InstaPayCheckout = (() => {
   const ORDER_STATUS = "بانتظار تأكيد الدفع - InstaPay";
 
   const DEFAULT_WHATSAPP = "201146809133";
-  const DEFAULT_LINK = ""; // رابط الدفع الافتراضي (https://ipn.eg/S/.../instapay/...) لو عايزة تثبّتيه في الكود
+  // حطي رابط الدفع بتاع حسابك بين علامتي التنصيص، مثال: "https://ipn.eg/S/name/instapay/AbC123"
+  const DEFAULT_LINK = "";
   const DEFAULT_PHONE = "01065863803"; // رقم التحويل الافتراضي (لو مفيش instapay_phone صالح في الإعدادات)
   const ANDROID_PACKAGE = "com.egyptianbanks.instapay";
   const PLAY_URL = "https://play.google.com/store/apps/details?id=" + ANDROID_PACKAGE;
@@ -94,12 +95,13 @@ window.InstaPayCheckout = (() => {
   }
 
   /* ---------- فتح تطبيق InstaPay ----------
-   * ليه مش بنفتح التطبيق بالـ package لوحده: متصفح أندرويد بيرفض يشغّل أي Activity من صفحة ويب
-   * إلا لو التطبيق معلن إنه بيستقبل روابط (BROWSABLE)، وشاشة التشغيل العادية مش كده -> كان بيروح لـ Play Store.
-   * الحل: نبعت للتطبيق رابط ipn.eg (الدومين بتاع InstaPay) مع تحديد الـ package بتاعه.
-   *  - لو فيه instapay_link: بنفتح رابط الدفع نفسه، ولو التطبيق مش منزّل بيفتح الرابط في المتصفح.
-   *  - لو مفيش: بنجرب ipn.eg عموماً، ولو التطبيق مش بيستقبله بنروح لـ Play Store.
-   * آيفون: رابط الدفع (Universal Link) أو App Store. الكمبيوتر: رابط الدفع أو موقع InstaPay. */
+   * متصفح أندرويد مبيفتحش من صفحة ويب غير الأنشطة المعلنة BROWSABLE، وتطبيق InstaPay
+   * الوحيد اللي بيستقبله من المتصفح هو روابط الدفع بتاعته (https://ipn.eg/S/.../instapay/...).
+   * وأي رابط ipn.eg مش صحيح بيفتح التطبيق ويكتب جواه "رابط غير صحيح" — عشان كده:
+   *  - لو فيه رابط دفع صحيح (instapay_link / DEFAULT_LINK): أندرويد بيفتحه في التطبيق مباشرة
+   *    (ولو التطبيق مش منزّل بيفتح الرابط في المتصفح)، وآيفون/الكمبيوتر بيفتحوا الرابط.
+   *  - لو مفيش رابط: مبنبعتش أي رابط للتطبيق، وبنفتح صفحة التطبيق في المتجر (فيها زر "فتح"
+   *    لو منزّل) بدل ما نعرض للعميل رسالة خطأ جوه التطبيق. */
   function detectPlatform() {
     const ua = navigator.userAgent || "";
     if (/android/i.test(ua)) return "android";
@@ -109,12 +111,12 @@ window.InstaPayCheckout = (() => {
 
   function getOpenAppTarget(link, platform) {
     if (platform === "android") {
-      const u = new URL(link || "https://ipn.eg/");
-      const fallback = link || PLAY_URL;
+      if (!link) return { mode: "open", url: PLAY_URL };
+      const u = new URL(link);
       return {
         mode: "navigate",
         url: `intent://${u.host}${u.pathname}#Intent;scheme=https;package=${ANDROID_PACKAGE};` +
-             `S.browser_fallback_url=${encodeURIComponent(fallback)};end`,
+             `S.browser_fallback_url=${encodeURIComponent(link)};end`,
       };
     }
     if (platform === "ios") return { mode: "open", url: link || IOS_URL };
