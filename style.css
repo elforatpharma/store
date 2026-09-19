@@ -1,39 +1,39 @@
 /* 1. تعريف الألوان كمتغيرات برمجية لسهولة التحكم */
 :root {
-    --surface: #faf8ff;
-    --surface-dim: #d2d9f4;
-    --surface-bright: #faf8ff;
+    --surface: #f9f9ff;
+    --surface-dim: #d3daef;
+    --surface-bright: #f9f9ff;
     --surface-container-lowest: #ffffff;
-    --surface-container-low: #f2f3ff;
-    --surface-container: #eaedff;
-    --surface-container-high: #e2e7ff;
-    --surface-container-highest: #dae2fd;
-    --on-surface: #131b2e;
-    --primary: #3312d5;
+    --surface-container-low: #f1f3ff;
+    --surface-container: #e9edff;
+    --surface-container-high: #e1e8fd;
+    --surface-container-highest: #dce2f7;
+    --on-surface: #141b2b;
+    --primary: #0c4a34;
     --on-primary: #ffffff;
-    --primary-container: #4d3ceb;
-    --on-primary-container: #d5d1ff;
-    --secondary: #6a00e1;
+    --primary-container: #003221;
+    --on-primary-container: #7fb99c;
+    --secondary: #c59b3f;
     --on-secondary: #ffffff;
-    --secondary-container: #8434fe;
-    --on-secondary-container: #f3e8ff;
-    --tertiary: #004f35;
+    --secondary-container: #9a731c;
+    --on-secondary-container: #fcf8ee;
+    --tertiary: #00321e;
     --on-tertiary: #ffffff;
-    --tertiary-container: #006a48;
-    --on-tertiary-container: #60eeb1;
+    --tertiary-container: #004b30;
+    --on-tertiary-container: #67be91;
     --error: #ba1a1a;
     --on-error: #ffffff;
     --error-container: #ffdad6;
     --on-error-container: #93000a;
-    --background: #faf8ff;
-    --on-background: #131b2e;
-    --surface-variant: #dae2fd;
-    --brand-gradient: linear-gradient(90deg, #4d3ceb 0%, #8536ff 100%);
-    --brand-gradient-hover: linear-gradient(90deg, #3f2fd4 0%, #7624f2 100%);
-    --primary-surface: #f5f3ff;
-    --primary-border: #ddd6fe;
-    --accent-glow: rgba(77, 60, 235, 0.3);
-    --success: #10b981;
+    --background: #f9f9ff;
+    --on-background: #141b2b;
+    --surface-variant: #dce2f7;
+    --brand-gradient: linear-gradient(90deg, #0c4a34 0%, #1e7b54 100%);
+    --brand-gradient-hover: linear-gradient(90deg, #083324 0%, #156344 100%);
+    --primary-surface: #f3f6f4;
+    --primary-border: #eadbb6;
+    --accent-glow: rgba(197, 155, 63, 0.35);
+    --success: #1e7b54;
     --warning: #f59e0b;
     --danger: #ef4444;
     --bg-pink-start: #ffafbd; /* وردي دافئ */
@@ -53,7 +53,7 @@ body {
     font-family: var(--site-font);
     
     /* إنشاء التدرج اللوني */
-    background: #faf8ff;
+    background: #f9f9ff;
     
     /* جعل الخلفية ثابتة أثناء السكرول لتعزيز تأثير الزجاج */
     background-attachment: fixed;
@@ -494,7 +494,7 @@ nav {
 .btn-buy-now-premium:hover { background: #ec135b; border-color: #ec135b; }
 
 .nav-link { color: #464556; transition: color 0.3s; position: relative; font-weight: 600; }
-.nav-link.text-primary { color: #3312d5; }
+.nav-link.text-primary { color: #0c4a34; }
 
 .catalog-tab-btn {
     font-size: 0.8rem;
@@ -502,13 +502,13 @@ nav {
     padding: 0.55rem 1.25rem;
     border-radius: 9999px;
     color: #464556;
-    background: #f5f3ff;
-    border: 1px solid rgba(77, 60, 235, 0.12);
+    background: #f3f6f4;
+    border: 1px solid rgba(12, 74, 52, 0.12);
     transition: all 0.25s ease;
     cursor: pointer;
 }
-.catalog-tab-btn:hover { background: rgba(77, 60, 235, 0.12); color: #3312d5; }
-.catalog-tab-btn.active { background: linear-gradient(135deg, #4D3CEB 0%, #8536FF 100%); color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(77, 60, 235, 0.25); }
+.catalog-tab-btn:hover { background: rgba(12, 74, 52, 0.12); color: #0c4a34; }
+.catalog-tab-btn.active { background: linear-gradient(135deg, #0c4a34 0%, #1e7b54 100%); color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(12, 74, 52, 0.25); }
 
 /* تحسينات التجاوب مع الجوال */
 @media (max-width: 768px) {
@@ -1192,18 +1192,18 @@ button[onclick*="buyNow"]:hover::after {
 }
 body {
   font-family: 'Tajawal', 'Cairo', sans-serif;
-  background-color: #F8FAFC;
-  color: #131B2E;
+  background-color: #F3F6F4;
+  color: #141b2b;
   overflow-x: hidden;
 }
 
 /* Glossy Shimmer CTA Effect */
 .btn-gradient-shimmer {
-  background: linear-gradient(135deg, #4D3CEB 0%, #8536FF 100%);
+  background: linear-gradient(135deg, #0c4a34 0%, #1e7b54 100%);
   position: relative;
   overflow: hidden;
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 10px 25px -4px rgba(77, 60, 235, 0.4);
+  box-shadow: 0 10px 25px -4px rgba(12, 74, 52, 0.4);
 }
 .btn-gradient-shimmer::after {
   content: '';
@@ -1223,7 +1223,7 @@ body {
 
 .btn-gradient-shimmer:hover {
   transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 14px 30px -2px rgba(133, 54, 255, 0.5);
+  box-shadow: 0 14px 30px -2px rgba(30, 123, 84, 0.5);
   filter: brightness(1.06);
 }
 
@@ -1240,17 +1240,17 @@ body {
 }
 
 .btn-outline {
-  border: 1.5px solid #4D3CEB;
-  color: #4D3CEB;
+  border: 1.5px solid #0c4a34;
+  color: #0c4a34;
   border-radius: 9999px;
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.95);
 }
 .btn-outline:hover {
-  background: #4D3CEB;
+  background: #0c4a34;
   color: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(77, 60, 235, 0.25);
+  box-shadow: 0 8px 20px rgba(12, 74, 52, 0.25);
 }
 
 .glass-nav {
@@ -1265,16 +1265,16 @@ body {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 14px 34px -10px rgba(77, 60, 235, 0.1);
+  box-shadow: 0 14px 34px -10px rgba(12, 74, 52, 0.1);
 }
 
 .badge-gradient {
-  background: linear-gradient(135deg, #4D3CEB 0%, #8536FF 100%);
+  background: linear-gradient(135deg, #0c4a34 0%, #1e7b54 100%);
   color: #ffffff;
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #4D3CEB 0%, #8536FF 100%);
+  background: linear-gradient(135deg, #0c4a34 0%, #1e7b54 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -1287,8 +1287,8 @@ body {
 }
 .pro-product-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 22px 35px -8px rgba(77, 60, 235, 0.16);
-  border-color: #C4B5FD;
+  box-shadow: 0 22px 35px -8px rgba(12, 74, 52, 0.16);
+  border-color: #eadbb6;
 }
 
 /* Heart button micro-animation */
@@ -1310,6 +1310,13 @@ body {
 }
 @keyframes badgeShine {
   to { background-position: 200% center; }
+}
+
+/* Gold Shimmer Badge - product card badges (logo gold) */
+.badge-gold-shimmer {
+  background: linear-gradient(90deg, #9a731c, #c59b3f, #e6c878, #c59b3f, #9a731c);
+  background-size: 200% auto;
+  animation: badgeShine 3s linear infinite;
 }
 
 /* Marquee ticker animation */
@@ -1344,11 +1351,11 @@ body {
   background: #F1F5F9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #C4B5FD;
+  background: #eadbb6;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #8536FF;
+  background: #1e7b54;
 }
 
 /* Testimonials marquee - continuous non-stop scroll to the left, never pauses */
@@ -1369,7 +1376,7 @@ body {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%236a00e1' stroke-width='1.8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23c59b3f' stroke-width='1.8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: left 1rem center;
   background-size: 1.05em;

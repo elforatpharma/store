@@ -31,7 +31,7 @@
     <link rel="stylesheet" href="style.css">
 
     <!-- PWA & Mobile Meta -->
-    <meta name="theme-color" content="#3312d5">
+    <meta name="theme-color" content="#0c4a34">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="الفرات فارما">
@@ -42,7 +42,7 @@
     <!-- Google Fonts: Cairo & Tajawal -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
@@ -56,55 +56,55 @@
             extend: {
               fontFamily: {
                 sans: ['Tajawal', 'Cairo', 'sans-serif'],
-                display: ['Cairo', 'sans-serif'],
+                display: ['Plus Jakarta Sans', 'Cairo', 'sans-serif'],
               },
               colors: {
-                surface: '#faf8ff',
-                surfaceDim: '#d2d9f4',
-                surfaceBright: '#faf8ff',
+                surface: '#f9f9ff',
+                surfaceDim: '#d3daef',
+                surfaceBright: '#f9f9ff',
                 surfaceContainerLowest: '#ffffff',
-                surfaceContainerLow: '#f2f3ff',
-                surfaceContainer: '#eaedff',
-                surfaceContainerHigh: '#e2e7ff',
-                surfaceContainerHighest: '#dae2fd',
-                onSurface: '#131b2e',
-                primary: '#3312d5',
+                surfaceContainerLow: '#f1f3ff',
+                surfaceContainer: '#e9edff',
+                surfaceContainerHigh: '#e1e8fd',
+                surfaceContainerHighest: '#dce2f7',
+                onSurface: '#141b2b',
+                primary: '#0c4a34',
                 onPrimary: '#ffffff',
-                primaryContainer: '#4d3ceb',
-                onPrimaryContainer: '#d5d1ff',
-                secondary: '#6a00e1',
+                primaryContainer: '#003221',
+                onPrimaryContainer: '#7fb99c',
+                secondary: '#c59b3f',
                 onSecondary: '#ffffff',
-                secondaryContainer: '#8434fe',
-                onSecondaryContainer: '#f3e8ff',
-                tertiary: '#004f35',
+                secondaryContainer: '#9a731c',
+                onSecondaryContainer: '#fcf8ee',
+                tertiary: '#00321e',
                 onTertiary: '#ffffff',
-                tertiaryContainer: '#006a48',
-                onTertiaryContainer: '#60eeb1',
+                tertiaryContainer: '#004b30',
+                onTertiaryContainer: '#67be91',
                 error: '#ba1a1a',
                 onError: '#ffffff',
                 errorContainer: '#ffdad6',
                 onErrorContainer: '#93000a',
-                background: '#faf8ff',
-                onBackground: '#131b2e',
-                surfaceVariant: '#dae2fd',
-                brandGradient: 'linear-gradient(90deg, #4d3ceb 0%, #8536ff 100%)',
-                brandGradientHover: 'linear-gradient(90deg, #3f2fd4 0%, #7624f2 100%)',
-                primarySurface: '#f5f3ff',
-                primaryBorder: '#ddd6fe',
-                accentGlow: 'rgba(77, 60, 235, 0.3)',
-                success: '#10b981',
+                background: '#f9f9ff',
+                onBackground: '#141b2b',
+                surfaceVariant: '#dce2f7',
+                brandGradient: 'linear-gradient(90deg, #0c4a34 0%, #1e7b54 100%)',
+                brandGradientHover: 'linear-gradient(90deg, #083324 0%, #156344 100%)',
+                primarySurface: '#f3f6f4',
+                primaryBorder: '#eadbb6',
+                accentGlow: 'rgba(197, 155, 63, 0.35)',
+                success: '#1e7b54',
                 warning: '#f59e0b',
                 danger: '#ef4444',
 
-                darkNavy: '#131B2E',
-                deepGray: '#64748B',
-                softBg: '#F8FAFC',
+                darkNavy: '#141b2b',
+                deepGray: '#404943',
+                softBg: '#F3F6F4',
               },
               boxShadow: {
-                'purple-soft': '0 10px 25px -5px rgba(77, 60, 235, 0.08)',
-                'purple-glow': '0 8px 30px rgba(77, 60, 235, 0.32)',
-                'purple-card': '0 20px 40px -15px rgba(77, 60, 235, 0.16)',
-                'glass-glow': '0 0 25px rgba(133, 54, 255, 0.25)',
+                'purple-soft': '0 10px 25px -5px rgba(12, 74, 52, 0.08)',
+                'purple-glow': '0 8px 30px rgba(12, 74, 52, 0.32)',
+                'purple-card': '0 20px 40px -15px rgba(12, 74, 52, 0.16)',
+                'glass-glow': '0 0 25px rgba(197, 155, 63, 0.25)',
               },
               animation: {
                 'float-slow': 'floating 5s ease-in-out infinite',
@@ -154,7 +154,7 @@
     <!-- Sticky wrapper: marquee + navbar stick together with no gap between them -->
     <div class="sticky top-0 z-50">
     <!-- Top Announcement Marquee Bar with Shimmer & Live Countdown -->
-<div class="bg-gradient-to-r from-[#3312D5] via-[#4D3CEB] to-[#8536FF] text-white py-2 px-4 text-xs font-medium shadow-md">
+<div class="bg-gradient-to-r from-[#0c4a34] via-[#0c4a34] to-[#1e7b54] text-white py-2 px-4 text-xs font-medium shadow-md">
 <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
 <!-- Live dynamic announcement badge -->
 <div id="offer-badges-wrap" class="flex items-center gap-2.5 overflow-hidden">
@@ -227,7 +227,7 @@
 </a>
 </nav>
 <!-- Search Bar -->
-<div class="hidden md:flex flex-1 max-w-xs xl:max-w-sm mx-2">
+<div class="hidden lg:flex flex-1 max-w-xs xl:max-w-sm mx-2">
 <div class="relative w-full group">
 <input type="text" id="desktop-search-input" placeholder="ابحث عن منتج..." class="w-full bg-slate-100/80 hover:bg-white border border-slate-200/80 focus:bg-white text-darkNavy text-xs rounded-full pr-10 pl-4 py-2.5 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-slate-400" oninput="app.handleSearch(this.value)" autocomplete="off">
 <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
@@ -260,7 +260,7 @@
 </header>
     </div>
 <!-- Mobile Search Bar -->
-<div class="p-3 bg-white border-b border-purple-50 md:hidden">
+<div class="p-3 bg-white border-b border-purple-50 lg:hidden">
 <div class="relative w-full">
 <input type="text" id="mobile-search-input" placeholder="ابحث عن منتج..." class="w-full bg-slate-50 border border-purple-100 text-darkNavy text-xs rounded-full pr-9 pl-4 py-2.5 focus:outline-none focus:border-primary shadow-inner" oninput="app.handleSearch(this.value)" autocomplete="off">
 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-primary">
@@ -455,7 +455,7 @@
                     <button class="catalog-tab-btn" data-filter="العناية بالشعر" onclick="app.navigate('catalog', 'العناية بالشعر')">العناية بالشعر</button>
                     <button class="catalog-tab-btn" data-filter="مجموعات متكاملة" onclick="app.navigate('catalog', 'مجموعات متكاملة')">المجموعات والعروض</button>
                 </div>
-                <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 text-right">
+                <div id="catalog-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10 text-right">
                     </div>
 
                 <!-- قسم المجموعات المتكاملة -->
@@ -465,7 +465,7 @@
                         <h2 class="text-3xl font-black tracking-tight text-darkNavy font-display mt-1">المجموعات المتكاملة</h2>
                         <p class="text-gray-500 text-sm mt-2">وفّري أكتر مع مجموعاتنا المتكاملة المختارة بعناية</p>
                     </div>
-                    <div id="bundles-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 text-right">
+                    <div id="bundles-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10 text-right">
                     </div>
                 </div>
             </section>
@@ -486,7 +486,7 @@
 <div class="testimonials-marquee-wrapper overflow-hidden" dir="ltr">
 <div class="testimonials-track flex gap-6 w-max" dir="ltr">
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
@@ -503,7 +503,7 @@
 </div>
 </div>
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
@@ -520,7 +520,7 @@
 </div>
 </div>
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
@@ -537,7 +537,7 @@
 </div>
 </div>
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
@@ -554,7 +554,7 @@
 </div>
 </div>
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
@@ -571,7 +571,7 @@
 </div>
 </div>
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
@@ -588,7 +588,7 @@
 </div>
 </div>
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
@@ -605,7 +605,7 @@
 </div>
 </div>
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
@@ -622,7 +622,7 @@
 </div>
 </div>
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
@@ -639,7 +639,7 @@
 </div>
 </div>
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
@@ -656,7 +656,7 @@
 </div>
 </div>
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
@@ -673,7 +673,7 @@
 </div>
 </div>
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
@@ -690,7 +690,7 @@
 </div>
 </div>
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
@@ -707,7 +707,7 @@
 </div>
 </div>
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
@@ -724,7 +724,7 @@
 </div>
 </div>
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
@@ -741,7 +741,7 @@
 </div>
 </div>
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-80 md:w-96 flex-shrink-0" dir="rtl">
+<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
@@ -856,7 +856,7 @@
             <section id="related-products" class="mt-20 pt-16 border-t border-purple-100 hidden">
                 <h2 class="text-3xl font-black text-darkNavy font-display mb-2 text-right">قد يعجبك أيضاً</h2>
                 <p class="text-slate-500 mb-8 text-right">منتجات مختارة بعناية تناسب اختيارك</p>
-                <div id="related-products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 text-right"></div>
+                <div id="related-products-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10 text-right"></div>
             </section>
         </div>
         
@@ -942,7 +942,7 @@
             </svg>
             المنتجات المفضلة
         </h1>
-        <div id="favorites-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 text-right">
+        <div id="favorites-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10 text-right">
         </div>
         <div id="favorites-empty" class="hidden text-center py-20">
             <div class="relative inline-block mb-6">
