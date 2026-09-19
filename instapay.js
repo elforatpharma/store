@@ -100,8 +100,9 @@ window.InstaPayCheckout = (() => {
    * وأي رابط ipn.eg مش صحيح بيفتح التطبيق ويكتب جواه "رابط غير صحيح" — عشان كده:
    *  - لو فيه رابط دفع صحيح (instapay_link / DEFAULT_LINK): أندرويد بيفتحه في التطبيق مباشرة
    *    (ولو التطبيق مش منزّل بيفتح الرابط في المتصفح)، وآيفون/الكمبيوتر بيفتحوا الرابط.
-   *  - لو مفيش رابط: مبنبعتش أي رابط للتطبيق، وبنفتح صفحة التطبيق في المتجر (فيها زر "فتح"
-   *    لو منزّل) بدل ما نعرض للعميل رسالة خطأ جوه التطبيق. */
+   *  - لو مفيش رابط: مبنبعتش أي رابط للتطبيق (عشان مايظهرش "رابط غير صحيح")، وبنطلب من Google Play
+   *    يشغّل التطبيق (market://launch). ده مش موثّق رسمياً لتشغيل التطبيقات المنزّلة،
+   *    فلو مشتغلش على الجهاز بيفتح صفحة التطبيق في المتجر (فيها زر "فتح"). */
   function detectPlatform() {
     const ua = navigator.userAgent || "";
     if (/android/i.test(ua)) return "android";
@@ -111,7 +112,15 @@ window.InstaPayCheckout = (() => {
 
   function getOpenAppTarget(link, platform) {
     if (platform === "android") {
-      if (!link) return { mode: "open", url: PLAY_URL };
+      if (!link) {
+        // من غير أي رابط أو بيانات للتطبيق: بنطلب من Google Play يشغّل التطبيق (market://launch)،
+        // ولو ملقاش/مش بيدعمها بيفتح صفحة التطبيق في المتجر (وفيها زر "فتح").
+        return {
+          mode: "navigate",
+          url: `intent://launch?id=${ANDROID_PACKAGE}#Intent;scheme=market;package=com.android.vending;` +
+               `S.browser_fallback_url=${encodeURIComponent(PLAY_URL)};end`,
+        };
+      }
       const u = new URL(link);
       return {
         mode: "navigate",

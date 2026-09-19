@@ -1,5 +1,5 @@
 // Service Worker for Elforat Pharma PWA
-const CACHE_NAME = 'elforat-cache-v3';
+const CACHE_NAME = 'elforat-cache-v5';
 const STATIC_ASSETS = [
   './',
   './index.html',
