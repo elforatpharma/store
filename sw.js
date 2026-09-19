@@ -1,11 +1,13 @@
 // Service Worker for Elforat Pharma PWA
-const CACHE_NAME = 'elforat-cache-v2';
+const CACHE_NAME = 'elforat-cache-v3';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './style.css',
   './analysis.js',
   './paymob.js',
+  './instapay.js',
+  './instapay-logo.png',
   './manifest.json',
   './logo.png',
   './icon-192.png',

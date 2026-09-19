@@ -2135,6 +2135,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
+            // ===== InstaPay: تحويل يدوي + إرسال الإيصال على واتساب =====
+            // بنجيب رقم التحويل الحالي من الإعدادات قبل تسجيل الطلب؛ لو مش متاح مفيش طلب بيتسجل.
+            const isInstapay = payment === 'instapay';
+            let instapayConfig = null;
+            if (isInstapay) {
+                try {
+                    if (!window.InstaPayCheckout) throw new Error('ملف الدفع عبر InstaPay (instapay.js) غير محمل.');
+                    submitBtn.innerText = 'جاري تجهيز بيانات التحويل...';
+                    instapayConfig = await window.InstaPayCheckout.loadConfig(_supabase);
+                } catch (ipErr) {
+                    showCustomAlert(ipErr.message || 'الدفع عبر InstaPay غير متاح حاليًا.', 'error');
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    return;
+                }
+            }
+            const orderStatus = isInstapay ? window.InstaPayCheckout.ORDER_STATUS : 'قيد التنفيذ';
+            let instapayOrderNo = null;
+
             // [تحديث أمان]: إعادة جلب الأسعار الحقيقية من قاعدة البيانات والتحقق من الكوبون
             // لمنع أي تلاعب محتمل في localStorage أو أدوات المطور (DevTools)
             const dbPriceMap = new Map();
@@ -2222,14 +2241,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     cart_total: finalTotal,
                     metadata: { payment, items_count: orderItems.length }
                 });
-                const paymentLabel = payment === 'paymob-card' ? 'بطاقة بنكية (Paymob)' : payment;
+                const paymentLabel = payment === 'paymob-card' ? 'بطاقة بنكية (Paymob)' : (isInstapay ? window.InstaPayCheckout.PAYMENT_LABEL : payment);
                 const merchantId = 'elforat-' + Date.now();
                 const orderData = {
                     customerName: name,
                     phone: phone,
                     address: address,
                     total: finalTotal,
-                    status: 'قيد التنفيذ',
+                    status: orderStatus,
                     payment_status: 'pending',
                     date: new Date().toLocaleString('ar-EG'),
                     items: orderItems,
@@ -2258,13 +2277,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         phone: phone,
                         address: address,
                         total: finalTotal,
-                        status: 'قيد التنفيذ',
+                        status: orderStatus,
                         date: new Date().toLocaleString('ar-EG'),
                         items: orderItems
                     };
                     const { data: minOrder, error: minError } = await _supabase.from('orders').insert([minimalData]).select('id').single();
                     if (!minError && minOrder) orderData.id = minOrder.id;
                 }
+
+                // رقم الطلب المعروض للعميل في رسالة InstaPay
+                instapayOrderNo = (orderData.id != null && /^\d{1,10}$/.test(String(orderData.id))) ? orderData.id : merchantId;
 
                 // زيادة عداد استخدام الكوبون بعد نجاح الطلب
                 if (couponCode) {
@@ -2281,6 +2303,32 @@ document.addEventListener("DOMContentLoaded", () => {
                 }).catch(() => { });
             } catch (err) {
                 console.error("خطأ في تسجيل الطلب بسوبابيز، جاري استكمال التحويل للواتساب...", err);
+            }
+
+            if (isInstapay) {
+                const paidTotal = finalTotal;
+                cart = [];
+                saveCart();
+                appliedCoupon = null;
+                saveCoupon();
+                updateBadge();
+                checkoutForm.reset();
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+
+                trackStoreEvent('payment_started', {
+                    coupon_code: couponCode,
+                    cart_total: paidTotal,
+                    metadata: { provider: 'instapay' }
+                });
+
+                window.InstaPayCheckout.showPopup({
+                    orderNo: instapayOrderNo,
+                    total: paidTotal,
+                    config: instapayConfig,
+                    onClose: () => app.navigate('home')
+                });
+                return;
             }
 
             let message = `*طلب جديد من موقع Elforat Pharma* 🛍️\n\n`;
