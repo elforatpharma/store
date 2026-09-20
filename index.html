@@ -30,6 +30,21 @@
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="stylesheet" href="style.css">
 
+    <!-- تسريع المنتجات: فتح الاتصال بسوبابيز وخدمة الصور بدري + بدء طلب المنتجات قبل ما باقي السكريبتات تخلّص تحميل -->
+    <link rel="preconnect" href="https://sidtdxchiqiogfkwbdui.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://wsrv.nl">
+    <script>
+        (function () {
+            try {
+                var base = 'https://sidtdxchiqiogfkwbdui.supabase.co';
+                var key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZHRkeGNoaXFpb2dma3diZHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTEyMTAsImV4cCI6MjA4OTY4NzIxMH0.QF1-67Qu2HfWJt3ANSegM87fykOYQBwqC7ggLG8LTVU';
+                window.__productsPrefetch = fetch(base + '/rest/v1/products?select=*&order=priority.desc&limit=1000', {
+                    headers: { apikey: key, Authorization: 'Bearer ' + key }
+                }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+            } catch (e) { window.__productsPrefetch = null; }
+        })();
+    </script>
+
     <!-- PWA & Mobile Meta -->
     <meta name="theme-color" content="#c59b3f">
     <meta name="apple-mobile-web-app-capable" content="yes">

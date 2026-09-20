@@ -465,7 +465,8 @@ document.addEventListener("DOMContentLoaded", () => {
     window.handleImgError = handleImgError;
 
     const PRODUCTS_CACHE_KEY = 'elforat_products_cache_v3';
-    const PRODUCTS_CACHE_TTL = 5 * 60 * 1000;
+    // الكاش بيتعرض فوراً حتى لو قديم (لحد 7 أيام)، وبعدها بيتحدّث من السيرفر في الخلفية
+    const PRODUCTS_CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
 
     // تقييمات متفاوتة وثابتة لكل منتج (بدل ما تبقى كلها 4.9)
     function computeRatingForId(id) {
@@ -545,7 +546,9 @@ document.addEventListener("DOMContentLoaded", () => {
     async function fetchProducts() {
         AppState.setState({ status: 'loading' });
         const cachedProducts = readProductsCache();
-        if (cachedProducts) {
+        const hadCache = !!cachedProducts;
+        let dataChanged = false;
+        if (hadCache) {
             productsDB = cachedProducts;
             renderCatalog(null, '');
             updateCategoryCounts();
@@ -553,6 +556,7 @@ document.addEventListener("DOMContentLoaded", () => {
             renderSkeletonLoading();
         }
 
+        const refresh = (async () => {
         try {
             // [تعديل الترتيب]: جلب المنتجات مرتبة حسب الـ ID لضمان الترتيب القديم
             // [تعديل Pagination]: سوبابيز/PostgREST بيرجع 1000 صف بحد أقصى في أي
@@ -561,6 +565,16 @@ document.addEventListener("DOMContentLoaded", () => {
             // نوصل لآخر صفحة (بترجع صفوف أقل من حجم الصفحة).
             const PRODUCTS_PAGE_SIZE = 1000;
             async function fetchAllProductsPaged() {
+                // [تسريع]: index.html بيبدأ طلب المنتجات قبل ما الصفحة تخلّص تحميل،
+                // فنستخدم نتيجته لو نجح (ولو فشل بنكمل بالطريقة العادية تحت).
+                try {
+                    if (window.__productsPrefetch) {
+                        const early = await window.__productsPrefetch;
+                        window.__productsPrefetch = null; // مرة واحدة بس
+                        if (Array.isArray(early) && early.length < PRODUCTS_PAGE_SIZE) return early;
+                    }
+                } catch (_) { window.__productsPrefetch = null; }
+
                 let all = [];
                 let from = 0;
                 while (true) {
@@ -587,7 +601,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await fetchWithRetry();
 
-            productsDB = normalizeProducts(data);
+            const freshProducts = normalizeProducts(data);
+            dataChanged = !hadCache || JSON.stringify(freshProducts) !== JSON.stringify(cachedProducts);
+            productsDB = freshProducts;
             writeProductsCache(productsDB);
 
             AppState.setState({ status: 'success' });
@@ -597,7 +613,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // ملحوظة: الـ IDs دي (p1/b1/b2/b3) مش موجودة فعلياً في جدول products
             // وبالتالي أي محاولة شراء منها هتترفض من الـ trigger الأمني على السيرفر.
             // دي بيانات احتياطية للعرض فقط في حالة انقطاع الاتصال بالكامل بقاعدة البيانات.
-            productsDB = [
+            if (!hadCache) productsDB = [
                 { id: 'p1', name: 'Guzel Gold Serum', category: 'العناية بالشعر', price: 250, oldPrice: 350, img: getFullImg('guzel_gold.png'), badge: 'خصم 28%', rating: 4.8 },
                 { id: 'b1', name: 'مجموعة الديتوكس والترطيب', category: 'مجموعات متكاملة', price: 125, oldPrice: 175, img: getFullImg('group1.png'), badge: 'توفير', rating: 4.5 },
                 { id: 'b2', name: 'مجموعة العناية الفائقة بالمناطق الحساسة', category: 'مجموعات متكاملة', price: 280, oldPrice: 380, img: getFullImg('group2.png'), badge: 'عرض خاص', rating: 4.7 },
@@ -607,9 +623,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // الهدايا تُجلب ديناميكياً من سوبابيز عبر loadGifts()
 
-            renderCatalog(null, '');
-            updateCategoryCounts();
+            if (!hadCache || dataChanged) {
+                // نحافظ على الفلتر/البحث اللي الزائر فيهم دلوقتي بدل ما نرجّعه لكل المنتجات
+                const key = catalogLastFilterKey || '|';
+                const sep = key.indexOf('|');
+                const curFilter = sep === -1 ? '' : key.slice(0, sep);
+                const curSearch = sep === -1 ? '' : key.slice(sep + 1);
+                renderCatalog(curFilter || null, curSearch, { keepPage: true });
+                updateCategoryCounts();
+                // لو الزائر فاتح رابط منتج جديد مش موجود في الكاش القديم
+                if (hadCache && /^#product/.test(location.hash) && typeof window.restoreViewFromHash === 'function') {
+                    window.restoreViewFromHash();
+                }
+            }
         }
+        })();
+
+        // لو فيه نسخة محفوظة: نعرضها فوراً ونكمّل التحديث في الخلفية بدون ما نأخّر باقي الصفحة.
+        // لو مفيش (أول زيارة): نستنى الجلب من السيرفر زي الأول.
+        return hadCache ? undefined : refresh;
     }
 
     const imageObserver = new MutationObserver(mutations => {
