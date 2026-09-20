@@ -430,13 +430,39 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // دالة إصلاح المسارات لضمان ظهور الصور من فولدر uploads
+    // دالة إصلاح المسارات لضمان ظهور الصور من فولدر uploads (النسخة الأصلية بالحجم الكامل)
     function getFullImg(path) {
         if (!path) return 'logo.png';
         if (path.startsWith('http')) return path;
         const cleanPath = path.replace('uploads/', '');
         return `${supabaseUrl}/storage/v1/object/public/products/uploads/${cleanPath}`;
     }
+
+    // [تحسين أداء]: نسخة مصغّرة ومضغوطة من الصورة عبر خدمة wsrv.nl المجانية
+    // (بروكسي تصغير صور مجاني وبدون تسجيل، بيشتغل مع أي صورة عامة على الإنترنت)
+    // - استخدمنا الخدمة دي بدل Supabase Image Transformations لأنها مش مفعّلة
+    // في خطة Supabase الحالية. لو الخدمة اتأخرت أو فشلت لأي سبب، الـ onerror
+    // في الـ <img> (شوفي handleImgError تحت) بيرجع تلقائياً للصورة الأصلية
+    // بالحجم الكامل، فمفيش أي كسر في العرض حتى لو الخدمة الخارجية وقعت.
+    function getOptimizedImg(path, width = 500, quality = 70) {
+        const fullUrl = getFullImg(path);
+        if (!fullUrl.startsWith('http')) return fullUrl; // لوجو محلي مثلاً - سيبه زي ما هو
+        return `https://wsrv.nl/?url=${encodeURIComponent(fullUrl)}&w=${width}&q=${quality}&output=webp`;
+    }
+
+    // معالج موحّد لفشل تحميل الصور: أول محاولة فشل بترجع للصورة الأصلية،
+    // ولو دي كمان فشلت بيرجع للوجو كحل أخير (بدل ما تفضل مكسورة).
+    function handleImgError(imgEl, fallbackUrl) {
+        if (!imgEl) return;
+        if (imgEl.dataset.imgFallback === '1') {
+            imgEl.onerror = null;
+            imgEl.src = 'logo.png';
+            return;
+        }
+        imgEl.dataset.imgFallback = '1';
+        imgEl.src = fallbackUrl || 'logo.png';
+    }
+    window.handleImgError = handleImgError;
 
     const PRODUCTS_CACHE_KEY = 'elforat_products_cache_v3';
     const PRODUCTS_CACHE_TTL = 5 * 60 * 1000;
@@ -460,6 +486,7 @@ document.addEventListener("DOMContentLoaded", () => {
             price: parseFloat(p.price) || 0,
             oldPrice: p.oldPrice || null,
             img: getFullImg(p.img),
+            imgThumb: getOptimizedImg(p.img, 500, 70),
             badge: p.badge || '',
             desc: p.desc || '',
             ingredients: p.ingredients || '',
@@ -528,22 +555,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             // [تعديل الترتيب]: جلب المنتجات مرتبة حسب الـ ID لضمان الترتيب القديم
-            const fetchWithRetry = ErrorHandler.retry(async () => {
-                let { data, error } = await _supabase
-                    .from('products')
-                    .select('*')
-                    .order('priority', { ascending: false });
-
-                if (error) {
-                    console.warn('Optimized products query failed, falling back:', error.message);
-                    ({ data, error } = await _supabase
+            // [تعديل Pagination]: سوبابيز/PostgREST بيرجع 1000 صف بحد أقصى في أي
+            // طلب واحد (limit افتراضي)، فلو عدد المنتجات زاد عن كده هتتقطع بصمت
+            // من غير أي خطأ. الحل: جلب البيانات على دفعات بـ .range() لحد ما
+            // نوصل لآخر صفحة (بترجع صفوف أقل من حجم الصفحة).
+            const PRODUCTS_PAGE_SIZE = 1000;
+            async function fetchAllProductsPaged() {
+                let all = [];
+                let from = 0;
+                while (true) {
+                    const to = from + PRODUCTS_PAGE_SIZE - 1;
+                    const { data: page, error } = await _supabase
                         .from('products')
                         .select('*')
-                        .order('priority', { ascending: false }));
-                }
+                        .order('priority', { ascending: false })
+                        .range(from, to);
 
-                if (error) throw error;
-                return data;
+                    if (error) throw error;
+                    if (!page || page.length === 0) break;
+
+                    all = all.concat(page);
+                    if (page.length < PRODUCTS_PAGE_SIZE) break; // ده آخر صفحة
+                    from += PRODUCTS_PAGE_SIZE;
+                }
+                return all;
+            }
+
+            const fetchWithRetry = ErrorHandler.retry(async () => {
+                return await fetchAllProductsPaged();
             }, AppState.maxRetries);
 
             const data = await fetchWithRetry();
@@ -803,6 +842,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     window.app = {
         searchTerm: '',
+        // [تحسين أداء]: زرار "عرض المزيد" - بيزوّد عدد المنتجات الظاهرة
+        // بدل ما كل المنتجات (وصورها) تتحمل مرة واحدة في الكتالوج
+        loadMoreCatalog: function () {
+            catalogVisibleCount += CATALOG_PAGE_SIZE;
+            const activeTab = document.querySelector('.catalog-tab-btn.active');
+            const currentFilter = activeTab ? (activeTab.getAttribute('data-filter') || null) : null;
+            renderCatalog(currentFilter, this.searchTerm, { keepPage: true });
+        },
         navigate: function (viewId, param = null, addToHistory = true) {
             const doNav = () => {
                 if (addToHistory) history.pushState({ viewId, param }, "", param ? `#${viewId}?item=${param}` : `#${viewId}`);
@@ -890,7 +937,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${suggestions.map(p => `
                         <div onclick="app.navigate('product', '${sanitize(p.id)}'); app.hideSearchSuggestions();" 
                              class="flex items-center gap-3 px-4 py-3 hover:bg-primary/5 cursor-pointer transition-colors group">
-                            <img src="${sanitize(p.img)}" loading="lazy" class="w-10 h-10 object-contain rounded-lg bg-gray-50 group-hover:scale-110 transition-transform">
+                            <img src="${sanitize(getOptimizedImg(p.img, 80, 70))}" loading="lazy" class="w-10 h-10 object-contain rounded-lg bg-gray-50 group-hover:scale-110 transition-transform" onerror="handleImgError(this, '${sanitize(p.img)}')">
                             <div class="flex-1 text-right">
                                 <p class="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">${sanitize(p.name)}</p>
                                 <p class="text-xs text-gray-500">${sanitize(p.category)}</p>
@@ -1214,7 +1261,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </button>
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
-        <img src="${sanitize(p.img)}" loading="lazy" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="this.src='logo.png'">
+        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
         <span class="absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
@@ -1247,7 +1294,25 @@ document.addEventListener("DOMContentLoaded", () => {
 </article>`;
     }
 
-    function renderCatalog(filter = null, searchTerm = '') {
+    // [تحسين أداء]: عرض المنتجات على دفعات بدل تحميل الكتالوج كله وصوره
+    // مرة واحدة في الـ DOM. مهم لما عدد المنتجات يكبر (مئات/آلاف).
+    const CATALOG_PAGE_SIZE = 24;
+    let catalogVisibleCount = CATALOG_PAGE_SIZE;
+    let catalogLastFilterKey = null;
+
+    function buildLoadMoreControl(totalCount, visibleCount) {
+        if (totalCount <= visibleCount) return '';
+        const remaining = totalCount - visibleCount;
+        return `
+            <div class="col-span-full flex justify-center pt-4 pb-2">
+                <button onclick="app.loadMoreCatalog()" class="btn-outline px-8 py-3.5 rounded-full font-bold text-sm flex items-center gap-2.5">
+                    <i class="fa-solid fa-arrow-down"></i>
+                    عرض المزيد (متبقي ${remaining} منتج)
+                </button>
+            </div>`;
+    }
+
+    function renderCatalog(filter = null, searchTerm = '', options = {}) {
         const grid = document.getElementById('catalog-grid');
         const bundlesSection = document.getElementById('bundles-section');
         const bundlesGrid = document.getElementById('bundles-grid');
@@ -1266,6 +1331,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 (p.desc && p.desc.toLowerCase().includes(searchTerm))
             );
         }
+
+        // إعادة ضبط الصفحة الأولى تلقائياً كل ما الفلتر أو البحث يتغيّر فعلياً
+        // (استدعاء "عرض المزيد" بيبعت keepPage:true عشان يحافظ على العدد الحالي)
+        const filterKey = `${filter || ''}|${searchTerm || ''}`;
+        if (!options.keepPage || filterKey !== catalogLastFilterKey) {
+            catalogVisibleCount = CATALOG_PAGE_SIZE;
+        }
+        catalogLastFilterKey = filterKey;
 
         // تحديث عنوان القسم وتفعيل التبويب المطابق
         const heading = document.getElementById('catalog-heading');
@@ -1303,8 +1376,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // عند فلترة المجموعات فقط، تُعرض كلها في الشبكة الرئيسية بدون صف منفصل
         if (filter === 'مجموعات متكاملة') {
+            const visibleBundles = products.slice(0, catalogVisibleCount);
             if (grid) {
-                grid.innerHTML = products.map((p, index) => buildProductCard(p, index)).join('');
+                grid.innerHTML = visibleBundles.map((p, index) => buildProductCard(p, index)).join('')
+                    + buildLoadMoreControl(products.length, catalogVisibleCount);
             }
             if (bundlesSection) bundlesSection.style.display = 'none';
             if (bundlesGrid) bundlesGrid.innerHTML = '';
@@ -1312,9 +1387,11 @@ document.addEventListener("DOMContentLoaded", () => {
             // فصل المجموعات المتكاملة (زي مجموعة الديتوكس وما بعدها) عن المنتجات الفردية
             const individualProducts = products.filter(p => p.category !== 'مجموعات متكاملة');
             const bundleProducts = products.filter(p => p.category === 'مجموعات متكاملة');
+            const visibleIndividual = individualProducts.slice(0, catalogVisibleCount);
 
             if (grid) {
-                grid.innerHTML = individualProducts.map((p, index) => buildProductCard(p, index)).join('');
+                grid.innerHTML = visibleIndividual.map((p, index) => buildProductCard(p, index)).join('')
+                    + buildLoadMoreControl(individualProducts.length, catalogVisibleCount);
             }
 
             if (bundleProducts.length > 0 && bundlesGrid && bundlesSection) {
@@ -1848,7 +1925,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </button>
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
-        <img src="${sanitize(p.img)}" loading="lazy" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="this.src='logo.png'">
+        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
         <span class="absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
@@ -2012,7 +2089,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </button>
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
-        <img src="${sanitize(p.img)}" loading="lazy" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="this.src='logo.png'">
+        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
         <span class="absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
@@ -2151,7 +2228,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
             }
-            const orderStatus = isInstapay ? window.InstaPayCheckout.ORDER_STATUS : 'قيد التنفيذ';
+            // الحالة والكود بييجوا من المصدر الموحّد (order-status.js) بدل نصوص متفرقة
+            const orderStatusCode = window.OrderStatus ? window.OrderStatus.CODES.PENDING : 'pending';
+            const orderStatus = isInstapay
+                ? window.InstaPayCheckout.ORDER_STATUS
+                : (window.OrderStatus ? window.OrderStatus.label(orderStatusCode, 'cod') : 'قيد التنفيذ');
             let instapayOrderNo = null;
 
             // [تحديث أمان]: إعادة جلب الأسعار الحقيقية من قاعدة البيانات والتحقق من الكوبون
@@ -2242,13 +2323,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     metadata: { payment, items_count: orderItems.length }
                 });
                 const paymentLabel = payment === 'paymob-card' ? 'بطاقة بنكية (Paymob)' : (isInstapay ? window.InstaPayCheckout.PAYMENT_LABEL : payment);
-                const merchantId = 'elforat-' + Date.now();
+                // merchant_order_id ثابت لنفس محاولة الشراء (حتى لو حصل reload/مشكلة شبكة)
+                // بدل توليد رقم جديد كل submit، عشان الحماية من تكرار الطلب تبقى فعلية
+                const merchantId = window.OrderStatus
+                    ? window.OrderStatus.getOrCreateMerchantOrderId()
+                    : ('elforat-' + Date.now());
                 const orderData = {
                     customerName: name,
                     phone: phone,
                     address: address,
                     total: finalTotal,
                     status: orderStatus,
+                    status_code: orderStatusCode,
                     payment_status: 'pending',
                     date: new Date().toLocaleString('ar-EG'),
                     items: orderItems,
@@ -2261,11 +2347,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     traffic_campaign: traffic.campaign
                 };
 
-                const { data: insertedOrder, error: orderError } = await _supabase
-                    .from('orders')
-                    .insert([orderData])
-                    .select('id')
-                    .single();
+                // إدخال idempotent: لو نفس merchant_order_id اتسجل قبل كده (retry بعد
+                // reload/مشكلة شبكة)، بيرجّع الطلب الموجود بدل ما يعمل نسخة تانية.
+                // محتاج unique constraint على عمود merchant_order_id (شوفي migration.sql)
+                const insertOnce = window.OrderStatus
+                    ? (data) => window.OrderStatus.insertOrderIdempotent(_supabase, data)
+                    : (data) => _supabase.from('orders').insert([data]).select('id').single()
+                        .then(r => ({ data: r.data, error: r.error }));
+
+                const { data: insertedOrder, error: orderError } = await insertOnce(orderData);
 
                 if (!orderError && insertedOrder) {
                     orderData.id = insertedOrder.id;
@@ -2278,10 +2368,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         address: address,
                         total: finalTotal,
                         status: orderStatus,
+                        // بنحافظ على merchant_order_id حتى في أقل نسخة من الطلب عشان
+                        // الحماية من التكرار تفضل شغالة لو النسخة الكاملة فشلت
+                        merchant_order_id: merchantId,
                         date: new Date().toLocaleString('ar-EG'),
                         items: orderItems
                     };
-                    const { data: minOrder, error: minError } = await _supabase.from('orders').insert([minimalData]).select('id').single();
+                    const { data: minOrder, error: minError } = await insertOnce(minimalData);
                     if (!minError && minOrder) orderData.id = minOrder.id;
                 }
 
@@ -2307,6 +2400,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (isInstapay) {
                 const paidTotal = finalTotal;
+                window.OrderStatus?.clearPendingMerchantOrderId?.();
                 cart = [];
                 saveCart();
                 appliedCoupon = null;
@@ -2351,6 +2445,7 @@ document.addEventListener("DOMContentLoaded", () => {
             message += `💰 *الإجمالي المطلوب:* ${finalTotal} ج.م\n`;
             message += `\nشكراً لاختيارك الفرات فارما! 🌺`;
 
+            window.OrderStatus?.clearPendingMerchantOrderId?.();
             cart = [];
             saveCart(); // [جديد] مسح المنتجات من التخزين بعد إرسال الطلب بنجاح
             appliedCoupon = null;
@@ -2655,13 +2750,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (!eventError) sessionStorage.setItem('elforat_visitor_event_tracked', 'true');
             }
 
-            const { data, error } = await _supabase.from('visitors').select('id,count').limit(1).maybeSingle();
+            // [تعديل أداء]: بدل ما نجيب العدد ونزوده يدوي (read-then-write بيعمل
+            // race condition لو حصلت زيارتين في نفس اللحظة)، بنستخدم دالة ذرية
+            // (atomic RPC) في قاعدة البيانات بتزوّد العداد في خطوة واحدة آمنة.
+            const { error } = await _supabase.rpc('increment_visitor_count');
             if (error) throw error;
-            if (data) {
-                await _supabase.from('visitors').update({ count: (Number(data.count) || 0) + 1 }).eq('id', data.id);
-            } else {
-                await _supabase.from('visitors').insert([{ count: 1 }]);
-            }
         } catch (e) {
             console.warn('visitor tracking skipped:', e.message || e);
         }

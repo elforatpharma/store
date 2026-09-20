@@ -61,7 +61,11 @@ window.PaymobCheckout = (() => {
     if (!cart.length) throw new Error("السلة فارغة");
 
     const coupon = getCoupon();
-    const merchant_order_id = `elforat-${Date.now()}`;
+    // merchant_order_id ثابت لنفس محاولة الدفع (حتى لو حصل reload) بدل توليد
+    // رقم جديد كل مرة، عشان ما نبعتش أكتر من intention/طلب لنفس المحاولة
+    const merchant_order_id = window.OrderStatus
+      ? window.OrderStatus.getOrCreateMerchantOrderId()
+      : `elforat-${Date.now()}`;
 
     // [تحديث أمان] بنبعت id/qty/isGift بس - السيرفر هو اللي بيحدد السعر
     // الحقيقي من جدول products، مش بنبعتله سعر جاهز يقدر حد يتلاعب فيه
@@ -120,13 +124,25 @@ window.PaymobCheckout = (() => {
 
   /** حفظ طلب مبدئي في جدول orders بحالة "بانتظار الدفع" */
   async function savePendingOrder(supabaseClient, pending) {
+    const statusLabel = window.OrderStatus
+      ? window.OrderStatus.label(window.OrderStatus.CODES.PENDING, 'paymob')
+      : "بانتظار الدفع - Paymob";
+    const statusCode = window.OrderStatus ? window.OrderStatus.CODES.PENDING : 'pending';
+
+    // منع تكرار الطلب: لو الطلب ده (نفس merchant_order_id) اتسجل قبل كده
+    // (مثلاً retry بعد مشكلة شبكة)، هنرجّع الموجود بدل ما نعمل نسخة تانية
+    const insertOne = window.OrderStatus
+      ? (data) => window.OrderStatus.insertOrderIdempotent(supabaseClient, data)
+      : (data) => supabaseClient.from("orders").insert([data]).select("id").single().then(r => ({ data: r.data, error: r.error }));
+
     try {
       const full = {
         customerName: pending.name,
         phone: pending.phone,
         address: pending.address,
         total: pending.total,
-        status: "بانتظار الدفع - Paymob",
+        status: statusLabel,
+        status_code: statusCode,
         payment_status: "pending",
         payment_method: "بطاقة بنكية (Paymob)",
         merchant_order_id: pending.merchant_order_id,
@@ -139,16 +155,16 @@ window.PaymobCheckout = (() => {
         date: new Date().toLocaleString("ar-EG"),
         items: pending.items,
       };
-      let { data, error } = await supabaseClient.from("orders").insert([full]).select("id").single();
+      let { data, error } = await insertOne(full);
       if (error) {
-        // fallback لو أعمدة الكوبون لسه متضافتش في الجدول
-        console.warn("savePendingOrder full failed, retry without coupon fields:", error.message);
+        // fallback لو أعمدة الكوبون أو status_code لسه متضافتش في الجدول
+        console.warn("savePendingOrder full failed, retry without coupon/status_code fields:", error.message);
         const withoutCoupon = {
           customerName: pending.name,
           phone: pending.phone,
           address: pending.address,
           total: pending.total,
-          status: "بانتظار الدفع - Paymob",
+          status: statusLabel,
           payment_status: "pending",
           payment_method: "بطاقة بنكية (Paymob)",
           merchant_order_id: pending.merchant_order_id,
@@ -159,21 +175,23 @@ window.PaymobCheckout = (() => {
           date: new Date().toLocaleString("ar-EG"),
           items: pending.items,
         };
-        const r2 = await supabaseClient.from("orders").insert([withoutCoupon]).select("id").single();
+        const r2 = await insertOne(withoutCoupon);
         data = r2.data; error = r2.error;
         if (error) {
-          // fallback أخير: أقل حقول ممكنة
+          // fallback أخير: أقل حقول ممكنة (بس مع الحفاظ على merchant_order_id
+          // عشان الحماية من التكرار تفضل شغالة حتى في أسوأ الحالات)
           console.warn("savePendingOrder retry failed, minimal:", error.message);
           const minimal = {
             customerName: pending.name,
             phone: pending.phone,
             address: pending.address,
             total: pending.total,
-            status: "بانتظار الدفع - Paymob",
+            status: statusLabel,
+            merchant_order_id: pending.merchant_order_id,
             date: new Date().toLocaleString("ar-EG"),
             items: pending.items,
           };
-          const r3 = await supabaseClient.from("orders").insert([minimal]).select("id").single();
+          const r3 = await insertOne(minimal);
           data = r3.data; error = r3.error;
           if (error) console.warn("savePendingOrder minimal:", error.message);
         }
@@ -236,6 +254,9 @@ window.PaymobCheckout = (() => {
 
     let pending = null;
     try { pending = JSON.parse(sessionStorage.getItem("paymob_pending_order") || "null"); } catch {}
+
+    // المحاولة دي خلصت (نجحت أو فشلت) - أي محاولة جديدة تاخد merchant_order_id جديد
+    window.OrderStatus?.clearPendingMerchantOrderId?.();
 
     if (success) {
       window.ElforatAnalytics?.trackStoreEvent?.("payment_success", {

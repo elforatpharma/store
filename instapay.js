@@ -16,7 +16,11 @@
 window.InstaPayCheckout = (() => {
   const PAYMENT_VALUE = "instapay";
   const PAYMENT_LABEL = "InstaPay";
-  const ORDER_STATUS = "بانتظار تأكيد الدفع - InstaPay";
+  // النص بييجي من المصدر الموحّد (order-status.js) بدل ما يتكرر هنا لوحده
+  const ORDER_STATUS = window.OrderStatus
+    ? window.OrderStatus.label(window.OrderStatus.CODES.PENDING, 'instapay')
+    : "بانتظار تأكيد الدفع - InstaPay";
+  const ORDER_STATUS_CODE = window.OrderStatus ? window.OrderStatus.CODES.PENDING : 'pending';
 
   const DEFAULT_WHATSAPP = "201146809133";
   // حطي رابط الدفع بتاع حسابك بين علامتي التنصيص، مثال: "https://ipn.eg/S/name/instapay/AbC123"
@@ -361,5 +365,5 @@ window.InstaPayCheckout = (() => {
     return { close };
   }
 
-  return { PAYMENT_VALUE, PAYMENT_LABEL, ORDER_STATUS, loadConfig, showPopup, buildWhatsAppUrl, getOpenAppTarget, normalizeLink };
+  return { PAYMENT_VALUE, PAYMENT_LABEL, ORDER_STATUS, ORDER_STATUS_CODE, loadConfig, showPopup, buildWhatsAppUrl, getOpenAppTarget, normalizeLink };
 })();
