@@ -343,6 +343,11 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) {
             appliedCoupon = null;
         }
+        // كوبون الترحيب صالح لأول زيارة فقط: لو المحفوظ WELCOME20 والزيارة الأولى خلصت → يتشال تلقائياً
+        if (appliedCoupon && window.WelcomeOffer && !window.WelcomeOffer.guard(appliedCoupon.code).ok) {
+            appliedCoupon = null;
+            saveCoupon();
+        }
     }
 
     function saveCoupon() {
@@ -1096,6 +1101,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (!code) { showMsg('برجاء إدخال كود الكوبون', false); return; }
 
+            // كوبون الترحيب (WELCOME20) صالح لأول زيارة فقط
+            if (window.WelcomeOffer) {
+                const wg = window.WelcomeOffer.guard(code);
+                if (!wg.ok) { showMsg(wg.message, false); return; }
+            }
+
             if (btn) { btn.disabled = true; btn.innerText = 'جاري التحقق...'; }
 
             try {
@@ -1152,6 +1163,40 @@ document.addEventListener("DOMContentLoaded", () => {
             appliedCoupon = null;
             saveCoupon();
             renderCart();
+        },
+        // تطبيق كوبون الترحيب من البانر (بيتنادى من welcome-offer.js)
+        applyWelcomeCoupon: async function () {
+            const wo = window.WelcomeOffer;
+            if (!wo || !wo.isEligible()) return { ok: false, message: 'كوبون الترحيب صالح لأول زيارة فقط' };
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const { data, error } = await _supabase
+                    .from('coupons')
+                    .select('code,discount_percentage,min_amount,max_uses,used_count')
+                    .eq('code', wo.code)
+                    .eq('is_active', true)
+                    .gte('expiry_date', today)
+                    .maybeSingle();
+                if (error || !data) return { ok: false, message: 'الكوبون غير متاح حالياً' };
+                if (data.max_uses != null && (Number(data.used_count) || 0) >= Number(data.max_uses)) {
+                    return { ok: false, message: 'تم استنفاد استخدامات هذا الكوبون' };
+                }
+                if (data.min_amount != null && Number(data.min_amount) > 0 && getCartSubtotal() < Number(data.min_amount)) {
+                    return { ok: false, message: `الحد الأدنى للطلب ${Number(data.min_amount)} ج.م لاستخدام الكوبون` };
+                }
+                appliedCoupon = { code: data.code, discount_percentage: data.discount_percentage };
+                saveCoupon();
+                renderCart();
+                trackStoreEvent('coupon_applied', {
+                    coupon_code: data.code,
+                    cart_total: getCartSubtotal(),
+                    metadata: { discount_percentage: data.discount_percentage, source: 'welcome_banner' }
+                });
+                return { ok: true, discount_percentage: data.discount_percentage };
+            } catch (e) {
+                console.error('applyWelcomeCoupon error:', e);
+                return { ok: false, message: 'حدث خطأ، حاولي مرة أخرى' };
+            }
         },
         updateQty: function (id, change) {
             const item = cart.find(item => item.id === id);
@@ -2278,6 +2323,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            // كوبون الترحيب انتهت زيارته الأولى → نشيله ونوقف الطلب عشان العميلة تشوف السعر الحقيقي
+            if (appliedCoupon && window.WelcomeOffer && !window.WelcomeOffer.guard(appliedCoupon.code).ok) {
+                appliedCoupon = null;
+                saveCoupon();
+                renderCart();
+                showCustomAlert('كوبون الترحيب صالح لأول زيارة فقط وقد انتهى، تم إزالته من السلة. راجعي الإجمالي وأكملي الطلب.', 'error');
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+                return;
+            }
+
             // ===== InstaPay: تحويل يدوي + إرسال الإيصال على واتساب =====
             // بنجيب رقم التحويل الحالي من الإعدادات قبل تسجيل الطلب؛ لو مش متاح مفيش طلب بيتسجل.
             const isInstapay = payment === 'instapay';
@@ -2426,6 +2482,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (!orderError && insertedOrder) {
                     orderData.id = insertedOrder.id;
                     trackStoreEvent('order_created', { coupon_code: couponCode, cart_total: finalTotal, metadata: { payment, items_count: orderItems.length } });
+                } else if (orderError && /WELCOME20_ALREADY_USED/.test(orderError.message || '')) {
+                    // السيرفر رفض الطلب: كوبون الترحيب استُخدم قبل كده بنفس رقم الهاتف.
+                    // مفيش fallback هنا (كان هيسجّل الطلب بالخصم من غير كود الكوبون).
+                    window.WelcomeOffer?.expire('already_used');
+                    appliedCoupon = null;
+                    saveCoupon();
+                    renderCart();
+                    showCustomAlert('كوبون الترحيب WELCOME20 استُخدم قبل كده بنفس رقم الهاتف، تم إلغاؤه. راجعي الإجمالي وأكملي الطلب.', 'error');
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    return;
                 } else if (orderError) {
                     console.warn('فشل إدخال الطلب بالحقول الكاملة، جاري المحاولة بالحد الأدنى:', orderError.message);
                     const minimalData = {
@@ -2446,6 +2513,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // رقم الطلب المعروض للعميل في رسالة InstaPay
                 instapayOrderNo = (orderData.id != null && /^\d{1,10}$/.test(String(orderData.id))) ? orderData.id : merchantId;
+
+                // كوبون الترحيب: أول طلب ناجح بيه = يتلغي فوراً
+                if (couponCode && orderData.id != null && window.WelcomeOffer
+                    && String(couponCode).toUpperCase() === window.WelcomeOffer.code) {
+                    window.WelcomeOffer.markUsed();
+                }
 
                 // زيادة عداد استخدام الكوبون بعد نجاح الطلب
                 if (couponCode) {
@@ -2831,6 +2904,7 @@ document.addEventListener("DOMContentLoaded", () => {
     checkCartExpiry(); // التحقق من انتهاء صلاحية السلة
     loadCart();
     loadCoupon(); // استرجاع كود الخصم المطبّق سابقاً (لو لسه صالح هيتحقق منه تاني عند العرض)
+    if (window.WelcomeOffer) window.WelcomeOffer.setApplyHandler(() => window.app.applyWelcomeCoupon());
     updateBadge();
 
     // إخفاء شاشة التحميل العالمية عند اكتمال التحميل
