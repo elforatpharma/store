@@ -2,7 +2,7 @@
  * ELFORAT PHARMA - Canonical Order Status + Idempotent Checkout Helper
  * =====================================================================
  * مصدر واحد لكل حاجة متعلقة بحالة الطلب و merchant_order_id، بيتحمّل قبل
- * paymob.js و instapay.js و analysis.js عشان الكل يستخدم نفس التعريف بدل
+ * instapay.js و analysis.js عشان الكل يستخدم نفس التعريف بدل
  * ما كل ملف يكتب نصوص عربية حرة لوحده (كانت السبب في تضارب الحالات).
  *
  * الأنابيب المعتمدة لحالة الطلب (status_code):
@@ -28,7 +28,6 @@ window.OrderStatus = (() => {
     [CODES.PENDING]: {
       cod: 'قيد التنفيذ',
       instapay: 'بانتظار تأكيد الدفع - InstaPay',
-      paymob: 'بانتظار الدفع - Paymob',
     },
     [CODES.PAID]: { default: 'تم الدفع' },
     [CODES.PROCESSING]: { default: 'قيد التجهيز في الصيدلية 📦' },

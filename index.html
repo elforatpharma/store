@@ -772,9 +772,8 @@
                         <div class="lg:col-span-8 text-white text-right">
                             <span class="inline-block text-[11px] font-black uppercase tracking-widest bg-white/15 px-3 py-1 rounded-full mb-3">الشحن والدفع بأمان وسرعة</span>
                             <h2 class="text-2xl sm:text-3xl font-black font-display mb-3 leading-snug">طرق دفع متعددة وشحن آمن وسريع لباب بيتك</h2>
-                            <p class="text-sm text-white/85 max-w-xl mb-6 leading-relaxed">نوفر لكِ تجربة تسوق سهلة ومضمونة، ادفعي أونلاين بالفيزا أو ماستركارد عبر Paymob، أو عند الاستلام أو عبر إنستاباي، مع شحن سريع لجميع المحافظات وهدية مجانية للطلبات فوق 500 ج.م</p>
+                            <p class="text-sm text-white/85 max-w-xl mb-6 leading-relaxed">نوفر لكِ تجربة تسوق سهلة ومضمونة، ادفعي عند الاستلام أو عبر إنستاباي، مع شحن سريع لجميع المحافظات وهدية مجانية للطلبات فوق 500 ج.م</p>
                             <div class="flex flex-wrap items-center gap-3">
-                                <span class="flex items-center gap-2 bg-white/15 px-3.5 py-2 rounded-full text-xs font-bold"><i class="fa-solid fa-credit-card text-amber-200"></i> بطاقة بنكية أونلاين (Paymob)</span>
                                 <span class="flex items-center gap-2 bg-white/15 px-3.5 py-2 rounded-full text-xs font-bold"><i class="fa-solid fa-mobile-screen text-amber-200"></i> إنستاباي InstaPay</span>
                                 <span class="flex items-center gap-2 bg-white/15 px-3.5 py-2 rounded-full text-xs font-bold"><i class="fa-solid fa-hand-holding-dollar text-amber-200"></i> الدفع عند الاستلام</span>
                             </div>
@@ -821,7 +820,7 @@
                         <div class="w-11 h-11 rounded-xl bg-primary text-white flex items-center justify-center text-base shrink-0"><i class="fa-solid fa-truck-fast"></i></div>
                         <div>
                             <div class="text-xs font-black text-darkNavy">شحن سريع ومجاني</div>
-                            <div class="text-[10px] text-slate-500 font-semibold">لجميع المحافظات فوق 500 ج.م</div>
+                            <div class="text-[10px] text-slate-500 font-semibold">لجميع المحافظات فوق 1000 ج.م</div>
                         </div>
                     </div>
                     <div class="flex items-center gap-3 bg-white border border-purple-100 rounded-2xl p-4 shadow-purple-soft">
@@ -913,10 +912,8 @@
                         <select id="cust-payment" required class="w-full p-3 border border-slate-200 rounded-2xl text-right bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
                             <option value="" disabled selected>اختر طريقة الدفع</option>
                             <option value="الدفع عند الاستلام">الدفع عند الاستلام</option>
-                            <option value="paymob-card">💳 فيزا / ماستركارد — دفع أونلاين آمن (Paymob)</option>
                             <option value="instapay">InstaPay — تحويل فوري (إنستاباي)</option>
                         </select>
-                        <p id="paymob-hint" class="hidden text-[11px] text-slate-500 leading-relaxed bg-purple-50 border border-purple-100 rounded-xl px-3 py-2">🔒 الدفع بالبطاقة يتم عبر بوابة Paymob الآمنة (تشفير كامل + 3D Secure) — سيتم تحويلك لصفحة الدفع لإتمام الطلب.</p>
                         <p id="instapay-hint" class="hidden text-[11px] text-slate-500 leading-relaxed bg-purple-50 border border-purple-100 rounded-xl px-3 py-2">📱 بعد تأكيد الطلب ستظهر بيانات التحويل عبر InstaPay، ثم يُرسل إيصال التحويل على واتساب المتجر لتأكيد الدفع. يظل الطلب بانتظار تأكيد الدفع حتى تتم مراجعة الإيصال.</p>
                         <button type="submit" class="w-full py-4 bg-gradient-to-r from-primary to-secondary text-white rounded-full font-black shadow-purple-glow hover:shadow-lg hover:brightness-110 transition-all active:scale-95">تأكيد الطلب</button>
                     </form>
@@ -1005,7 +1002,7 @@
             </h3>
             <ul class="space-y-2.5 text-sm text-[#c7c4d9]">
               <li class="flex items-center gap-2"><i class="fa-solid fa-truck-fast text-[#c4c0ff] text-xs"></i> الشحن والتوصيل</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-credit-card text-[#c4c0ff] text-xs"></i> طرق الدفع (فيزا / ماستركارد / COD / InstaPay)</li>
+              <li class="flex items-center gap-2"><i class="fa-solid fa-credit-card text-[#c4c0ff] text-xs"></i> طرق الدفع (الدفع عند الاستلام / InstaPay)</li>
               <li class="flex items-center gap-2"><i class="fa-solid fa-rotate-left text-[#c4c0ff] text-xs"></i> سياسة الاستبدال والاسترجاع</li>
               <li class="flex items-center gap-2"><i class="fa-solid fa-circle-question text-[#c4c0ff] text-xs"></i> الأسئلة الشائعة</li>
               <li>
@@ -1029,7 +1026,6 @@
 
 
     <script src="order-status.js"></script>
-    <script src="paymob.js"></script>
     <script src="instapay.js?v=5"></script>
     <script src="analysis.js"></script>
     <script>
@@ -1120,14 +1116,12 @@
         })();
     </script>
     <script>
-        // إظهار التنبيه المناسب عند اختيار الدفع بالبطاقة (Paymob) أو InstaPay
+        // إظهار التنبيه المناسب عند اختيار الدفع عبر InstaPay
         document.addEventListener('DOMContentLoaded', () => {
             const sel = document.getElementById('cust-payment');
-            const paymobHint = document.getElementById('paymob-hint');
             const instapayHint = document.getElementById('instapay-hint');
             if (!sel) return;
             const sync = () => {
-                if (paymobHint) paymobHint.classList.toggle('hidden', sel.value !== 'paymob-card');
                 if (instapayHint) instapayHint.classList.toggle('hidden', sel.value !== 'instapay');
             };
             sel.addEventListener('change', sync);
@@ -1252,7 +1246,7 @@
                             <span class="w-2 h-2 rounded-full bg-primary"></span> 3. أمان المعاملات المالية والدفع
                         </h4>
                         <p class="text-xs text-slate-600">
-                            عند اختيار الدفع بالبطاقة، يتم الدفع عبر بوابة <b>Paymob</b> المعتمدة بتشفير كامل (3D Secure). 
+                            نوفر الدفع عند الاستلام أو التحويل عبر InstaPay مع إرسال إيصال التحويل لتأكيد الدفع.
                             <b>نحن لا نرى ولا نخزن أي أرقام بطاقات أو رموز سرية</b> على خوادمنا نهائياً.
                         </p>
                     </div>

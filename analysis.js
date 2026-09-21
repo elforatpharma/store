@@ -364,6 +364,28 @@ document.addEventListener("DOMContentLoaded", () => {
         return Math.round(discount * 100) / 100;
     }
 
+    // ==========================================
+    // شريط تقدّم الشحن المجاني: يتدرّج لونه من الذهبي إلى الأخضر
+    // كل ما اقترب إجمالي السلة من حد الشحن المجاني (FREE_SHIPPING_THRESHOLD)
+    // ==========================================
+    const FREE_SHIPPING_THRESHOLD = 1000;
+
+    function lerpHexColor(fromHex, toHex, t) {
+        const clampedT = Math.min(Math.max(t, 0), 1);
+        const f = fromHex.replace('#', ''), to = toHex.replace('#', '');
+        const fr = parseInt(f.substring(0, 2), 16), fg = parseInt(f.substring(2, 4), 16), fb = parseInt(f.substring(4, 6), 16);
+        const tr = parseInt(to.substring(0, 2), 16), tg = parseInt(to.substring(2, 4), 16), tb = parseInt(to.substring(4, 6), 16);
+        const r = Math.round(fr + (tr - fr) * clampedT);
+        const g = Math.round(fg + (tg - fg) * clampedT);
+        const b = Math.round(fb + (tb - fb) * clampedT);
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    }
+
+    // ذهبي (لون العلامة التجارية) عند 0% ← أخضر زاهي كل ما اقتربت النسبة من 100%
+    function getShippingBarColor(pct) {
+        return lerpHexColor('#c59b3f', '#10b981', pct / 100);
+    }
+
     // إعادة التحقق من صلاحية الكوبون المحفوظ محلياً كل مرة يُفتح فيها السلة
     // (في حالة الآدمن أوقف الكوبون أو انتهت صلاحيته من وقت ما اتحفظ في المتصفح)
     async function revalidateCoupon() {
@@ -467,6 +489,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const PRODUCTS_CACHE_KEY = 'elforat_products_cache_v3';
     // الكاش بيتعرض فوراً حتى لو قديم (لحد 7 أيام)، وبعدها بيتحدّث من السيرفر في الخلفية
     const PRODUCTS_CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
+    // [تعديل أداء]: قبل كده كل فتح للصفحة كان بيعمل تحديث كامل من سوبابيز في
+    // الخلفية حتى لو الكاش لسه طازة (نفس اللحظة تقريباً)، وده بيضاعف الحمل على
+    // قاعدة البيانات مع أي زيادة في الزوار بدون أي فايدة حقيقية للمستخدم (هو
+    // أصلاً شايف نفس البيانات من الكاش). دلوقتي: لو آخر تحديث حصل من أقل من
+    // 5 دقايق، منعملش طلب شبكة تاني ونكتفي بالكاش المعروض بالفعل.
+    const PRODUCTS_REFRESH_THROTTLE = 5 * 60 * 1000;
+
+    function getProductsCacheAge() {
+        try {
+            const cached = JSON.parse(localStorage.getItem(PRODUCTS_CACHE_KEY) || 'null');
+            if (!cached || !cached.savedAt) return Infinity;
+            return Date.now() - cached.savedAt;
+        } catch (e) {
+            return Infinity;
+        }
+    }
 
     // تقييمات متفاوتة وثابتة لكل منتج (بدل ما تبقى كلها 4.9)
     function computeRatingForId(id) {
@@ -556,7 +594,14 @@ document.addEventListener("DOMContentLoaded", () => {
             renderSkeletonLoading();
         }
 
-        const refresh = (async () => {
+        // لو عندنا كاش وسنّه لسه تحت حد التحديث (5 دقايق)، منعملش أي طلب
+        // شبكة لسوبابيز خالص - نكتفي باللي اتعرض بالفعل من الكاش فوق.
+        const cacheAge = hadCache ? getProductsCacheAge() : Infinity;
+        const shouldSkipNetworkRefresh = hadCache && cacheAge < PRODUCTS_REFRESH_THROTTLE;
+
+        const refresh = shouldSkipNetworkRefresh ? (async () => {
+            AppState.setState({ status: 'success' });
+        })() : (async () => {
         try {
             // [تعديل الترتيب]: جلب المنتجات مرتبة حسب الـ ID لضمان الترتيب القديم
             // [تعديل Pagination]: سوبابيز/PostgREST بيرجع 1000 صف بحد أقصى في أي
@@ -2047,7 +2092,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const discount = getCartDiscount(subtotal);
         const finalTotal = Math.max(subtotal - discount, 0);
         const itemsCount = cart.reduce((s, i) => s + i.qty, 0);
-        const freeShippingLeft = Math.max(500 - subtotal, 0);
+        const freeShippingLeft = Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0);
+        const freeShippingPct = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
+        const freeShippingColor = getShippingBarColor(freeShippingPct);
 
         const countLabel = document.getElementById('cart-summary-count');
         if (countLabel) countLabel.textContent = `${itemsCount} ${itemsCount === 1 ? 'منتج' : 'منتجات'} في الحقيبة`;
@@ -2067,11 +2114,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span class="flex items-center gap-2"><i class="fa-solid fa-truck-fast text-slate-300 w-4 text-center"></i> الشحن</span>
                     <span class="font-bold text-emerald-600">${freeShippingLeft > 0 ? 'يُحسب لاحقاً' : 'مجاني 🎉'}</span>
                 </div>
-                ${freeShippingLeft > 0 ? `
-                <div class="bg-purple-50/70 border border-purple-100 rounded-xl px-3 py-2 text-[11px] font-bold text-primary flex items-center gap-2">
-                    <i class="fa-solid fa-gift"></i>
-                    أضيفي ${sanitize(freeShippingLeft)} ج.م كمان واحصلي على هدية مجانية
-                </div>` : ''}
+                <div class="pt-1">
+                    <div class="flex items-center justify-between text-[11px] font-bold mb-1.5">
+                        <span class="flex items-center gap-1.5" style="color:${freeShippingColor}">
+                            <i class="fa-solid fa-truck-fast"></i>
+                            ${freeShippingLeft > 0 ? `أضيفي ${sanitize(freeShippingLeft)} ج.م كمان واحصلي على شحن مجاني` : 'مبروك! حصلتِ على شحن مجاني 🎉'}
+                        </span>
+                        <span class="text-slate-400">${Math.round(freeShippingPct)}%</span>
+                    </div>
+                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full transition-all duration-500 ease-out" style="width:${freeShippingPct}%; background-color:${freeShippingColor};"></div>
+                    </div>
+                </div>
                 <div class="relative overflow-hidden rounded-2xl bg-gradient-to-l from-primary to-secondary text-white px-4 py-4 flex items-center justify-between mt-1">
                     <div class="absolute -top-6 -left-6 w-20 h-20 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
                     <span class="relative font-bold text-sm">الإجمالي</span>
@@ -2224,29 +2278,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // ===== Paymob: الدفع بالبطاقة أونلاين =====
-            if (payment === 'paymob-card') {
-                if (!window.PaymobCheckout) {
-                    showCustomAlert('ملف الدفع الإلكتروني (paymob.js) غير محمل. تأكدي من إضافة السكريبت.', 'error');
-                    submitBtn.innerText = originalBtnText;
-                    submitBtn.disabled = false;
-                    return;
-                }
-                try {
-                    await window.PaymobCheckout.startCardPayment({
-                        name, phone, address,
-                        supabaseClient: _supabase,
-                        submitBtn
-                    });
-                    // تم التحويل لصفحة Paymob — لا تكملي باقي الكود
-                    return;
-                } catch (err) {
-                    submitBtn.innerText = originalBtnText;
-                    submitBtn.disabled = false;
-                    return;
-                }
-            }
-
             // ===== InstaPay: تحويل يدوي + إرسال الإيصال على واتساب =====
             // بنجيب رقم التحويل الحالي من الإعدادات قبل تسجيل الطلب؛ لو مش متاح مفيش طلب بيتسجل.
             const isInstapay = payment === 'instapay';
@@ -2357,7 +2388,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     cart_total: finalTotal,
                     metadata: { payment, items_count: orderItems.length }
                 });
-                const paymentLabel = payment === 'paymob-card' ? 'بطاقة بنكية (Paymob)' : (isInstapay ? window.InstaPayCheckout.PAYMENT_LABEL : payment);
+                const paymentLabel = isInstapay ? window.InstaPayCheckout.PAYMENT_LABEL : payment;
                 // merchant_order_id ثابت لنفس محاولة الشراء (حتى لو حصل reload/مشكلة شبكة)
                 // بدل توليد رقم جديد كل submit، عشان الحماية من تكرار الطلب تبقى فعلية
                 const merchantId = window.OrderStatus
@@ -2814,14 +2845,6 @@ document.addEventListener("DOMContentLoaded", () => {
     loadGifts();
     FavoritesManager.init(); // تهيئة نظام المفضلة
     updateBadge(); // تحديث شارة المفضلة عند التحميل
-    // معالجة الرجوع من بوابة Paymob (نجاح / فشل الدفع)
-    try {
-        if (window.PaymobCheckout && typeof window.PaymobCheckout.handleReturn === 'function') {
-            window.PaymobCheckout.handleReturn(_supabase).then((handled) => {
-                if (handled) { loadCart(); updateBadge(); renderCart(); }
-            }).catch((e) => console.warn('Paymob return handler:', e));
-        }
-    } catch (e) { console.warn('Paymob return handler:', e); }
     fetchProducts().then(() => {
         hideGlobalLoader();
         restoreViewFromHash();
