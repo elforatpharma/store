@@ -2766,9 +2766,12 @@ document.addEventListener("DOMContentLoaded", () => {
             hoursEl.textContent = '00';
             minutesEl.textContent = '00';
             secondsEl.textContent = '00';
-            hideOfferCountdown();
+            hideOfferCountdown(); // العداد بيتخفي بالكامل، فمفيش داعي لإظهاره
             return;
         }
+
+        // الداتا الحقيقية جاهزة دلوقتي - نظهر العداد (كان مخفي بـ opacity:0 في style.css)
+        document.getElementById('offer-countdown-wrap')?.classList.add('is-ready');
 
         const countdownTimer = setInterval(() => {
             const now = Date.now();
@@ -2801,6 +2804,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // هتتستبدل تلقائياً لو الأدمن رفع صورة بديلة، ولو لأ هتفضل الصورة المحلية شغالة عادي.
     // ==========================================
     async function applyStoreBranding() {
+        // نظهر صورة الهيرو (كانت مخفية بـ opacity:0 في style.css) بمجرد ما نعرف
+        // src النهائي بتاعها - سواء من الكاش/السيرفر أو لو فضلت الصورة المحلية
+        // زي ما هي - عشان الزائر ميشوفش صورة تتقلب قدامه.
+        const revealHero = () => {
+            document.querySelectorAll('.hero-main-image').forEach(el => el.classList.add('is-ready'));
+        };
+
         try {
             const cacheKey = 'elforat_store_settings_cache_v1';
             const applySettings = (s) => {
@@ -2824,6 +2834,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
                 if (cached && cached.data && Date.now() - cached.savedAt < 10 * 60 * 1000) {
                     applySettings(cached.data);
+                    revealHero(); // عندنا نسخة حديثة كفاية من الكاش - نظهرها فوراً من غير ما ننتظر السيرفر
                 }
             } catch (e) { }
 
@@ -2839,6 +2850,8 @@ document.addEventListener("DOMContentLoaded", () => {
             try { localStorage.setItem(cacheKey, JSON.stringify({ savedAt: Date.now(), data: data.data })); } catch (e) { }
         } catch (e) {
             console.warn('تعذر تحميل هوية المتجر من الإعدادات، هتفضل الصور المحلية الافتراضية:', e);
+        } finally {
+            revealHero(); // في كل الأحوال (نجاح/فشل/مفيش إعدادات) لازم تتظهر في الآخر
         }
     }
 

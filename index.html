@@ -354,7 +354,7 @@
 <!-- Main Showcase Card -->
 <div class="relative rounded-3xl p-1.5 shadow-2xl bg-white/40 backdrop-blur-md border border-white/60">
 <div class="aspect-square max-h-[520px] rounded-2xl overflow-hidden relative group flex items-center justify-center shadow-inner bg-slate-100">
-<img alt="منتجات العناية بالبشرة والجمال الفرات فارما" class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" src="hero-products.webp">
+<img alt="منتجات العناية بالبشرة والجمال الفرات فارما" class="hero-main-image w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" src="hero-products.webp">
 <div class="absolute inset-0 bg-gradient-to-t from-darkNavy/25 via-transparent to-transparent pointer-events-none"></div>
 </div>
 <div class="absolute -bottom-3 -right-3 text-white z-10">
@@ -1411,6 +1411,16 @@
                 if (e.key === 'Escape') closePrivacyModal();
             });
         });
+    </script>
+
+    <!-- شبكة أمان: لو حصل أي خطأ في analysis.js أو الشبكة بطيئة جداً،
+         نظهر العداد وصورة الهيرو بعد 4 ثواني بأي حال بدل ما تفضل مخفية للأبد -->
+    <script>
+        setTimeout(() => {
+            document.querySelectorAll('#offer-countdown-wrap, .hero-main-image').forEach(el => {
+                el.classList.add('is-ready');
+            });
+        }, 4000);
     </script>
 
 </body>

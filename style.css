@@ -1411,6 +1411,22 @@ body {
   row-gap: 3px;
 }
 
+/* ==========================================
+   منع فليكر العداد وصورة الهيرو عند تحميل الصفحة
+   العنصرين مخفيين بالبداية، وبيظهروا (fade-in) بس لما
+   الداتا الحقيقية توصل من analysis.js (بدل ما نعرض قيمة/صورة
+   افتراضية غلط لحظة، وبعدين تتغير قدام عين الزائر)
+   ========================================== */
+#offer-countdown-wrap,
+.hero-main-image {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+#offer-countdown-wrap.is-ready,
+.hero-main-image.is-ready {
+  opacity: 1;
+}
+
 /* تكديس زرا "اشتري الآن / أضف للسلة" عمودياً على الشاشات الصغيرة جداً */
 @media (max-width: 479.98px) {
   #catalog-grid .pro-product-card .grid-cols-2,
