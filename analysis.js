@@ -2648,38 +2648,51 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // بيجيب أو بينشئ وقت انتهاء العرض الخاص بالـ IP ده من Supabase
-    // (محتاج جدول اسمه offer_countdowns فيه عمودين: ip (text, primary key) و end_time (bigint)
-    async function getOrCreateEndTimeForIP(ip) {
-        const DURATION = 24 * 60 * 60 * 1000; // 24 ساعة
+    // بيجيب أو بيتحقق من نافذة العرض الخاصة بالـ IP ده من Supabase
+    // (جدول offer_countdowns: ip (text, primary key), end_time (bigint))
+    // القاعدة: نافذة الـ 24 ساعة تتحدد مرة واحدة بس لكل IP وقت أول ظهور ليه.
+    // لو خلصت، بتفضل خلصت للأبد لنفس الـ IP - من غير أي تجديد تلقائي.
+    async function getOfferWindowForIP(ip) {
+        const DURATION = 24 * 60 * 60 * 1000; // 24 ساعة بالظبط
         const localKey = 'elforat_offer_end_' + ip;
+        const localExpiredKey = 'elforat_offer_expired_' + ip;
         const now = Date.now();
 
-        // 1) نسأل السيرفر الأول (هو مصدر الحقيقة الأساسي)
+        // 1) السيرفر هو مصدر الحقيقة (بيفضل صحيح حتى لو الزائر مسح الكاش)
         const { data, error } = await _supabase
             .from('offer_countdowns')
             .select('end_time')
             .eq('ip', ip)
             .maybeSingle();
 
-        if (!error && data && data.end_time && data.end_time > now) {
-            localStorage.setItem(localKey, data.end_time); // نزامن النسخة المحلية
-            return data.end_time;
+        if (!error && data && data.end_time) {
+            if (data.end_time > now) {
+                localStorage.setItem(localKey, data.end_time);
+                return { endTime: data.end_time, expired: false };
+            }
+            // خلصت فعلاً على السيرفر - تفضل خلصت، من غير تجديد
+            localStorage.setItem(localExpiredKey, '1');
+            return { endTime: data.end_time, expired: true };
         }
 
-        // 2) لو السيرفر مرجعش نتيجة صالحة (جدول مش موجود، مشكلة شبكة، RLS...)
-        // قبل ما نعتبر إن العرض خلص، نتأكد من النسخة المحفوظة محليًا لنفس الـ IP
+        // 2) السيرفر ما رجّعش نتيجة (مشكلة شبكة/RLS)، نستأنس بالنسخة المحلية لنفس الـ IP
+        if (localStorage.getItem(localExpiredKey)) {
+            return { endTime: now, expired: true };
+        }
         const cached = localStorage.getItem(localKey);
-        if (cached && parseInt(cached, 10) > now) {
+        if (cached) {
             const cachedEndTime = parseInt(cached, 10);
-            // نحاول نزامنها تاني مع السيرفر (بدون ما نوقف لو فشلت)
-            _supabase.from('offer_countdowns')
-                .upsert({ ip: ip, end_time: cachedEndTime }, { onConflict: 'ip' })
-                .then(() => { });
-            return cachedEndTime;
+            if (cachedEndTime > now) {
+                _supabase.from('offer_countdowns')
+                    .upsert({ ip: ip, end_time: cachedEndTime }, { onConflict: 'ip' })
+                    .then(() => { });
+                return { endTime: cachedEndTime, expired: false };
+            }
+            localStorage.setItem(localExpiredKey, '1');
+            return { endTime: cachedEndTime, expired: true };
         }
 
-        // 3) مفيش أي نسخة صالحة (سيرفر ولا محلي): دلوقتي بس ننشئ عداد جديد فعلاً
+        // 3) أول ظهور فعلي لهذا الـ IP على الإطلاق: ننشئ نافذة 24 ساعة جديدة (مرة واحدة بس)
         const newEndTime = now + DURATION;
         localStorage.setItem(localKey, newEndTime);
         const { error: upsertError } = await _supabase
@@ -2689,7 +2702,15 @@ document.addEventListener("DOMContentLoaded", () => {
             console.warn('تعذر حفظ العداد على السيرفر، هيتحفظ محليًا فقط:', upsertError.message);
         }
 
-        return newEndTime;
+        return { endTime: newEndTime, expired: false };
+    }
+
+    // بيخفي عنصر العداد وبطاقات العروض المرتبطة بيه لما الوقت يخلص
+    function hideOfferCountdown() {
+        const countdownWrap = document.getElementById('offer-countdown-wrap');
+        const offersWrap = document.getElementById('offer-badges-wrap');
+        if (countdownWrap) countdownWrap.style.display = 'none';
+        if (offersWrap) offersWrap.style.display = 'none';
     }
 
     async function startCountdown() {
@@ -2697,38 +2718,56 @@ document.addEventListener("DOMContentLoaded", () => {
         const minutesEl = document.getElementById('minutes');
         const secondsEl = document.getElementById('seconds');
 
-        if (!hoursEl || !minutesEl || !secondsEl) return;
-
         const DURATION = 24 * 60 * 60 * 1000;
         let endTime = null;
+        let expired = false;
         let ip = null;
 
         try {
             ip = await getVisitorIP();
             if (ip) {
-                endTime = await getOrCreateEndTimeForIP(ip);
+                const win = await getOfferWindowForIP(ip);
+                endTime = win.endTime;
+                expired = win.expired;
             }
         } catch (e) {
             console.warn('فشل ربط العداد بالـ IP، هيشتغل بالطريقة المحلية:', e);
         }
 
-        // لو معرفناش الـ IP أو فشل الاتصال بـ Supabase، نرجع لأسلوب localStorage القديم كبديل
-        if (!endTime) {
-            const stored = localStorage.getItem('elforat_offer_end');
-            if (!stored || parseInt(stored, 10) <= Date.now()) {
-                endTime = Date.now() + DURATION;
-                localStorage.setItem('elforat_offer_end', endTime);
+        // لو معرفناش الـ IP (مفيش نت مثلاً)، نرجع لأسلوب localStorage القديم كبديل مؤقت بس
+        // (ده أضعف من الربط بالـ IP لأنه بيتصفّر لو الزائر مسح الكاش، لكن أحسن من مفيش حاجة)
+        if (endTime == null) {
+            if (localStorage.getItem('elforat_offer_expired')) {
+                expired = true;
+                endTime = Date.now();
             } else {
-                endTime = parseInt(stored, 10);
+                const stored = localStorage.getItem('elforat_offer_end');
+                if (!stored) {
+                    endTime = Date.now() + DURATION;
+                    localStorage.setItem('elforat_offer_end', endTime);
+                } else if (parseInt(stored, 10) <= Date.now()) {
+                    expired = true;
+                    endTime = parseInt(stored, 10);
+                    localStorage.setItem('elforat_offer_expired', '1');
+                } else {
+                    endTime = parseInt(stored, 10);
+                }
             }
         }
 
-        // بيخفي عنصر العداد وبطاقات العروض المرتبطة بيه لما الوقت يخلص
-        function hideOfferCountdown() {
-            const countdownWrap = document.getElementById('offer-countdown-wrap');
-            const offersWrap = document.getElementById('offer-badges-wrap');
-            if (countdownWrap) countdownWrap.style.display = 'none';
-            if (offersWrap) offersWrap.style.display = 'none';
+        // كوبون الترحيب مربوط بنفس نافذة الـ 24 ساعة: نافذة واحدة لكل زائر (IP) للعرض والكوبون معاً
+        if (window.WelcomeOffer && typeof window.WelcomeOffer.reconcile === 'function') {
+            window.WelcomeOffer.reconcile(endTime, expired);
+        }
+
+        if (!hoursEl || !minutesEl || !secondsEl) return;
+
+        if (expired) {
+            hoursEl.textContent = '00';
+            minutesEl.textContent = '00';
+            secondsEl.textContent = '00';
+            hideOfferCountdown();
+            return;
         }
 
         const countdownTimer = setInterval(() => {
@@ -2741,6 +2780,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 secondsEl.textContent = '00';
                 hideOfferCountdown();
                 clearInterval(countdownTimer);
+                window.WelcomeOffer?.expire?.('offer_ended');
                 return;
             }
 
@@ -2752,12 +2792,6 @@ document.addEventListener("DOMContentLoaded", () => {
             minutesEl.textContent = m.toString().padStart(2, '0');
             secondsEl.textContent = s.toString().padStart(2, '0');
         }, 1000);
-
-        // لو الوقت كان خلص فعلاً وقت تحميل الصفحة (مثلاً الزائر رجع بعد يوم كامل)
-        if (Math.floor((endTime - Date.now()) / 1000) <= 0) {
-            hideOfferCountdown();
-            clearInterval(countdownTimer);
-        }
     }
 
     // ==========================================

@@ -1,26 +1,37 @@
 /**
- * WelcomeOffer - كوبون WELCOME20 لأول زيارة فقط
+ * WelcomeOffer - كوبون WELCOME20 لأول 24 ساعة من زيارة الزائر
  * الفرات فارما (يوضع في المتجر، مش في لوحة التحكم)
  *
  * المنطق:
- *  - أول مرة يفتح الزائر المتجر  → الكوبون يتفعّل ويظهر له بانر.
- *  - أي زيارة جديدة بعدها (تبويب/جلسة جديدة) → الكوبون يتلغي تلقائياً.
- *  - بعد إتمام أول طلب بالكوبون → يتلغي فوراً (markUsed).
+ *  - أول مرة يفتح الزائر المتجر → نافذة 24 ساعة بتبدأ وبيظهر بانر الكوبون.
+ *  - نافذة الـ 24 ساعة دي هي نفسها نافذة عداد العرض في أعلى الصفحة (جدول
+ *    offer_countdowns في Supabase، مربوطة بـ IP الزائر)، عشان الاتنين يخلصوا
+ *    مع بعض بالظبط، ومتفضلش تتصفّر لو الزائر مسح الكاش (السيرفر هو المرجع).
+ *  - لو الـ 24 ساعة خلصت ولسه ما اشتراش → الكوبون يتلغي تلقائياً ولا يرجع
+ *    يفتح تاني لنفس الـ IP.
+ *  - بعد إتمام أول طلب بالكوبون → يتلغي فوراً (markUsed)، قبل ما الوقت يخلص.
+ *  - ملحوظة أمان: الحماية الحقيقية من إعادة الاستخدام مش هنا، دي في السيرفر
+ *    (رقم الهاتف وقت الطلب - شوفي welcome_coupon.sql). النافذة دي بس تحدد
+ *    "متاح وللا لأ" في واجهة المتجر، وممكن تتصفّر لو الزائر غيّر IP (VPN)
+ *    مع مسح الكاش مع بعض، لأن مفيش هوية تانية أقوى من كده للزائر المجهول.
  *
  * الاستخدام في المتجر:
- *   <script src="welcome-offer.js"></script>          // قبل analysis.min.js
+ *   <script src="welcome-offer.js"></script>          // قبل analysis.js
  *
- *   WelcomeOffer.isEligible()      // true لو لسه في زيارته الأولى
- *   WelcomeOffer.guard(code)       // {ok:false,message} لو الكود WELCOME20 والزائر مش مؤهل
- *   WelcomeOffer.markUsed()        // نادِها بعد نجاح الطلب
+ *   WelcomeOffer.isEligible()        // true لو لسه جوه نافذة الـ 24 ساعة
+ *   WelcomeOffer.guard(code)         // {ok:false,message} لو الكود WELCOME20 والزائر مش مؤهل
+ *   WelcomeOffer.markUsed()          // نادِها بعد نجاح الطلب
+ *   WelcomeOffer.expire(reason)      // إلغاء يدوي (بينادى تلقائياً برضه)
+ *   WelcomeOffer.reconcile(endTime, expired) // بتنادى من analysis.js بعد ما ياخد
+ *                                     // نافذة الـ IP الحقيقية من السيرفر
  *   WelcomeOffer.setApplyHandler(fn) // fn() ترجع {ok, message} — بتفعّل زرار "طبّقي الكوبون" في البانر
  */
 (function () {
   'use strict';
 
   var CODE = 'WELCOME20';
-  var KEY = 'elforat_welcome_offer_v1';      // localStorage: حالة العرض للزائر
-  var SKEY = 'elforat_welcome_session_v1';   // sessionStorage: علامة الزيارة الحالية
+  var KEY = 'elforat_welcome_offer_v1'; // localStorage: حالة العرض للزائر
+  var DURATION = 24 * 60 * 60 * 1000;   // 24 ساعة بالظبط
 
   function storageWorks() {
     try {
@@ -37,39 +48,71 @@
   function write(v) {
     try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {}
   }
-  function inThisSession() {
-    try { return sessionStorage.getItem(SKEY) === '1'; } catch (e) { return false; }
-  }
-  function markSession() {
-    try { sessionStorage.setItem(SKEY, '1'); } catch (e) {}
-  }
 
   var canStore = storageWorks();
   var state = canStore ? read() : null;
+  var expiryTimer = null;
 
   if (!canStore) {
-    // لو المتصفح مانع التخزين مقدرش أعرف الزائر جديد ولا لأ → مفيش عرض
+    // لو المتصفح مانع التخزين مقدرش أحدد نافذة الـ 24 ساعة بثبات → مفيش عرض
     state = { status: 'expired', reason: 'no_storage' };
-  } else if (!state) {
-    // أول زيارة على الإطلاق
-    state = { status: 'active', firstSeen: Date.now() };
-    write(state);
-    markSession();
-  } else if (state.status === 'active' && !inThisSession()) {
-    // رجع تاني في زيارة جديدة → الكوبون يتلغي تلقائياً
-    state.status = 'expired';
-    state.reason = 'visit_ended';
-    state.expiredAt = Date.now();
+  } else if (!state || typeof state.endTime !== 'number') {
+    // أول زيارة على الإطلاق (أو نسخة قديمة من التخزين قبل التحديث ده):
+    // تخمين محلي مؤقت لحد ما analysis.js يجيب نافذة الـ IP الحقيقية من السيرفر
+    // عبر reconcile() ويظبطها لو مختلفة.
+    state = { status: 'active', endTime: Date.now() + DURATION };
     write(state);
   }
 
   var listeners = [];
   function emit() { listeners.forEach(function (fn) { try { fn(state); } catch (e) {} }); }
 
-  function isEligible() { return state.status === 'active'; }
+  function clearScheduledExpiry() {
+    if (expiryTimer) { clearTimeout(expiryTimer); expiryTimer = null; }
+  }
+
+  // بيجدول إلغاء تلقائي بالظبط في لحظة انتهاء الـ 24 ساعة حتى لو التاب فاضل مفتوح
+  function scheduleExpiry() {
+    clearScheduledExpiry();
+    if (state.status !== 'active' || typeof state.endTime !== 'number') return;
+    var ms = state.endTime - Date.now();
+    if (ms <= 0) { expire('time_up'); return; }
+    // setTimeout بحد أقصى آمن (لو الفرق كبير جداً لأي سبب)
+    expiryTimer = setTimeout(function () { expire('time_up'); }, Math.min(ms, 2147000000));
+  }
+
+  function isEligible() {
+    if (state.status !== 'active') return false;
+    if (typeof state.endTime === 'number' && Date.now() >= state.endTime) {
+      expire('time_up');
+      return false;
+    }
+    return true;
+  }
+
+  // بتزامن النافذة المحلية مع نافذة الـ IP الحقيقية الجاية من السيرفر (analysis.js).
+  // لو الزائر مسح الكاش، دي اللي بترجّع الحالة الصحيحة بدل ما تتصفّر من الأول.
+  function reconcile(serverEndTime, serverExpired) {
+    if (!canStore) return;
+    if (state.status === 'expired') {
+      // لو اتلغى فعلاً بعد إتمام طلب، سيبيه زي ما هو - مايرجعش يتفتح
+      return;
+    }
+    if (serverExpired) {
+      expire('offer_ended');
+      return;
+    }
+    if (typeof serverEndTime === 'number' && serverEndTime !== state.endTime) {
+      state.endTime = serverEndTime;
+      write(state);
+      scheduleExpiry();
+      emit();
+    }
+  }
 
   function expire(reason) {
     if (state.status === 'expired') return;
+    clearScheduledExpiry();
     state.status = 'expired';
     state.reason = reason || 'manual';
     state.expiredAt = Date.now();
@@ -175,7 +218,9 @@
     refreshAction();
   }
 
-  function init() { if (isEligible()) showBanner(); }
+  function init() {
+    if (isEligible()) { showBanner(); scheduleExpiry(); }
+  }
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
     else init();
@@ -187,6 +232,7 @@
     guard: guard,
     markUsed: function () { expire('order_placed'); },
     expire: expire,
+    reconcile: reconcile,
     onChange: function (fn) { if (typeof fn === 'function') listeners.push(fn); },
     setApplyHandler: function (fn) {
       applyHandler = (typeof fn === 'function') ? fn : null;
