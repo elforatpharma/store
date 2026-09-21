@@ -583,6 +583,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         .from('products')
                         .select('*')
                         .order('priority', { ascending: false })
+                        // ترتيب ثانوي ثابت: لو كذا منتج ليهم نفس الـ priority، من غيره الترتيب
+                        // بين الصفحات مش مضمون وممكن منتج يتكرر أو يتفوّت. (بيطابق index: idx_products_priority_id)
+                        .order('id', { ascending: true })
                         .range(from, to);
 
                     if (error) throw error;
@@ -2420,12 +2423,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         .catch((e) => console.warn('زيادة استخدام الكوبون فشلت:', e));
                 }
 
-                // إرسال إشعار فوري للإدارة عبر بوت تيليجرام
-                fetch(`${supabaseUrl}/functions/v1/telegram-order-notify`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'apikey': supabaseKey },
-                    body: JSON.stringify({ record: orderData, type: 'INSERT' })
-                }).catch(() => { });
+                // ملحوظة: إشعار تيليجرام بقى بيتبعت تلقائيًا من Supabase نفسها
+                // (Database Webhook على INSERT في جدول orders) بدل ما يتبعت من هنا.
+                // ده أأمن لأنه مش محتاج أي سر يتحط في كود الموقع العام، وأضمن لأنه
+                // بيشتغل حتى لو المتصفح قفل الصفحة فورًا بعد إتمام الطلب.
             } catch (err) {
                 console.error("خطأ في تسجيل الطلب بسوبابيز، جاري استكمال التحويل للواتساب...", err);
             }

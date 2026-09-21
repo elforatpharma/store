@@ -12,8 +12,9 @@ window.PAYMOB_CONFIG = window.PAYMOB_CONFIG || {
   // مثال: https://sidtdxchiqiogfkwbdui.supabase.co/functions/v1/paymob-create-intention
   FUNCTION_URL: "https://sidtdxchiqiogfkwbdui.supabase.co/functions/v1/paymob-create-intention",
   PAYMOB_PUBLIC_KEY: "egy_pk_test_sUkeX09sfj2qssvSdPyfglMJFj7m2N62",
-  // سر المشاركة بين الفرونت والدالة (يرسل في هيدر x-store-secret)
-  ORDER_NOTIFY_SECRET: "Elforat-Hook-2026-e9f2c1a7b4d0",
+  // ⚠️ لاحظي إن ده لسه مفتاح TEST — لازم يتحول لمفتاح egy_pk_live_... قبل الحملة
+  // (ORDER_NOTIFY_SECRET اتشال من هنا؛ إشعار تيليجرام بقى بيتبعت سيرفر-لسيرفر
+  // عن طريق Database Webhook في Supabase، مش من كود الموقع العام)
 };
 
 window.PaymobCheckout = (() => {

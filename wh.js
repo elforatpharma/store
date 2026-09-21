@@ -1,5 +1,5 @@
-const url = "https://api.telegram.org/bot8732006531:AAHCi9z19vQpEY2KPb4kcl2scdDtbuMXzHg";
-const r = await fetch(url + "/getWebhookInfo");
+   const url = "https://api.telegram.org/bot" + process.env.BOT_TOKEN;
+   const r = await fetch(url + "/getWebhookInfo");
 const j = await r.json();
 console.log(JSON.stringify({
   has_custom_certificate: j.result?.has_custom_certificate,

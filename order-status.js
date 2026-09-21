@@ -31,9 +31,9 @@ window.OrderStatus = (() => {
       paymob: 'بانتظار الدفع - Paymob',
     },
     [CODES.PAID]: { default: 'تم الدفع' },
-    [CODES.PROCESSING]: { default: 'قيد التجهيز' },
+    [CODES.PROCESSING]: { default: 'قيد التجهيز في الصيدلية 📦' },
     [CODES.SHIPPED]: { default: 'تم الشحن' },
-    [CODES.DELIVERED]: { default: 'تم التسليم' },
+    [CODES.DELIVERED]: { default: 'تم التوصيل بنجاح ✅' },
     [CODES.CANCELLED]: { default: 'ملغي' },
   };
 
