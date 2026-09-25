@@ -1392,7 +1392,7 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
         <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
-        <span class="absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
+        <span class="hidden sm:block absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
         <div class="flex items-center justify-between mb-1">
@@ -2055,7 +2055,7 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
         <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
-        <span class="absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
+        <span class="hidden sm:block absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
         <div class="flex items-center justify-between mb-1">
@@ -2228,7 +2228,7 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
         <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
-        <span class="absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
+        <span class="hidden sm:block absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
         <div class="flex items-center justify-between mb-1">
