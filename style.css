@@ -1380,6 +1380,15 @@ body {
 }
 .testimonials-track {
   animation: testimonialsScrollLeft 45s linear infinite;
+  /* منع تحديد النص عند الضغط المطول بالإصبع على الموبايل: كان بيخلي
+     المتصفح يفتح قائمة تحديد/نسخ النص ويطلق touchcancel فتكمّل الحركة
+     فورًا رغم إن الإصبع لسه ضاغط. تعطيل التحديد يخلي الوقفة تكمل عادي
+     طول ما الإصبع ضاغط، وترجع تتحرك بس لما يرفع إيده فعلاً. */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 .testimonials-track.is-paused {
   animation-play-state: paused;
