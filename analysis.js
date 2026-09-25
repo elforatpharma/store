@@ -410,7 +410,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 saveCoupon();
             } else {
                 const subtotal = typeof getCartSubtotal === 'function' ? getCartSubtotal() : 0;
-                const minOk = (data.min_amount == null) || subtotal >= Number(data.min_amount);
+                const minOk = (data.min_amount == null) || String(data.code).toUpperCase() === 'WELCOME10' || subtotal >= Number(data.min_amount);
                 const usesOk = (data.max_uses == null) || (Number(data.used_count) || 0) < Number(data.max_uses);
                 const pctOk = data.discount_percentage === appliedCoupon.discount_percentage;
                 if (!minOk || !usesOk || !pctOk) {
@@ -1138,7 +1138,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
 
-                if (data.min_amount != null && Number(data.min_amount) > 0) {
+                if (data.min_amount != null && Number(data.min_amount) > 0 && String(data.code).toUpperCase() !== 'WELCOME10') {
                     const subtotal = getCartSubtotal();
                     if (subtotal < Number(data.min_amount)) {
                         showMsg(`الحد الأدنى للطلب ${Number(data.min_amount)} ج.م لاستخدام هذا الكوبون`, false);
@@ -1186,9 +1186,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (data.max_uses != null && (Number(data.used_count) || 0) >= Number(data.max_uses)) {
                     return { ok: false, message: 'تم استنفاد استخدامات هذا الكوبون' };
                 }
-                if (data.min_amount != null && Number(data.min_amount) > 0 && getCartSubtotal() < Number(data.min_amount)) {
-                    return { ok: false, message: `الحد الأدنى للطلب ${Number(data.min_amount)} ج.م لاستخدام الكوبون` };
-                }
+                // كوبون الترحيب (WELCOME10) بيتطبق من غير أي شرط حد أدنى للطلب،
+                // حتى لو كان فيه min_amount متسجل ليه في لوحة التحكم.
                 appliedCoupon = { code: data.code, discount_percentage: data.discount_percentage };
                 saveCoupon();
                 renderCart();
@@ -2423,7 +2422,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if (dbCoupon && Number(dbCoupon.discount_percentage) > 0) {
                         const usesOk = (dbCoupon.max_uses == null) || (Number(dbCoupon.used_count) || 0) < Number(dbCoupon.max_uses);
-                        const minOk = (dbCoupon.min_amount == null) || subtotal >= Number(dbCoupon.min_amount);
+                        const minOk = (dbCoupon.min_amount == null) || String(dbCoupon.code).toUpperCase() === 'WELCOME10' || subtotal >= Number(dbCoupon.min_amount);
                         if (usesOk && minOk) {
                             verifiedCouponCode = dbCoupon.code;
                             const pct = Number(dbCoupon.discount_percentage);
