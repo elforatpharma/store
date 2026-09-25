@@ -343,7 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) {
             appliedCoupon = null;
         }
-        // كوبون الترحيب صالح لأول زيارة فقط: لو المحفوظ WELCOME20 والزيارة الأولى خلصت → يتشال تلقائياً
+        // كوبون الترحيب صالح لأول زيارة فقط: لو المحفوظ WELCOME10 والزيارة الأولى خلصت → يتشال تلقائياً
         if (appliedCoupon && window.WelcomeOffer && !window.WelcomeOffer.guard(appliedCoupon.code).ok) {
             appliedCoupon = null;
             saveCoupon();
@@ -872,7 +872,7 @@ document.addEventListener("DOMContentLoaded", () => {
         banner.className = "fixed top-0 left-0 right-0 bg-gradient-to-r from-primary via-secondary to-primary text-white py-3 px-4 z-[9998] flex items-center justify-center gap-4 overflow-hidden shadow-purple-glow";
         banner.innerHTML = `
             <div class="animate-pulse">🎉</div>
-            <span class="font-bold text-sm md:text-base">احصل علي كريم صنفرة مجانا للطلبات فوق 500 ج.م! | خصم 20% على المجموعات المتكاملة</span>
+            <span class="font-bold text-sm md:text-base">شحن مجاني للطلبات فوق 1000 ج.م! | خصم 20% على المجموعات المتكاملة</span>
             <button id="close-promo-btn" class="hover:bg-white/20 rounded-full p-1 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -936,6 +936,11 @@ document.addEventListener("DOMContentLoaded", () => {
             renderCatalog(currentFilter, this.searchTerm, { keepPage: true });
         },
         navigate: function (viewId, param = null, addToHistory = true) {
+            // لما بنستعيد القسم من الـ #hash عند أول تحميل/ريفريش للصفحة (الصفحة
+            // كلها لسه مخفية بـ route-restoring)، بنحط السكرول فورًا من غير حركة
+            // وبدون أي view-transition - عشان لما الصفحة تظهر تبقى واقفة على
+            // مكانها الصح على طول، مش تتحرك/تتقفز قدام عين الزائر.
+            const instant = !!window.__initialRouteRestore;
             const doNav = () => {
                 if (addToHistory) history.pushState({ viewId, param }, "", param ? `#${viewId}?item=${param}` : `#${viewId}`);
                 document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
@@ -946,10 +951,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById('view-main').classList.add('active');
                     if (viewId === 'catalog') renderCatalog(param, this.searchTerm); else renderCatalog(null, this.searchTerm);
                     const target = document.getElementById(viewId);
-                    if (target) window.scrollTo({ top: target.offsetTop - 80, behavior: "smooth" });
+                    if (target) window.scrollTo({ top: target.offsetTop - 80, behavior: instant ? "auto" : "smooth" });
                 } else {
                     document.getElementById('view-' + viewId).classList.add('active');
-                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    window.scrollTo({ top: 0, behavior: instant ? "auto" : "smooth" });
                     if (viewId === 'product') renderProductDetails(param);
                     if (viewId === 'cart') { renderCart(); revalidateCoupon(); }
                     if (viewId === 'favorites') renderFavorites();
@@ -959,7 +964,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 else document.body.classList.remove('show-mobile-bar');
             };
 
-            if (document.startViewTransition) {
+            if (!instant && document.startViewTransition) {
                 document.startViewTransition(() => doNav());
             } else {
                 doNav();
@@ -1101,7 +1106,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (!code) { showMsg('برجاء إدخال كود الكوبون', false); return; }
 
-            // كوبون الترحيب (WELCOME20) صالح لأول زيارة فقط
+            // كوبون الترحيب (WELCOME10) صالح لأول زيارة فقط
             if (window.WelcomeOffer) {
                 const wg = window.WelcomeOffer.guard(code);
                 if (!wg.ok) { showMsg(wg.message, false); return; }
@@ -1770,7 +1775,6 @@ document.addEventListener("DOMContentLoaded", () => {
                                     aria-selected="true"
                                     aria-controls="tab-desc">
                                 الوصف
-                                <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary transform scale-x-100 transition-transform"></span>
                             </button>
                             <button onclick="switchTab('ingredients')" 
                                     id="tab-btn-ingredients"
@@ -1792,12 +1796,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                     
                     <div id="tab-desc" class="tab-content text-gray-600 leading-relaxed animate-fade-in-up">
-                        <p>${sanitize(p.desc) || 'أفضل منتجات العناية المختارة بعناية فائقة لضمان أفضل النتائج لبشرتك وشعرك.'}</p>
+                        <p class="whitespace-pre-line">${sanitize(p.desc) || 'أفضل منتجات العناية المختارة بعناية فائقة لضمان أفضل النتائج لبشرتك وشعرك.'}</p>
                         ${p.size ? `<p class="mt-4 text-sm"><strong>الحجم:</strong> ${sanitize(p.size)}</p>` : ''}
                     </div>
                     
                     <div id="tab-ingredients" class="tab-content hidden text-gray-600 leading-relaxed">
-                        <p>${sanitize(p.ingredients) || 'مكونات طبيعية 100% بدون مواد حافظة أو كحول. مناسب لجميع أنواع البشرة والشعر.'}</p>
+                        <p class="whitespace-pre-line">${sanitize(p.ingredients) || 'مكونات طبيعية 100% بدون مواد حافظة أو كحول. مناسب لجميع أنواع البشرة والشعر.'}</p>
                     </div>
                     
                     <div id="tab-reviews" class="tab-content hidden text-gray-600 leading-relaxed">
@@ -2482,14 +2486,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (!orderError && insertedOrder) {
                     orderData.id = insertedOrder.id;
                     trackStoreEvent('order_created', { coupon_code: couponCode, cart_total: finalTotal, metadata: { payment, items_count: orderItems.length } });
-                } else if (orderError && /WELCOME20_ALREADY_USED/.test(orderError.message || '')) {
+                } else if (orderError && /WELCOME10_ALREADY_USED/.test(orderError.message || '')) {
                     // السيرفر رفض الطلب: كوبون الترحيب استُخدم قبل كده بنفس رقم الهاتف.
                     // مفيش fallback هنا (كان هيسجّل الطلب بالخصم من غير كود الكوبون).
                     window.WelcomeOffer?.expire('already_used');
                     appliedCoupon = null;
                     saveCoupon();
                     renderCart();
-                    showCustomAlert('كوبون الترحيب WELCOME20 استُخدم قبل كده بنفس رقم الهاتف، تم إلغاؤه. راجعي الإجمالي وأكملي الطلب.', 'error');
+                    showCustomAlert('كوبون الترحيب WELCOME10 استُخدم قبل كده بنفس رقم الهاتف، تم إلغاؤه. راجعي الإجمالي وأكملي الطلب.', 'error');
                     submitBtn.innerText = originalBtnText;
                     submitBtn.disabled = false;
                     return;
@@ -2800,15 +2804,20 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 8.5 جلب هوية المتجر (اللوجو + صورة الهيرو) من جدول settings
     // بيسمح للأدمن يتحكم في اللوجو وصورة الهيرو من لوحة التحكم (صفحة الإعدادات)
-    // من غير ما نحتاج نعدّل ملفات HTML يدوياً - أي صورة موجودة محلياً (logo.png / hero-products.jpg)
-    // هتتستبدل تلقائياً لو الأدمن رفع صورة بديلة، ولو لأ هتفضل الصورة المحلية شغالة عادي.
+    // من غير ما نحتاج نعدّل ملفات HTML يدوياً.
+    //
+    // صورة الهيرو (.hero-main-image) بقت من غير src افتراضي في الـ HTML خالص
+    // (مفيش صورة محلية بتتعرض الأول وبعدين تتبدّل قدام عين الزائر). الـ src
+    // بتاعها بيتحط أول مرة هنا لما نعرف القيمة الصح - من الكاش (فوري) أو من
+    // السيرفر - أو من inline script صغير قبل ما الملف ده يتحمّل أصلاً (شوفي
+    // index.html) لو فيه نسخة كاش جاهزة. الصورة المحلية (data-fallback-src)
+    // بتتستخدم بس كشبكة أمان أخيرة لو مفيش أي إعدادات محفوظة خالص أو حصل خطأ.
     // ==========================================
     async function applyStoreBranding() {
-        // نظهر صورة الهيرو (كانت مخفية بـ opacity:0 في style.css) بمجرد ما نعرف
-        // src النهائي بتاعها - سواء من الكاش/السيرفر أو لو فضلت الصورة المحلية
-        // زي ما هي - عشان الزائر ميشوفش صورة تتقلب قدامه.
-        const revealHero = () => {
-            document.querySelectorAll('.hero-main-image').forEach(el => el.classList.add('is-ready'));
+        const heroFallback = () => {
+            document.querySelectorAll('.hero-main-image').forEach(el => {
+                if (!el.getAttribute('src') && el.dataset.fallbackSrc) el.src = el.dataset.fallbackSrc;
+            });
         };
 
         try {
@@ -2822,7 +2831,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 if (s.hero_image_url) {
-                    document.querySelectorAll('img[src="hero-products.webp"], img[src="hero-products.jpg"]').forEach(el => { el.src = s.hero_image_url; });
+                    document.querySelectorAll('.hero-main-image').forEach(el => { el.src = s.hero_image_url; });
                 }
 
                 if (s.store_name) {
@@ -2834,7 +2843,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
                 if (cached && cached.data && Date.now() - cached.savedAt < 10 * 60 * 1000) {
                     applySettings(cached.data);
-                    revealHero(); // عندنا نسخة حديثة كفاية من الكاش - نظهرها فوراً من غير ما ننتظر السيرفر
                 }
             } catch (e) { }
 
@@ -2844,14 +2852,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 .eq('id', 1)
                 .maybeSingle();
 
-            if (error || !data || !data.data) return; // مفيش إعدادات محفوظة، نسيب الصور المحلية زي ما هي
+            if (error || !data || !data.data) return; // مفيش إعدادات محفوظة
 
             applySettings(data.data);
             try { localStorage.setItem(cacheKey, JSON.stringify({ savedAt: Date.now(), data: data.data })); } catch (e) { }
         } catch (e) {
             console.warn('تعذر تحميل هوية المتجر من الإعدادات، هتفضل الصور المحلية الافتراضية:', e);
         } finally {
-            revealHero(); // في كل الأحوال (نجاح/فشل/مفيش إعدادات) لازم تتظهر في الآخر
+            heroFallback(); // شبكة أمان: لو صورة الهيرو لسه من غير src خالص (مفيش hero_image_url في الإعدادات)، نستخدم النسخة المحلية
         }
     }
 
@@ -2987,9 +2995,21 @@ document.addEventListener("DOMContentLoaded", () => {
         return { viewId, param };
     }
 
+    // بتشيل كلاس route-restoring (اللي مضاف من index.html بدري قبل ما الصفحة
+    // ترسم) بمجرد ما القسم الصح يبقى جاهز - عشان نفك إخفاء الصفحة اللي كنا
+    // مستخدمينه لمنع قفلة "رأس الصفحة يظهر ثم يرجع للمكان الصح" عند الريفريش.
+    function revealAfterRouteRestore() {
+        document.documentElement.classList.remove('route-restoring');
+    }
+
     function restoreViewFromHash() {
         const target = parseHash();
-        if (!target || !['home', 'catalog', 'about', 'product', 'cart', 'favorites'].includes(target.viewId)) return;
+        if (!target || !['home', 'catalog', 'about', 'product', 'cart', 'favorites'].includes(target.viewId)) {
+            revealAfterRouteRestore();
+            return;
+        }
+
+        window.__initialRouteRestore = true;
         if (target.viewId === 'home' || target.viewId === 'about') {
             app.navigate(target.viewId, null, false);
         } else if (target.viewId === 'catalog') {
@@ -2999,14 +3019,33 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             app.navigate(target.viewId, null, false);
         }
+        window.__initialRouteRestore = false;
+        revealAfterRouteRestore();
     }
     window.restoreViewFromHash = restoreViewFromHash;
 
     // دعم أزرار الرجوع والتقدم في المتصفح
+    // ملحوظة: أول صفحة بيفتحها الزائر (زيارة مباشرة للموقع من غير أي #hash)
+    // مالهاش hash خالص. فلو رجع بالـ"رجوع" لحد قبل أول صفحة زارها (كتالوج/منتج..)
+    // هيرجع لنفس هذا الرابط الفاضي من غير hash - وكان مفيش أي تعامل مع الحالة
+    // دي فكانت الصفحة تفضل واقفة على آخر view (زي الكتالوج) من غير ما ترجع
+    // فعليًا للرئيسية. دلوقتي بنعتبر الـ hash الفاضي = الرئيسية صراحةً.
     window.addEventListener('popstate', () => {
-        const target = parseHash();
-        if (target && target.viewId) {
-            app.navigate(target.viewId, target.param, false);
+        // نفس أسلوب الريفريش بالظبط: نخفي محتوى الصفحة لحظة التبديل ونستخدم
+        // سكرول فوري (بدل الحركة السموث) عشان زرار الرجوع/التقدم يبدّلوا
+        // القسم فورًا من غير أي قفلة أو حركة سكرول ظاهرة قدام عين الزائر.
+        document.documentElement.classList.add('route-restoring');
+        window.__initialRouteRestore = true;
+        try {
+            const target = parseHash();
+            if (target && target.viewId) {
+                app.navigate(target.viewId, target.param, false);
+            } else {
+                app.navigate('home', null, false);
+            }
+        } finally {
+            window.__initialRouteRestore = false;
+            document.documentElement.classList.remove('route-restoring');
         }
     });
 

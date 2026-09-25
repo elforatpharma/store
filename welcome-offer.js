@@ -1,5 +1,5 @@
 /**
- * WelcomeOffer - كوبون WELCOME20 لأول 24 ساعة من زيارة الزائر
+ * WelcomeOffer - كوبون WELCOME10 لأول 24 ساعة من زيارة الزائر
  * الفرات فارما (يوضع في المتجر، مش في لوحة التحكم)
  *
  * المنطق:
@@ -19,7 +19,7 @@
  *   <script src="welcome-offer.js"></script>          // قبل analysis.js
  *
  *   WelcomeOffer.isEligible()        // true لو لسه جوه نافذة الـ 24 ساعة
- *   WelcomeOffer.guard(code)         // {ok:false,message} لو الكود WELCOME20 والزائر مش مؤهل
+ *   WelcomeOffer.guard(code)         // {ok:false,message} لو الكود WELCOME10 والزائر مش مؤهل
  *   WelcomeOffer.markUsed()          // نادِها بعد نجاح الطلب
  *   WelcomeOffer.expire(reason)      // إلغاء يدوي (بينادى تلقائياً برضه)
  *   WelcomeOffer.reconcile(endTime, expired) // بتنادى من analysis.js بعد ما ياخد
@@ -29,7 +29,7 @@
 (function () {
   'use strict';
 
-  var CODE = 'WELCOME20';
+  var CODE = 'WELCOME10';
   var KEY = 'elforat_welcome_offer_v1'; // localStorage: حالة العرض للزائر
   var DURATION = 24 * 60 * 60 * 1000;   // 24 ساعة بالظبط
 
@@ -132,7 +132,7 @@
   var applyHandler = null;
   var textEl = null;
   var actionBtn = null;
-  var BASE_TEXT = '🎁 أهلاً بكِ! خصم 20% على زيارتك الأولى بكود ';
+  var BASE_TEXT = '🎁 أهلاً بكِ! خصم 10% على زيارتك الأولى بكود ';
 
   function hideBanner() {
     if (bannerEl && bannerEl.parentNode) bannerEl.parentNode.removeChild(bannerEl);
@@ -166,7 +166,7 @@
         .then(function (res) {
           if (res && res.ok) {
             actionBtn.textContent = 'تم التطبيق ✓';
-            fillText('تم تطبيق خصم ' + (res.discount_percentage || 20) + '% على سلتك 🎉');
+            fillText('تم تطبيق خصم ' + (res.discount_percentage || 10) + '% على سلتك 🎉');
             setTimeout(hideBanner, 2500);
           } else {
             fillText((res && res.message) || 'تعذر تطبيق الكوبون');
@@ -176,7 +176,12 @@
         })
         .catch(function () { fillText('تعذر تطبيق الكوبون'); refreshAction(); });
     } else {
-      var done = function () { if (actionBtn) actionBtn.textContent = 'تم النسخ ✓'; };
+      // البانر يختفي فورًا بعد نسخ الكود - الكوبون نفسه يفضل صالح للاستخدام
+      // في الشيك أوت (isEligible مابيتغيّرش هنا)، البانر بس هو اللي بيختفي.
+      var done = function () {
+        if (actionBtn) actionBtn.textContent = 'تم النسخ ✓';
+        setTimeout(hideBanner, 700);
+      };
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(CODE).then(done, done);
       } else { done(); }
@@ -187,6 +192,7 @@
     if (bannerEl || !isEligible()) return;
     var el = document.createElement('div');
     el.setAttribute('dir', 'rtl');
+    el.className = 'welcome-offer-banner';
     el.style.cssText =
       'position:fixed;bottom:16px;right:16px;left:16px;max-width:420px;margin-inline:auto;z-index:99999;' +
       'background:linear-gradient(90deg,#4d3ceb 0%,#8536ff 100%);color:#fff;border-radius:16px;' +

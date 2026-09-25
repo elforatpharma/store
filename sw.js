@@ -1,5 +1,5 @@
 // Service Worker for Elforat Pharma PWA
-const CACHE_NAME = 'elforat-cache-v8';
+const CACHE_NAME = 'elforat-cache-v9';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -48,9 +48,13 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
 
-  // Never cache external APIs or Supabase
+  // Never cache external APIs (Supabase REST/Functions) or Telegram.
+  // ملحوظة: قبل كده كنا بنستثني أي طلب لـ supabase.co بالكامل بما فيها
+  // صور Supabase Storage (زي صورة الهيرو والمنتجات)، فكانت الصورة بترجع
+  // تتحمّل من الإنترنت من الصفر في كل زيارة بدل ما تتخزن في كاش الـ SW.
+  // دلوقتي بنستثني بس مسارات الـ API الحقيقية (rest/functions)، وبنسيب
+  // صور الـ Storage تتخزن وتتكاش زي أي صورة تانية في الموقع.
   if (
-    url.hostname.includes('supabase.co') ||
     url.hostname.includes('telegram.org') ||
     url.pathname.includes('/rest/v1/') ||
     url.pathname.includes('/functions/v1/')

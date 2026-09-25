@@ -1372,13 +1372,17 @@ body {
   background: #1e7b54;
 }
 
-/* Testimonials marquee - continuous non-stop scroll to the left, never pauses */
+/* Testimonials marquee - continuous scroll to the left, pauses on hover (desktop)
+   and on touch-hold (mobile), resumes when the mouse/finger leaves */
 @keyframes testimonialsScrollLeft {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
 .testimonials-track {
   animation: testimonialsScrollLeft 45s linear infinite;
+}
+.testimonials-track.is-paused {
+  animation-play-state: paused;
 }
 .testimonial-card {
   will-change: transform;
@@ -1412,18 +1416,17 @@ body {
 }
 
 /* ==========================================
-   منع فليكر العداد وصورة الهيرو عند تحميل الصفحة
-   العنصرين مخفيين بالبداية، وبيظهروا (fade-in) بس لما
-   الداتا الحقيقية توصل من analysis.js (بدل ما نعرض قيمة/صورة
+   منع فليكر العداد عند تحميل الصفحة
+   العنصر مخفي بالبداية، وبيظهر (fade-in) بس لما
+   الداتا الحقيقية توصل من analysis.js (بدل ما نعرض قيمة
    افتراضية غلط لحظة، وبعدين تتغير قدام عين الزائر)
+   صورة الهيرو بقت بتظهر فوراً زي أي صورة عادية (من غير تأخير).
    ========================================== */
-#offer-countdown-wrap,
-.hero-main-image {
+#offer-countdown-wrap {
   opacity: 0;
   transition: opacity 0.35s ease;
 }
-#offer-countdown-wrap.is-ready,
-.hero-main-image.is-ready {
+#offer-countdown-wrap.is-ready {
   opacity: 1;
 }
 
@@ -1462,8 +1465,18 @@ body.show-mobile-bar .toast-container {
   bottom: 92px;
 }
 
+/* رفع بانر كوبون الترحيب (WelcomeOffer) فوق الشريط الثابت كمان،
+   عشان ميتراكبش مع زرار "اشتري الآن / أضف للسلة" على الموبايل */
+body.show-mobile-bar .welcome-offer-banner {
+  bottom: 92px;
+}
+
 @media (max-width: 480px) {
   body.show-mobile-bar .toast-container {
+    bottom: 88px;
+  }
+
+  body.show-mobile-bar .welcome-offer-banner {
     bottom: 88px;
   }
 }

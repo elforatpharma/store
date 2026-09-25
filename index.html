@@ -30,6 +30,53 @@
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="stylesheet" href="style.css">
 
+    <!-- منع "قفلة" الصفحة عند الريفريش: لو الرابط فيه #hash لصفحة غير الرئيسية
+         (كتالوج/منتج/سلة/مفضلة)، الصفحة الافتراضية (الهيرو) كانت بتترسم وتظهر
+         للحظة قبل ما الجافاسكريبت يجيب البيانات ويبدّل للقسم الصح - فالزائر كان
+         شايف "رأس الصفحة" يلمع ثم يرجع/يقفز للمكان اللي كان فيه. دلوقتي بنخفي
+         محتوى الصفحة فورًا (قبل ما يترسم خالص) لحد ما القسم الصح يبقى جاهز،
+         بدل ما نعرضله المكان الغلط الأول وبعدين نقفز للصح.
+         الفانكشن restoreViewFromHash في analysis.js هي اللي بتشيل الإخفاء ده
+         (بتشيل كلاس route-restoring) بعد ما تظبط القسم الصح والسكرول. -->
+    <script>
+        (function () {
+            try {
+                var raw = location.hash.slice(1);
+                if (!raw) return;
+                var viewId = raw.split('?')[0];
+                if (viewId && viewId !== 'home') {
+                    document.documentElement.classList.add('route-restoring');
+                }
+            } catch (e) { }
+        })();
+    </script>
+    <style>
+        html.route-restoring .view-section {
+            visibility: hidden !important;
+        }
+
+        html.route-restoring::after {
+            content: '';
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 34px;
+            height: 34px;
+            margin: -17px 0 0 -17px;
+            border: 3px solid rgba(197, 155, 63, 0.2);
+            border-top-color: #c59b3f;
+            border-radius: 50%;
+            z-index: 99999;
+            animation: route-restoring-spin 0.7s linear infinite;
+        }
+
+        @keyframes route-restoring-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
     <!-- تسريع المنتجات: فتح الاتصال بسوبابيز وخدمة الصور بدري + بدء طلب المنتجات قبل ما باقي السكريبتات تخلّص تحميل -->
     <link rel="preconnect" href="https://sidtdxchiqiogfkwbdui.supabase.co" crossorigin>
     <link rel="preconnect" href="https://wsrv.nl">
@@ -149,39 +196,9 @@
 
 <body class="font-sans text-gray-900 antialiased overflow-x-hidden">
 
-    <!-- Sticky wrapper: marquee + navbar stick together with no gap between them -->
+    <!-- Sticky wrapper: navbar -->
     <div class="sticky top-0 z-50">
-    <!-- Top Announcement Marquee Bar with Shimmer & Live Countdown -->
-<div class="bg-gradient-to-r from-[#c59b3f] via-[#c59b3f] to-[#1e7b54] text-white py-2 px-4 text-xs font-medium shadow-md">
-<div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
-<!-- Live dynamic announcement badge -->
-<div id="offer-badges-wrap" class="flex items-center gap-2.5 overflow-hidden">
-<span class="badge-shimmer text-white px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase shadow-sm flex items-center gap-1.5">
-<span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
-        عرض حصري ومحدود 🔥
-      </span>
-<div class="hidden sm:flex items-center gap-2 text-xs font-semibold">
-<span class="">احصلي على كريم صنفرة مجاناً للطلبات فوق 500 ج.م</span>
-<span class="text-purple-200">|</span>
-<span class="text-amber-300 font-bold">خصم 20% بكود: FORAT20</span>
-</div>
-</div>
-<!-- Contact & Quick stats -->
-<div class="flex items-center gap-4 text-xs text-white/95">
-<div id="offer-countdown-wrap" class="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-2.5 py-0.5 rounded-full">
-<span class="text-[10px] text-purple-200">ينتهي العرض خلال:</span>
-<span class="font-mono font-bold text-amber-300"><span id="hours">23</span>:<span id="minutes">59</span>:<span id="seconds">49</span></span>
-</div>
-<a class="flex items-center gap-1.5 hover:text-amber-300 transition-colors bg-emerald-500/30 hover:bg-emerald-500/50 px-2.5 py-0.5 rounded-full" href="https://wa.me/201146809133" target="_blank">
-<i class="fa-brands fa-whatsapp text-emerald-300 text-xs"></i>
-<span class="font-mono text-xs" dir="ltr">+20 114 680 9133</span>
-</a>
-<span class="hidden md:inline text-white/30">|</span>
-<span class="hidden md:flex items-center gap-1.5"><i class="fa-solid fa-truck-fast text-purple-200"></i> شحن سريع لجميع المحافظات</span>
-</div>
-</div>
-</div>
-<!-- Main Glass Navbar with Glow & Micro-interactions -->
+    <!-- Main Glass Navbar with Glow & Micro-interactions -->
 <header class="glass-nav transition-all duration-300 shadow-sm">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 <div class="flex items-center justify-between h-16 gap-4">
@@ -354,7 +371,20 @@
 <!-- Main Showcase Card -->
 <div class="relative rounded-3xl p-1.5 shadow-2xl bg-white/40 backdrop-blur-md border border-white/60">
 <div class="aspect-square max-h-[520px] rounded-2xl overflow-hidden relative group flex items-center justify-center shadow-inner bg-slate-100">
-<img alt="منتجات العناية بالبشرة والجمال الفرات فارما" class="hero-main-image w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" src="hero-products.webp">
+<img alt="منتجات العناية بالبشرة والجمال الفرات فارما" class="hero-main-image w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" data-fallback-src="hero-products.webp">
+<script>
+    // بنحط src الصورة فورًا (قبل ما analysis.js يتحمّل أصلاً) لو عندنا نسخة
+    // كاش جاهزة من زيارة سابقة - عشان الزائر العائد ميشوفش أي قفلة صورة بصورة.
+    // لو مفيش كاش (أول زيارة)، الصورة تفضل من غير src لحد ما القيمة الصح توصل.
+    (function () {
+        try {
+            var cached = JSON.parse(localStorage.getItem('elforat_store_settings_cache_v1') || 'null');
+            var url = cached && cached.data && cached.data.hero_image_url;
+            var img = document.currentScript.previousElementSibling;
+            if (url && img) img.src = url;
+        } catch (e) { }
+    })();
+</script>
 <div class="absolute inset-0 bg-gradient-to-t from-darkNavy/25 via-transparent to-transparent pointer-events-none"></div>
 </div>
 <div class="absolute -bottom-3 -right-3 text-white z-10">
@@ -813,125 +843,6 @@
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
 </div>
 <p class="text-sm text-slate-600 leading-relaxed flex-1">
-                    "الغسول جميل أوي وحلو أوي عشان المسام الواسعة، وطريقة استخدامه بتحسيها زي المساج للوش كده. تسلم إيدك بجد."
-                </p>
-<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
-<div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">ه</div>
-<div>
-<div class="text-xs font-black text-darkNavy">Heba</div>
-<div class="text-[10px] text-slate-400">رسالة فيسبوك موثقة</div>
-</div>
-</div>
-</div>
-
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
-<i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
-<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
-<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-</div>
-<p class="text-sm text-slate-600 leading-relaxed flex-1">
-                    "جربت علبتين اسكراب للبشرة، وطلعوا تحفة جداً، وعجبوا ماما وأخواتي كلهم."
-                </p>
-<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
-<div class="w-9 h-9 rounded-full bg-purple-50 text-secondary flex items-center justify-center font-black text-sm">ه</div>
-<div>
-<div class="text-xs font-black text-darkNavy">Hagar</div>
-<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
-</div>
-</div>
-</div>
-
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
-<i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
-<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
-<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-</div>
-<p class="text-sm text-slate-600 leading-relaxed flex-1">
-                    "كريم النضارة تحفة فنية، والغسول مع الفرشة اللي بيجيله اختراع بجد، بينضف البشرة من القلب."
-                </p>
-<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
-<div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">ع</div>
-<div>
-<div class="text-xs font-black text-darkNavy">عميلة</div>
-<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
-</div>
-</div>
-</div>
-
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
-<i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
-<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
-<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-</div>
-<p class="text-sm text-slate-600 leading-relaxed flex-1">
-                    "الكريم استخدمته يوم واحد وكان تحفة في الترطيب، وسايبلي لمعة جميلة على البشرة."
-                </p>
-<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
-<div class="w-9 h-9 rounded-full bg-purple-50 text-secondary flex items-center justify-center font-black text-sm">ع</div>
-<div>
-<div class="text-xs font-black text-darkNavy">عميلة</div>
-<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
-</div>
-</div>
-</div>
-
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
-<i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
-<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
-<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-</div>
-<p class="text-sm text-slate-600 leading-relaxed flex-1">
-                    "بصراحة قلل تساقط الشعر الحمد لله، أخدت بس أسبوعين استخدام وجابت نتيجة كويسة، مع إن شعري كان ضعيف أوي والشعيرات رفيعة. تسلمي يا سمسم بجد."
-                </p>
-<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
-<div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">ع</div>
-<div>
-<div class="text-xs font-black text-darkNavy">عميلة</div>
-<div class="text-[10px] text-slate-400">تعليق إنستغرام موثق</div>
-</div>
-</div>
-</div>
-
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
-<i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
-<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
-<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-</div>
-<p class="text-sm text-slate-600 leading-relaxed flex-1">
-                    "مساء الورد جميل، ما شاء الله. كنت واخدة واحد لبنتي وواحد لبنت أختي، وشكراً فيه خالص، بيطري وجميل."
-                </p>
-<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
-<div class="w-9 h-9 rounded-full bg-purple-50 text-secondary flex items-center justify-center font-black text-sm">ع</div>
-<div>
-<div class="text-xs font-black text-darkNavy">عميلة</div>
-<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
-</div>
-</div>
-</div>
-
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
-<i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
-<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
-<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-</div>
-<p class="text-sm text-slate-600 leading-relaxed flex-1">
-                    "استخدمته مرتين لحد دلوقتي وما شاء الله جميل وبيرطب أوي، شعري كان هايش جداً قبل ما استخدمه وهو أول حاجة تنيملي شعري كده، وبرغم إنه خفيف إلا إن ترطيبه كويس أوي."
-                </p>
-<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
-<div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">ع</div>
-<div>
-<div class="text-xs font-black text-darkNavy">عميلة</div>
-<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
-</div>
-</div>
-</div>
-
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
-<i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
-<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
-<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-</div>
-<p class="text-sm text-slate-600 leading-relaxed flex-1">
                     "حلو أوي بجد، بينظف البشرة من أي دهون من غير ما يجففها، بيخلي البشرة منورة. تسلم إيدكم."
                 </p>
 <div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
@@ -1249,125 +1160,6 @@
 </div>
 </div>
 
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
-<i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
-<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
-<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-</div>
-<p class="text-sm text-slate-600 leading-relaxed flex-1">
-                    "الغسول جميل أوي وحلو أوي عشان المسام الواسعة، وطريقة استخدامه بتحسيها زي المساج للوش كده. تسلم إيدك بجد."
-                </p>
-<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
-<div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">ه</div>
-<div>
-<div class="text-xs font-black text-darkNavy">Heba</div>
-<div class="text-[10px] text-slate-400">رسالة فيسبوك موثقة</div>
-</div>
-</div>
-</div>
-
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
-<i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
-<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
-<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-</div>
-<p class="text-sm text-slate-600 leading-relaxed flex-1">
-                    "جربت علبتين اسكراب للبشرة، وطلعوا تحفة جداً، وعجبوا ماما وأخواتي كلهم."
-                </p>
-<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
-<div class="w-9 h-9 rounded-full bg-purple-50 text-secondary flex items-center justify-center font-black text-sm">ه</div>
-<div>
-<div class="text-xs font-black text-darkNavy">Hagar</div>
-<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
-</div>
-</div>
-</div>
-
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
-<i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
-<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
-<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-</div>
-<p class="text-sm text-slate-600 leading-relaxed flex-1">
-                    "كريم النضارة تحفة فنية، والغسول مع الفرشة اللي بيجيله اختراع بجد، بينضف البشرة من القلب."
-                </p>
-<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
-<div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">ع</div>
-<div>
-<div class="text-xs font-black text-darkNavy">عميلة</div>
-<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
-</div>
-</div>
-</div>
-
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
-<i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
-<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
-<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-</div>
-<p class="text-sm text-slate-600 leading-relaxed flex-1">
-                    "الكريم استخدمته يوم واحد وكان تحفة في الترطيب، وسايبلي لمعة جميلة على البشرة."
-                </p>
-<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
-<div class="w-9 h-9 rounded-full bg-purple-50 text-secondary flex items-center justify-center font-black text-sm">ع</div>
-<div>
-<div class="text-xs font-black text-darkNavy">عميلة</div>
-<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
-</div>
-</div>
-</div>
-
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
-<i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
-<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
-<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-</div>
-<p class="text-sm text-slate-600 leading-relaxed flex-1">
-                    "بصراحة قلل تساقط الشعر الحمد لله، أخدت بس أسبوعين استخدام وجابت نتيجة كويسة، مع إن شعري كان ضعيف أوي والشعيرات رفيعة. تسلمي يا سمسم بجد."
-                </p>
-<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
-<div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">ع</div>
-<div>
-<div class="text-xs font-black text-darkNavy">عميلة</div>
-<div class="text-[10px] text-slate-400">تعليق إنستغرام موثق</div>
-</div>
-</div>
-</div>
-
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
-<i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
-<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
-<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-</div>
-<p class="text-sm text-slate-600 leading-relaxed flex-1">
-                    "مساء الورد جميل، ما شاء الله. كنت واخدة واحد لبنتي وواحد لبنت أختي، وشكراً فيه خالص، بيطري وجميل."
-                </p>
-<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
-<div class="w-9 h-9 rounded-full bg-purple-50 text-secondary flex items-center justify-center font-black text-sm">ع</div>
-<div>
-<div class="text-xs font-black text-darkNavy">عميلة</div>
-<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
-</div>
-</div>
-</div>
-
-<div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
-<i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
-<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
-<i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-</div>
-<p class="text-sm text-slate-600 leading-relaxed flex-1">
-                    "استخدمته مرتين لحد دلوقتي وما شاء الله جميل وبيرطب أوي، شعري كان هايش جداً قبل ما استخدمه وهو أول حاجة تنيملي شعري كده، وبرغم إنه خفيف إلا إن ترطيبه كويس أوي."
-                </p>
-<div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
-<div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">ع</div>
-<div>
-<div class="text-xs font-black text-darkNavy">عميلة</div>
-<div class="text-[10px] text-slate-400">رسالة واتساب موثقة</div>
-</div>
-</div>
-</div>
-
 </div>
 </div>
 
@@ -1384,7 +1176,7 @@
                         <div class="lg:col-span-8 text-white text-right">
                             <span class="inline-block text-[11px] font-black uppercase tracking-widest bg-white/15 px-3 py-1 rounded-full mb-3">الشحن والدفع بأمان وسرعة</span>
                             <h2 class="text-2xl sm:text-3xl font-black font-display mb-3 leading-snug">طرق دفع متعددة وشحن آمن وسريع لباب بيتك</h2>
-                            <p class="text-sm text-white/85 max-w-xl mb-6 leading-relaxed">نوفر لكِ تجربة تسوق سهلة ومضمونة، ادفعي عند الاستلام أو عبر إنستاباي، مع شحن سريع لجميع المحافظات وهدية مجانية للطلبات فوق 500 ج.م</p>
+                            <p class="text-sm text-white/85 max-w-xl mb-6 leading-relaxed">نوفر لكِ تجربة تسوق سهلة ومضمونة، ادفعي عند الاستلام أو عبر إنستاباي، مع شحن سريع لجميع المحافظات وشحن مجاني بالكامل للطلبات فوق 1000 ج.م</p>
                             <div class="flex flex-wrap items-center gap-3">
                                 <span class="flex items-center gap-2 bg-white/15 px-3.5 py-2 rounded-full text-xs font-bold"><i class="fa-solid fa-mobile-screen text-amber-200"></i> إنستاباي InstaPay</span>
                                 <span class="flex items-center gap-2 bg-white/15 px-3.5 py-2 rounded-full text-xs font-bold"><i class="fa-solid fa-hand-holding-dollar text-amber-200"></i> الدفع عند الاستلام</span>
@@ -1397,19 +1189,48 @@
                         <div class="lg:col-span-4">
                             <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 text-white">
                                 <div class="w-11 h-11 rounded-2xl bg-white/15 flex items-center justify-center mb-4">
-                                    <i class="fa-solid fa-gift text-lg text-amber-200"></i>
+                                    <i class="fa-solid fa-truck-fast text-lg text-amber-200"></i>
                                 </div>
-                                <h3 class="font-black text-base mb-1">هدية مجانية للطلبات فوق 500 ج.م</h3>
-                                <p class="text-xs text-white/80 mb-4 leading-relaxed">أضيفي الكود في صفحة الدفع واحصلي على كريم صنفرة هدية مع طلبك</p>
-                                <div class="flex items-center gap-2 bg-white/15 border border-dashed border-white/40 rounded-xl px-4 py-2.5">
-                                    <span class="font-mono font-black tracking-widest text-amber-200 flex-1 text-sm">FORAT20</span>
-                                    <button onclick="if (navigator.clipboard) { navigator.clipboard.writeText('FORAT20').then(() => alert('تم نسخ الكود بنجاح')).catch(() => alert('تعذر نسخ الكود، انسخيه يدويًا: FORAT20')); } else { alert('تعذر نسخ الكود تلقائيًا، انسخيه يدويًا: FORAT20'); }" class="text-[10px] font-bold bg-white text-primary px-3 py-1.5 rounded-full hover:brightness-95 transition-all">نسخ الكود</button>
+                                <h3 class="font-black text-base mb-1">شحن مجاني للطلبات فوق 1000 ج.م</h3>
+                                <p class="text-xs text-white/80 mb-4 leading-relaxed">مفيش أي كود مطلوب، الشحن بيتحسب مجاني تلقائي لما إجمالي طلبك يتخطى 1000 ج.م</p>
+                                <div id="static-welcome-coupon-block" style="transition: opacity 0.3s ease;">
+                                    <p class="text-[11px] text-amber-200 font-bold mb-2">وكمان خصم 10% على زيارتك الأولى بكود:</p>
+                                    <div class="flex items-center gap-2 bg-white/15 border border-dashed border-white/40 rounded-xl px-4 py-2.5">
+                                        <span class="font-mono font-black tracking-widest text-amber-200 flex-1 text-sm">WELCOME10</span>
+                                        <button onclick="copyStaticWelcomeCode(this)" class="text-[10px] font-bold bg-white text-primary px-3 py-1.5 rounded-full hover:brightness-95 transition-all">نسخ الكود</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
+            <script>
+                // كارت الكوبون الثابت في بانر "الشحن والدفع" (مش بانر WelcomeOffer العائم):
+                // بمجرد ما الزائرة تنسخ الكود، الكارت ده يختفي فورًا. الكوبون نفسه
+                // يفضل شغال عادي في الشيك أوت - الاختفاء ده خاص بعرض الكود في الصفحة بس.
+                function copyStaticWelcomeCode(btn) {
+                    var wrap = document.getElementById('static-welcome-coupon-block');
+                    var hide = function () {
+                        if (!wrap) return;
+                        wrap.style.opacity = '0';
+                        setTimeout(function () { wrap.style.display = 'none'; }, 300);
+                    };
+                    var finish = function () {
+                        if (btn) btn.textContent = 'تم النسخ ✓';
+                        setTimeout(hide, 500);
+                    };
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText('WELCOME10').then(finish, function () {
+                            alert('تعذر نسخ الكود، انسخيه يدويًا: WELCOME10');
+                            finish();
+                        });
+                    } else {
+                        alert('تعذر نسخ الكود تلقائيًا، انسخيه يدويًا: WELCOME10');
+                        finish();
+                    }
+                }
+            </script>
 
             <!-- Trust Strip -->
             <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
@@ -2026,13 +1847,44 @@
     </script>
 
     <!-- شبكة أمان: لو حصل أي خطأ في analysis.js أو الشبكة بطيئة جداً،
-         نظهر العداد وصورة الهيرو بعد 4 ثواني بأي حال بدل ما تفضل مخفية للأبد -->
+         نظهر العداد بعد 4 ثواني بأي حال بدل ما يفضل مخفي للأبد -->
     <script>
         setTimeout(() => {
-            document.querySelectorAll('#offer-countdown-wrap, .hero-main-image').forEach(el => {
+            document.querySelectorAll('#offer-countdown-wrap').forEach(el => {
                 el.classList.add('is-ready');
             });
         }, 4000);
+    </script>
+
+    <!-- شبكة أمان تانية: لو restoreViewFromHash في analysis.js لأي سبب مكملتش
+         (خطأ غير متوقع، أو الملف فشل يتحمّل)، نشيل إخفاء الصفحة (route-restoring)
+         بعد 5 ثواني بأي حال بدل ما تفضل مخفية للأبد -->
+    <script>
+        setTimeout(() => {
+            document.documentElement.classList.remove('route-restoring');
+        }, 5000);
+    </script>
+
+    <!-- تقييمات آراء العملاء: وقوف الماوس عليها (ديسكتوب) أو الضغط المطول عليها
+         (موبايل) بيوقف دورانها، وإزالة الماوس/الضغط بيكمّل الحركة تاني -->
+    <script>
+        (function () {
+            const wrapper = document.querySelector('.testimonials-marquee-wrapper');
+            const track = document.querySelector('.testimonials-track');
+            if (!wrapper || !track) return;
+
+            const pause = () => track.classList.add('is-paused');
+            const resume = () => track.classList.remove('is-paused');
+
+            // ديسكتوب: وقوف الماوس
+            wrapper.addEventListener('mouseenter', pause);
+            wrapper.addEventListener('mouseleave', resume);
+
+            // موبايل: الضغط المطول باللمس
+            wrapper.addEventListener('touchstart', pause, { passive: true });
+            wrapper.addEventListener('touchend', resume, { passive: true });
+            wrapper.addEventListener('touchcancel', resume, { passive: true });
+        })();
     </script>
 
 </body>
