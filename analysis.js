@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ELFORAT PHARMA - FULL INTEGRATED SCRIPT
  * النسخة الكاملة: التصميم الأصلي + سوبابيز + الترتيب + الخط المتحرك + الصور
  */
@@ -1952,7 +1952,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <p class="text-sm text-gray-600">${sanitize(r.text)}</p>
                             </div>`).join('')}
                         </div>
-                        <button onclick="app.openAddReviewModal(`${p.id}`, `${sanitize(p.name)}`)" class="mt-4 w-full py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-all text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-star text-amber-400"></i> إضافة تقييمك وتجربتك</button>
+                        <button onclick="app.openAddReviewModal('${p.id}', '${sanitize(p.name)}')" class="mt-4 w-full py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-all text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-star text-amber-400"></i> إضافة تقييمك وتجربتك</button>
                     </div>
                     
                     <!-- أزرار الإجراء -->

@@ -514,6 +514,54 @@ nav {
 @media (max-width: 768px) {
     .product-image-bg { padding: 1rem !important; }
     .category-circle { width: 140px; height: 140px; }
+
+    /* Hero Section */
+    .hero-main-image { border-radius: 1rem; }
+
+    /* Cart sidebar - full width on mobile */
+    #cart-sidebar {
+        width: 100% !important;
+        max-width: 100vw !important;
+    }
+
+    /* Product grid - 2 columns on tablet */
+    #catalog-grid,
+    #related-products-grid,
+    #favorites-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* Reduce section headings size */
+    h2.text-3xl, h2.text-4xl { font-size: 1.5rem !important; }
+    h3.text-2xl { font-size: 1.25rem !important; }
+
+    /* Fix overflow on wide tables/cards */
+    .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+}
+
+@media (max-width: 480px) {
+    /* Product grid - single column on very small screens */
+    #catalog-grid,
+    #related-products-grid,
+    #favorites-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.625rem;
+    }
+
+    /* Header action buttons - smaller on very small screens */
+    .btn-fav, header button.w-9 {
+        width: 2rem !important;
+        height: 2rem !important;
+    }
+
+    /* Mobile search bar padding */
+    #mobile-search-input { font-size: 0.8rem; }
+
+    /* Footer - stack columns */
+    footer .grid { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
+
+    /* Product card name - prevent overflow */
+    .pro-product-card .font-bold { font-size: 0.78rem; }
 }
 
 ::-webkit-scrollbar { width: 4px; }
