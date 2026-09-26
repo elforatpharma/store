@@ -756,7 +756,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const audio = new Audio('https://actions.google.com/sounds/v1/water/pop.ogg');
             audio.volume = 0.5;
-            audio.play().catch(e => console.log('سياسة المتصفح تمنع تشغيل الصوت تلقائياً قبل تفاعل المستخدم'));
+            audio.play().catch(() => {});
         } catch (err) {
             console.error('خطأ في تشغيل الصوت:', err);
         }
@@ -833,7 +833,7 @@ document.addEventListener("DOMContentLoaded", () => {
             AppState.setState({ status: "success" });
         } catch (e) {
             ErrorHandler.handle(e, "loadGifts");
-            console.log("تعذر جلب الهدايا من سوبابيز");
+            console.warn("تعذر جلب الهدايا من سوبابيز");
         }
     }
 
@@ -1131,7 +1131,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     // إذا لم نكن في الكتالوج، اذهب للكتالوج مع البحث
                     this.navigate('catalog');
                 }
-                console.log("تم تنفيذ البحث عن: " + this.searchTerm);
+
             }, 300);
         },
 
