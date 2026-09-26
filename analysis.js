@@ -111,6 +111,40 @@ document.addEventListener("DOMContentLoaded", () => {
         return el.innerHTML;
     }
 
+    // تنسيق النصوص متسلسلة الأسطر والنقاط والقوائم
+    function renderFormattedText(str, defaultFallback = '') {
+        const raw = (str != null && String(str).trim()) ? String(str).trim() : defaultFallback;
+        if (!raw) return '';
+        const safe = sanitize(raw);
+        const lines = safe.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        
+        let html = '';
+        let inList = false;
+
+        lines.forEach(line => {
+            const isBullet = /^[•\-\*–—]\s*/.test(line) || /^\d+[\.\-\)]\s*/.test(line);
+            if (isBullet) {
+                if (!inList) {
+                    html += '<ul class="space-y-2 my-2 pr-1 list-none">';
+                    inList = true;
+                }
+                const cleanedText = line.replace(/^([•\-\*–—]|\d+[\.\-\)])\s*/, '');
+                html += `<li class="flex items-start gap-2 text-sm leading-relaxed"><span class="text-primary mt-1 flex-shrink-0 text-xs">●</span><span>${cleanedText}</span></li>`;
+            } else {
+                if (inList) {
+                    html += '</ul>';
+                    inList = false;
+                }
+                html += `<p class="leading-relaxed mb-2 text-sm">${line}</p>`;
+            }
+        });
+
+        if (inList) {
+            html += '</ul>';
+        }
+        return html;
+    }
+
     const ToastManager = {
         container: null,
         toastQueue: [],
@@ -1928,12 +1962,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                     
                     <div id="tab-desc" class="tab-content text-gray-600 leading-relaxed animate-fade-in-up">
-                        <p>${sanitize(p.desc) || 'أفضل منتجات العناية المختارة بعناية فائقة لضمان أفضل النتائج لبشرتك وشعرك.'}</p>
-                        ${p.size ? `<p class="mt-4 text-sm"><strong>الحجم:</strong> ${sanitize(p.size)}</p>` : ''}
+                        ${renderFormattedText(p.desc, 'أفضل منتجات العناية المختارة بعناية فائقة لضمان أفضل النتائج لبشرتك وشعرك.')}
+                        ${p.size ? `<p class="mt-4 text-sm font-medium"><strong>الحجم:</strong> ${sanitize(p.size)}</p>` : ''}
                     </div>
                     
                     <div id="tab-ingredients" class="tab-content hidden text-gray-600 leading-relaxed">
-                        <p>${sanitize(p.ingredients) || 'مكونات طبيعية 100% بدون مواد حافظة أو كحول. مناسب لجميع أنواع البشرة والشعر.'}</p>
+                        ${renderFormattedText(p.ingredients, 'مكونات طبيعية 100% بدون مواد حافظة أو كحول. مناسب لجميع أنواع البشرة والشعر.')}
                     </div>
                     
                     <div id="tab-reviews" class="tab-content hidden text-gray-600 leading-relaxed">
