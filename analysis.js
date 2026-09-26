@@ -409,11 +409,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 appliedCoupon = null;
                 saveCoupon();
             } else {
-                const subtotal = typeof getCartSubtotal === 'function' ? getCartSubtotal() : 0;
-                const minOk = (data.min_amount == null) || subtotal >= Number(data.min_amount);
                 const usesOk = (data.max_uses == null) || (Number(data.used_count) || 0) < Number(data.max_uses);
                 const pctOk = data.discount_percentage === appliedCoupon.discount_percentage;
-                if (!minOk || !usesOk || !pctOk) {
+                if (!usesOk || !pctOk) {
                     appliedCoupon = null;
                     saveCoupon();
                 } else {
@@ -1133,15 +1131,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
 
-                if (data.min_amount != null && Number(data.min_amount) > 0) {
-                    const subtotal = getCartSubtotal();
-                    if (subtotal < Number(data.min_amount)) {
-                        showMsg(`الحد الأدنى للطلب ${Number(data.min_amount)} ج.م لاستخدام هذا الكوبون`, false);
-                        renderCart();
-                        return;
-                    }
-                }
-
                 appliedCoupon = { code: data.code, discount_percentage: data.discount_percentage };
                 saveCoupon();
                 input.value = '';
@@ -1180,9 +1169,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (error || !data) return { ok: false, message: 'الكوبون غير متاح حالياً' };
                 if (data.max_uses != null && (Number(data.used_count) || 0) >= Number(data.max_uses)) {
                     return { ok: false, message: 'تم استنفاد استخدامات هذا الكوبون' };
-                }
-                if (data.min_amount != null && Number(data.min_amount) > 0 && getCartSubtotal() < Number(data.min_amount)) {
-                    return { ok: false, message: `الحد الأدنى للطلب ${Number(data.min_amount)} ج.م لاستخدام الكوبون` };
                 }
                 appliedCoupon = { code: data.code, discount_percentage: data.discount_percentage };
                 saveCoupon();
@@ -2426,8 +2412,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if (dbCoupon && Number(dbCoupon.discount_percentage) > 0) {
                         const usesOk = (dbCoupon.max_uses == null) || (Number(dbCoupon.used_count) || 0) < Number(dbCoupon.max_uses);
-                        const minOk = (dbCoupon.min_amount == null) || subtotal >= Number(dbCoupon.min_amount);
-                        if (usesOk && minOk) {
+                        if (usesOk) {
                             verifiedCouponCode = dbCoupon.code;
                             const pct = Number(dbCoupon.discount_percentage);
                             verifiedDiscountAmount = Math.round(((subtotal * pct) / 100) * 100) / 100;
