@@ -1489,3 +1489,15 @@ body.show-mobile-bar .welcome-offer-banner {
     bottom: 88px;
   }
 }
+
+/* إظهار تدريجي لصورة الهيرو الرئيسية: بتفضل مخفية (opacity:0) لحد ما
+   جافاسكريبت (applyStoreBranding في analysis.js) يتأكد من الـ src
+   النهائي (محلي أو من إعدادات المتجر) ويضيف كلاس is-ready */
+.hero-main-image {
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+}
+
+.hero-main-image.is-ready {
+  opacity: 1;
+}

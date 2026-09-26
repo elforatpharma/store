@@ -23,8 +23,9 @@ window.InstaPayCheckout = (() => {
   const ORDER_STATUS_CODE = window.OrderStatus ? window.OrderStatus.CODES.PENDING : 'pending';
 
   const DEFAULT_WHATSAPP = "201146809133";
-  // حطي رابط الدفع بتاع حسابك بين علامتي التنصيص، مثال: "https://ipn.eg/S/name/instapay/AbC123"
-  const DEFAULT_LINK = "";
+  // رابط الدفع الخاص بحساب المالك (m.salama.insta@instapay) - بيفتح تطبيق
+  // InstaPay مباشرة مع تجهيز المستلم تلقائياً، والعميل بس يكتب المبلغ ويأكد
+  const DEFAULT_LINK = "https://ipn.eg/S/m.salama.insta/instapay/8Whbum";
   const DEFAULT_PHONE = "01065863803"; // رقم التحويل الافتراضي (لو مفيش instapay_phone صالح في الإعدادات)
   const ANDROID_PACKAGE = "com.egyptianbanks.instapay";
   const PLAY_URL = "https://play.google.com/store/apps/details?id=" + ANDROID_PACKAGE;

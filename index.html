@@ -382,7 +382,7 @@
 <!-- Main Showcase Card -->
 <div class="relative rounded-3xl p-1.5 shadow-2xl bg-white/40 backdrop-blur-md border border-white/60">
 <div class="aspect-square max-h-[520px] rounded-2xl overflow-hidden relative group flex items-center justify-center shadow-inner bg-slate-100">
-<img alt="منتجات العناية بالبشرة والجمال الفرات فارما" class="hero-main-image w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" data-fallback-src="hero-products.webp">
+<img src="hero-products.webp" alt="منتجات العناية بالبشرة والجمال الفرات فارما" class="hero-main-image w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" data-fallback-src="hero-products.webp" onerror="if (this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;">
 <script>
     // بنحط src الصورة فورًا (قبل ما analysis.js يتحمّل أصلاً) لو عندنا نسخة
     // كاش جاهزة من زيارة سابقة - عشان الزائر العائد ميشوفش أي قفلة صورة بصورة.
