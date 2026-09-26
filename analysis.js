@@ -410,7 +410,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 saveCoupon();
             } else {
                 const subtotal = typeof getCartSubtotal === 'function' ? getCartSubtotal() : 0;
-                const minOk = (data.min_amount == null) || String(data.code).toUpperCase() === 'WELCOME10' || subtotal >= Number(data.min_amount);
+                const minOk = (data.min_amount == null) || subtotal >= Number(data.min_amount);
                 const usesOk = (data.max_uses == null) || (Number(data.used_count) || 0) < Number(data.max_uses);
                 const pctOk = data.discount_percentage === appliedCoupon.discount_percentage;
                 if (!minOk || !usesOk || !pctOk) {
@@ -936,11 +936,6 @@ document.addEventListener("DOMContentLoaded", () => {
             renderCatalog(currentFilter, this.searchTerm, { keepPage: true });
         },
         navigate: function (viewId, param = null, addToHistory = true) {
-            // لما بنستعيد القسم من الـ #hash عند أول تحميل/ريفريش للصفحة (الصفحة
-            // كلها لسه مخفية بـ route-restoring)، بنحط السكرول فورًا من غير حركة
-            // وبدون أي view-transition - عشان لما الصفحة تظهر تبقى واقفة على
-            // مكانها الصح على طول، مش تتحرك/تتقفز قدام عين الزائر.
-            const instant = !!window.__initialRouteRestore;
             const doNav = () => {
                 if (addToHistory) history.pushState({ viewId, param }, "", param ? `#${viewId}?item=${param}` : `#${viewId}`);
                 document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
@@ -951,10 +946,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById('view-main').classList.add('active');
                     if (viewId === 'catalog') renderCatalog(param, this.searchTerm); else renderCatalog(null, this.searchTerm);
                     const target = document.getElementById(viewId);
-                    if (target) window.scrollTo({ top: target.offsetTop - 80, behavior: instant ? "auto" : "smooth" });
+                    if (target) window.scrollTo({ top: target.offsetTop - 80, behavior: "smooth" });
                 } else {
                     document.getElementById('view-' + viewId).classList.add('active');
-                    window.scrollTo({ top: 0, behavior: instant ? "auto" : "smooth" });
+                    window.scrollTo({ top: 0, behavior: "smooth" });
                     if (viewId === 'product') renderProductDetails(param);
                     if (viewId === 'cart') { renderCart(); revalidateCoupon(); }
                     if (viewId === 'favorites') renderFavorites();
@@ -964,7 +959,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 else document.body.classList.remove('show-mobile-bar');
             };
 
-            if (!instant && document.startViewTransition) {
+            if (document.startViewTransition) {
                 document.startViewTransition(() => doNav());
             } else {
                 doNav();
@@ -1138,7 +1133,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
 
-                if (data.min_amount != null && Number(data.min_amount) > 0 && String(data.code).toUpperCase() !== 'WELCOME10') {
+                if (data.min_amount != null && Number(data.min_amount) > 0) {
                     const subtotal = getCartSubtotal();
                     if (subtotal < Number(data.min_amount)) {
                         showMsg(`الحد الأدنى للطلب ${Number(data.min_amount)} ج.م لاستخدام هذا الكوبون`, false);
@@ -1186,8 +1181,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (data.max_uses != null && (Number(data.used_count) || 0) >= Number(data.max_uses)) {
                     return { ok: false, message: 'تم استنفاد استخدامات هذا الكوبون' };
                 }
-                // كوبون الترحيب (WELCOME10) بيتطبق من غير أي شرط حد أدنى للطلب،
-                // حتى لو كان فيه min_amount متسجل ليه في لوحة التحكم.
+                if (data.min_amount != null && Number(data.min_amount) > 0 && getCartSubtotal() < Number(data.min_amount)) {
+                    return { ok: false, message: `الحد الأدنى للطلب ${Number(data.min_amount)} ج.م لاستخدام الكوبون` };
+                }
                 appliedCoupon = { code: data.code, discount_percentage: data.discount_percentage };
                 saveCoupon();
                 renderCart();
@@ -1391,7 +1387,7 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
         <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
-        <span class="hidden sm:block absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
+        <span class="absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
         <div class="flex items-center justify-between mb-1">
@@ -1678,18 +1674,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // إذا لم يكن له صور إضافية خاصة، يتم عرض صورته الرسمية فقط
-        let dbImgs = [];
-        if (p.images) {
-            if (Array.isArray(p.images)) dbImgs = p.images;
-            else if (typeof p.images === 'string') {
+        // [تصحيح]: صور معرض المنتج اللي بتتضاف من لوحة التحكم (inventory.html)
+        // بتتخزن في عمود "gallery" في Supabase، مش "images"، فكان الكود هنا
+        // بيدوّر على عمود فاضي دايمًا وبالتالي صور المعرض الجديدة ما كانتش
+        // بتظهر في المتجر رغم إنها بتتحفظ صح في قاعدة البيانات.
+        function parseGalleryField(val) {
+            if (!val) return [];
+            if (Array.isArray(val)) return val.filter(Boolean);
+            if (typeof val === 'string') {
                 try {
-                    const parsed = JSON.parse(p.images);
-                    if (Array.isArray(parsed)) dbImgs = parsed;
+                    const parsed = JSON.parse(val);
+                    if (Array.isArray(parsed)) return parsed.filter(Boolean);
                 } catch (e) {
-                    if (p.images.trim().startsWith('http')) dbImgs = [p.images.trim()];
+                    if (val.trim().startsWith('http')) return [val.trim()];
                 }
             }
+            return [];
         }
+        let dbImgs = parseGalleryField(p.gallery);
+        if (dbImgs.length === 0) dbImgs = parseGalleryField(p.images); // توافق مع أي بيانات قديمة كانت مخزنة باسم images
         const candidateImgs = dbImgs.length > 0 ? dbImgs : (extraImgs || []);
         let mergedImgs = [];
         if (p.img) mergedImgs.push(getFullImg(p.img));
@@ -1774,6 +1777,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     aria-selected="true"
                                     aria-controls="tab-desc">
                                 الوصف
+                                <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary transform scale-x-100 transition-transform"></span>
                             </button>
                             <button onclick="switchTab('ingredients')" 
                                     id="tab-btn-ingredients"
@@ -1795,12 +1799,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                     
                     <div id="tab-desc" class="tab-content text-gray-600 leading-relaxed animate-fade-in-up">
-                        <p class="whitespace-pre-line">${sanitize(p.desc) || 'أفضل منتجات العناية المختارة بعناية فائقة لضمان أفضل النتائج لبشرتك وشعرك.'}</p>
+                        <p>${sanitize(p.desc) || 'أفضل منتجات العناية المختارة بعناية فائقة لضمان أفضل النتائج لبشرتك وشعرك.'}</p>
                         ${p.size ? `<p class="mt-4 text-sm"><strong>الحجم:</strong> ${sanitize(p.size)}</p>` : ''}
                     </div>
                     
                     <div id="tab-ingredients" class="tab-content hidden text-gray-600 leading-relaxed">
-                        <p class="whitespace-pre-line">${sanitize(p.ingredients) || 'مكونات طبيعية 100% بدون مواد حافظة أو كحول. مناسب لجميع أنواع البشرة والشعر.'}</p>
+                        <p>${sanitize(p.ingredients) || 'مكونات طبيعية 100% بدون مواد حافظة أو كحول. مناسب لجميع أنواع البشرة والشعر.'}</p>
                     </div>
                     
                     <div id="tab-reviews" class="tab-content hidden text-gray-600 leading-relaxed">
@@ -2054,7 +2058,7 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
         <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
-        <span class="hidden sm:block absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
+        <span class="absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
         <div class="flex items-center justify-between mb-1">
@@ -2227,7 +2231,7 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
         <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
-        <span class="hidden sm:block absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
+        <span class="absolute bottom-2.5 left-3 text-[10px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
         <div class="flex items-center justify-between mb-1">
@@ -2422,7 +2426,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if (dbCoupon && Number(dbCoupon.discount_percentage) > 0) {
                         const usesOk = (dbCoupon.max_uses == null) || (Number(dbCoupon.used_count) || 0) < Number(dbCoupon.max_uses);
-                        const minOk = (dbCoupon.min_amount == null) || String(dbCoupon.code).toUpperCase() === 'WELCOME10' || subtotal >= Number(dbCoupon.min_amount);
+                        const minOk = (dbCoupon.min_amount == null) || subtotal >= Number(dbCoupon.min_amount);
                         if (usesOk && minOk) {
                             verifiedCouponCode = dbCoupon.code;
                             const pct = Number(dbCoupon.discount_percentage);
@@ -2803,20 +2807,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 8.5 جلب هوية المتجر (اللوجو + صورة الهيرو) من جدول settings
     // بيسمح للأدمن يتحكم في اللوجو وصورة الهيرو من لوحة التحكم (صفحة الإعدادات)
-    // من غير ما نحتاج نعدّل ملفات HTML يدوياً.
-    //
-    // صورة الهيرو (.hero-main-image) بقت من غير src افتراضي في الـ HTML خالص
-    // (مفيش صورة محلية بتتعرض الأول وبعدين تتبدّل قدام عين الزائر). الـ src
-    // بتاعها بيتحط أول مرة هنا لما نعرف القيمة الصح - من الكاش (فوري) أو من
-    // السيرفر - أو من inline script صغير قبل ما الملف ده يتحمّل أصلاً (شوفي
-    // index.html) لو فيه نسخة كاش جاهزة. الصورة المحلية (data-fallback-src)
-    // بتتستخدم بس كشبكة أمان أخيرة لو مفيش أي إعدادات محفوظة خالص أو حصل خطأ.
+    // من غير ما نحتاج نعدّل ملفات HTML يدوياً - أي صورة موجودة محلياً (logo.png / hero-products.jpg)
+    // هتتستبدل تلقائياً لو الأدمن رفع صورة بديلة، ولو لأ هتفضل الصورة المحلية شغالة عادي.
     // ==========================================
     async function applyStoreBranding() {
-        const heroFallback = () => {
-            document.querySelectorAll('.hero-main-image').forEach(el => {
-                if (!el.getAttribute('src') && el.dataset.fallbackSrc) el.src = el.dataset.fallbackSrc;
-            });
+        // نظهر صورة الهيرو (كانت مخفية بـ opacity:0 في style.css) بمجرد ما نعرف
+        // src النهائي بتاعها - سواء من الكاش/السيرفر أو لو فضلت الصورة المحلية
+        // زي ما هي - عشان الزائر ميشوفش صورة تتقلب قدامه.
+        const revealHero = () => {
+            document.querySelectorAll('.hero-main-image').forEach(el => el.classList.add('is-ready'));
         };
 
         try {
@@ -2830,7 +2829,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 if (s.hero_image_url) {
-                    document.querySelectorAll('.hero-main-image').forEach(el => { el.src = s.hero_image_url; });
+                    document.querySelectorAll('img[src="hero-products.webp"], img[src="hero-products.jpg"]').forEach(el => { el.src = s.hero_image_url; });
                 }
 
                 if (s.store_name) {
@@ -2842,6 +2841,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
                 if (cached && cached.data && Date.now() - cached.savedAt < 10 * 60 * 1000) {
                     applySettings(cached.data);
+                    revealHero(); // عندنا نسخة حديثة كفاية من الكاش - نظهرها فوراً من غير ما ننتظر السيرفر
                 }
             } catch (e) { }
 
@@ -2851,14 +2851,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 .eq('id', 1)
                 .maybeSingle();
 
-            if (error || !data || !data.data) return; // مفيش إعدادات محفوظة
+            if (error || !data || !data.data) return; // مفيش إعدادات محفوظة، نسيب الصور المحلية زي ما هي
 
             applySettings(data.data);
             try { localStorage.setItem(cacheKey, JSON.stringify({ savedAt: Date.now(), data: data.data })); } catch (e) { }
         } catch (e) {
             console.warn('تعذر تحميل هوية المتجر من الإعدادات، هتفضل الصور المحلية الافتراضية:', e);
         } finally {
-            heroFallback(); // شبكة أمان: لو صورة الهيرو لسه من غير src خالص (مفيش hero_image_url في الإعدادات)، نستخدم النسخة المحلية
+            revealHero(); // في كل الأحوال (نجاح/فشل/مفيش إعدادات) لازم تتظهر في الآخر
         }
     }
 
@@ -2994,21 +2994,9 @@ document.addEventListener("DOMContentLoaded", () => {
         return { viewId, param };
     }
 
-    // بتشيل كلاس route-restoring (اللي مضاف من index.html بدري قبل ما الصفحة
-    // ترسم) بمجرد ما القسم الصح يبقى جاهز - عشان نفك إخفاء الصفحة اللي كنا
-    // مستخدمينه لمنع قفلة "رأس الصفحة يظهر ثم يرجع للمكان الصح" عند الريفريش.
-    function revealAfterRouteRestore() {
-        document.documentElement.classList.remove('route-restoring');
-    }
-
     function restoreViewFromHash() {
         const target = parseHash();
-        if (!target || !['home', 'catalog', 'about', 'product', 'cart', 'favorites'].includes(target.viewId)) {
-            revealAfterRouteRestore();
-            return;
-        }
-
-        window.__initialRouteRestore = true;
+        if (!target || !['home', 'catalog', 'about', 'product', 'cart', 'favorites'].includes(target.viewId)) return;
         if (target.viewId === 'home' || target.viewId === 'about') {
             app.navigate(target.viewId, null, false);
         } else if (target.viewId === 'catalog') {
@@ -3018,33 +3006,14 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             app.navigate(target.viewId, null, false);
         }
-        window.__initialRouteRestore = false;
-        revealAfterRouteRestore();
     }
     window.restoreViewFromHash = restoreViewFromHash;
 
     // دعم أزرار الرجوع والتقدم في المتصفح
-    // ملحوظة: أول صفحة بيفتحها الزائر (زيارة مباشرة للموقع من غير أي #hash)
-    // مالهاش hash خالص. فلو رجع بالـ"رجوع" لحد قبل أول صفحة زارها (كتالوج/منتج..)
-    // هيرجع لنفس هذا الرابط الفاضي من غير hash - وكان مفيش أي تعامل مع الحالة
-    // دي فكانت الصفحة تفضل واقفة على آخر view (زي الكتالوج) من غير ما ترجع
-    // فعليًا للرئيسية. دلوقتي بنعتبر الـ hash الفاضي = الرئيسية صراحةً.
     window.addEventListener('popstate', () => {
-        // نفس أسلوب الريفريش بالظبط: نخفي محتوى الصفحة لحظة التبديل ونستخدم
-        // سكرول فوري (بدل الحركة السموث) عشان زرار الرجوع/التقدم يبدّلوا
-        // القسم فورًا من غير أي قفلة أو حركة سكرول ظاهرة قدام عين الزائر.
-        document.documentElement.classList.add('route-restoring');
-        window.__initialRouteRestore = true;
-        try {
-            const target = parseHash();
-            if (target && target.viewId) {
-                app.navigate(target.viewId, target.param, false);
-            } else {
-                app.navigate('home', null, false);
-            }
-        } finally {
-            window.__initialRouteRestore = false;
-            document.documentElement.classList.remove('route-restoring');
+        const target = parseHash();
+        if (target && target.viewId) {
+            app.navigate(target.viewId, target.param, false);
         }
     });
 

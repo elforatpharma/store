@@ -4,6 +4,17 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ============================================================
+         Security Headers (Meta-tag fallback)
+         GitHub Pages مش بيسمح بإضافة HTTP Response Headers حقيقية
+         (زي X-Frame-Options أو X-Content-Type-Options)، فدي أقصى حماية
+         ممكنة عن طريق <meta> لحد ما تتفعّل الهيدرز الحقيقية عبر
+         Cloudflare أو استضافة بتدعم _headers (شوفي security-headers-README.md)
+         ============================================================ -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://sidtdxchiqiogfkwbdui.supabase.co https://wsrv.nl; connect-src 'self' https://sidtdxchiqiogfkwbdui.supabase.co https://api.ipify.org; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
     <title>متجر الفُرات فارما الإلكتروني | ELFORAT PHARMA STORE</title>
 
     <!-- SEO Meta Tags -->
