@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ELFORAT PHARMA - FULL INTEGRATED SCRIPT
  * النسخة الكاملة: التصميم الأصلي + سوبابيز + الترتيب + الخط المتحرك + الصور
  */
@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // شريط تقدّم الشحن المجاني: يتدرّج لونه من الذهبي إلى الأخضر
     // كل ما اقترب إجمالي السلة من حد الشحن المجاني (FREE_SHIPPING_THRESHOLD)
     // ==========================================
-    const FREE_SHIPPING_THRESHOLD = 1000;
+    let FREE_SHIPPING_THRESHOLD = 1000;
 
     function lerpHexColor(fromHex, toHex, t) {
         const clampedT = Math.min(Math.max(t, 0), 1);
@@ -923,6 +923,149 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 4. نظام التنقل والسلة (App Logic)
     // ==========================================
+    // ==========================================
+    // نظام التواصل المباشر (إرسال إلى جدول messages)
+    // ==========================================
+    async function submitContactMessage(name, phone, message) {
+        if (!name || !phone || !message) {
+            throw new Error('يرجى ملء جميع الحقول المطلوبة');
+        }
+        const { error } = await _supabase.from('messages').insert([{
+            name: name.trim(),
+            phone: phone.trim(),
+            message: message.trim(),
+            status: 'new'
+        }]);
+        if (error) throw error;
+        return true;
+    }
+
+    function openContactModal() {
+        if (typeof Swal === 'undefined') {
+            window.open('https://wa.me/201146809133', '_blank');
+            return;
+        }
+        Swal.fire({
+            title: '<div class="flex items-center gap-2 justify-center text-primary font-bold text-lg"><i class="fa-solid fa-headset"></i> تواصل مع الفريق الطبي</div>',
+            html: `
+                <div class="space-y-3 text-right text-xs" dir="rtl">
+                    <p class="text-slate-500 mb-3">يسعدنا استقبال استفساراتكم ومتابعاتكم الطبية، وسيتواصل معكم فريقنا المتخصص فوراً.</p>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">الاسم بالكامل *</label>
+                        <input id="contact-name" class="swal2-input !w-full !m-0 !text-sm !h-11 !rounded-xl" placeholder="أدخل اسمك الكريم">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">رقم الهاتف أو الواتساب *</label>
+                        <input id="contact-phone" type="tel" class="swal2-input !w-full !m-0 !text-sm !h-11 !rounded-xl text-left" dir="ltr" placeholder="01xxxxxxxxx">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">رسالتك أو استفسارك الطبي *</label>
+                        <textarea id="contact-msg" class="swal2-textarea !w-full !m-0 !text-sm !rounded-xl" rows="3" placeholder="اكتب سؤالك أو استفسارك هنا..."></textarea>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'إرسال الرسالة الآن ✉️',
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: '#3312d5',
+            focusConfirm: false,
+            preConfirm: async () => {
+                const name = document.getElementById('contact-name').value.trim();
+                const phone = document.getElementById('contact-phone').value.trim();
+                const msg = document.getElementById('contact-msg').value.trim();
+                if (!name || !phone || !msg) {
+                    Swal.showValidationMessage('يرجى ملء جميع الحقول المطلوبة');
+                    return false;
+                }
+                try {
+                    await submitContactMessage(name, phone, msg);
+                    return true;
+                } catch(err) {
+                    Swal.showValidationMessage('تعذر إرسال الرسالة: ' + (err.message || 'حاول مجدداً'));
+                    return false;
+                }
+            }
+        }).then(res => {
+            if (res.isConfirmed) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم إرسال رسالتك بنجاح! 🌸',
+                    text: 'سيتواصل معك أحد صيادلتنا المتخصصين في أقرب وقت عبر الواتساب أو الهاتف.',
+                    confirmButtonText: 'حسناً',
+                    confirmButtonColor: '#3312d5'
+                });
+            }
+        });
+    }
+
+    // ==========================================
+    // نظام تقييمات المنتجات المتصل بقاعدة البيانات (reviews)
+    // ==========================================
+    function openAddReviewModal(productId, productName) {
+        if (typeof Swal === 'undefined') return;
+        Swal.fire({
+            title: `<div class="text-base font-bold text-darkNavy">إضافة تقييم لـ ${productName || 'المنتج'}</div>`,
+            html: `
+                <div class="space-y-3 text-right text-xs" dir="rtl">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">اسمك الكريم *</label>
+                        <input id="rev-name" class="swal2-input !w-full !m-0 !text-sm !h-11 !rounded-xl" placeholder="مثال: ياسمين أحمد">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">تقييمك للمنتج (النجوم) *</label>
+                        <select id="rev-stars" class="swal2-input !w-full !m-0 !text-sm !h-11 !rounded-xl font-bold">
+                            <option value="5" selected>★★★★★ (5 نجوم - ممتاز جداً)</option>
+                            <option value="4">★★★★☆ (4 نجوم - جيد جداً)</option>
+                            <option value="3">★★★☆☆ (3 نجوم - جيد)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">اكتبي تجربتك مع المنتج *</label>
+                        <textarea id="rev-comment" class="swal2-textarea !w-full !m-0 !text-sm !rounded-xl" rows="3" placeholder="ما رأيك في النتيجة والفاعلية وسرعة التوصيل؟"></textarea>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'نشر التقييم ⭐',
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: '#3312d5',
+            focusConfirm: false,
+            preConfirm: async () => {
+                const name = document.getElementById('rev-name').value.trim();
+                const stars = document.getElementById('rev-stars').value;
+                const comment = document.getElementById('rev-comment').value.trim();
+                if (!name || !comment) {
+                    Swal.showValidationMessage('يرجى ملء الاسم والتجربة');
+                    return false;
+                }
+                try {
+                    const { error } = await _supabase.from('reviews').insert([{
+                        product_id: String(productId),
+                        customer_name: name,
+                        rating: Number(stars),
+                        comment: comment,
+                        is_approved: true
+                    }]);
+                    if (error) throw error;
+                    return true;
+                } catch(err) {
+                    Swal.showValidationMessage('تعذر حفظ التقييم: ' + (err.message || 'حاول مجدداً'));
+                    return false;
+                }
+            }
+        }).then(res => {
+            if (res.isConfirmed) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'شكراً لمشاركتك تجربتك! 🌸',
+                    text: 'تم نشر تقييمك بنجاح وسيفيد العملاء الآخرين.',
+                    confirmButtonText: 'حسناً',
+                    confirmButtonColor: '#3312d5'
+                });
+            }
+        });
+    }
+
     window.app = {
         searchTerm: '',
         // [تحسين أداء]: زرار "عرض المزيد" - بيزوّد عدد المنتجات الظاهرة
@@ -1809,7 +1952,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <p class="text-sm text-gray-600">${sanitize(r.text)}</p>
                             </div>`).join('')}
                         </div>
-                        <button class="mt-4 w-full py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-all text-sm">إضافة تقييمك</button>
+                        <button onclick="app.openAddReviewModal(`${p.id}`, `${sanitize(p.name)}`)" class="mt-4 w-full py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-all text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-star text-amber-400"></i> إضافة تقييمك وتجربتك</button>
                     </div>
                     
                     <!-- أزرار الإجراء -->
@@ -2579,10 +2722,7 @@ document.addEventListener("DOMContentLoaded", () => {
             saveCart(); // [جديد] مسح المنتجات من التخزين بعد إرسال الطلب بنجاح
             appliedCoupon = null;
             saveCoupon(); // مسح الكوبون بعد إتمام الطلب بنجاح
-            try {
-                const orderSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-                orderSound.play().catch(() => { });
-            } catch (e) { }
+// صوت التنبيه مخصص للوحة التحكم فقط
             updateBadge();
             checkoutForm.reset();
 
@@ -2820,6 +2960,32 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (s.store_name) {
                     document.title = document.title.replace(/الفُرات فارما|الفرات فارما/g, s.store_name);
                 }
+
+                // تحديث الحد الأدنى للشحن المجاني ديناميكياً من لوحة التحكم
+                if (s.free_shipping_threshold != null && Number(s.free_shipping_threshold) > 0) {
+                    FREE_SHIPPING_THRESHOLD = Number(s.free_shipping_threshold);
+                    if (typeof app !== 'undefined' && app.renderCart && cart && cart.length) {
+                        app.renderCart();
+                    }
+                }
+
+                // تحديث جميع روابط الواتساب في المتجر ديناميكياً برقم خدمة العملاء
+                if (s.whatsapp) {
+                    let cleanWa = String(s.whatsapp).replace(/\D/g, '');
+                    if (cleanWa.startsWith('0')) cleanWa = '20' + cleanWa.slice(1);
+                    if (cleanWa) {
+                        document.querySelectorAll('a[href*="wa.me"]').forEach(el => {
+                            el.href = `https://wa.me/${cleanWa}`;
+                        });
+                    }
+                }
+
+                // تحديث أرقام الاتصال المباشر في المتجر
+                if (s.phone) {
+                    document.querySelectorAll('a[href*="tel:"]').forEach(el => {
+                        el.href = `tel:${s.phone}`;
+                    });
+                }
             };
 
             try {
@@ -2869,9 +3035,30 @@ document.addEventListener("DOMContentLoaded", () => {
     function getTrafficParams() {
         const params = new URLSearchParams(location.search);
         const ref = document.referrer || '';
-        const host = (() => { try { return ref ? new URL(ref).hostname : ''; } catch (e) { return ''; } })();
+        const host = (() => { try { return ref ? new URL(ref).hostname.toLowerCase() : ''; } catch (e) { return ''; } })();
+        let detectedSource = 'direct';
+        if (params.get('utm_source')) {
+            detectedSource = params.get('utm_source').toLowerCase();
+        } else if (host.includes('facebook') || host.includes('fb.me')) {
+            detectedSource = 'facebook';
+        } else if (host.includes('instagram')) {
+            detectedSource = 'instagram';
+        } else if (host.includes('tiktok')) {
+            detectedSource = 'tiktok';
+        } else if (host.includes('snapchat')) {
+            detectedSource = 'snapchat';
+        } else if (host.includes('google')) {
+            detectedSource = 'google';
+        } else if (host.includes('whatsapp') || host.includes('wa.me')) {
+            detectedSource = 'whatsapp';
+        } else if (host.includes('t.me') || host.includes('telegram')) {
+            detectedSource = 'telegram';
+        } else if (host) {
+            detectedSource = host;
+        }
+
         return {
-            source: params.get('utm_source') || (host.includes('facebook') ? 'facebook' : host.includes('google') ? 'google' : host || 'direct'),
+            source: detectedSource,
             medium: params.get('utm_medium') || (ref ? 'referral' : 'direct'),
             campaign: params.get('utm_campaign') || null
         };
