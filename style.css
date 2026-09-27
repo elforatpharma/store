@@ -1549,3 +1549,30 @@ body.show-mobile-bar .welcome-offer-banner {
 .hero-main-image.is-ready {
   opacity: 1;
 }
+
+/* Trust stats bar (الهيرو: 100% / سريع / +2,000) - منع قص/التفاف الأيقونة
+   على شاشات الموبايل الضيقة، مع تصغير الخط تدريجياً بدل الاعتماد على
+   كلاسات Tailwind غير موجودة في tailwind-built.css */
+.trust-stat-value {
+  font-size: 1.05rem;
+  white-space: nowrap;
+}
+.trust-stat-value i {
+  flex-shrink: 0;
+}
+@media (min-width: 640px) {
+  .trust-stat-value {
+    font-size: 1.5rem;
+  }
+}
+@media (max-width: 360px) {
+  .trust-stats-bar {
+    gap: 0.5rem;
+  }
+  .trust-stat-col {
+    padding-right: 0.5rem;
+  }
+  .trust-stat-value {
+    font-size: 0.9rem;
+  }
+}
