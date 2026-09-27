@@ -1597,7 +1597,7 @@ body.show-mobile-bar .welcome-offer-banner {
   -webkit-text-fill-color: transparent;
   color: transparent;
   display: inline-block;
-  animation: textShimmerSweep 3.5s ease-in-out infinite;
+  animation: textShimmerSweep 9s ease-in-out infinite;
 }
 @keyframes textShimmerSweep {
   0% { background-position: 130% 0; }
