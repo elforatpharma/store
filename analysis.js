@@ -69,6 +69,58 @@ document.addEventListener("DOMContentLoaded", () => {
     const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
     // ==========================================
+    // [مهم] دعم الريفريش وأزرار الرجوع/التقدم في المتصفح
+    // اتنقل لهنا (أول حاجة بعد إنشاء supabase client) بدل آخر الملف،
+    // عشان يفضل شغال حتى لو حصل أي خطأ JS في أي حتة تانية في الملف ده.
+    // لو الكود ده فضل في آخر الملف وحصل error قبله، مكانش بيتسجل خالص،
+    // فكانت كل صفحة بترجع للهوم بعد الريفريش أو زرار رجوع/تقدم.
+    // ==========================================
+    function parseHash() {
+        const raw = location.hash.slice(1);
+        if (!raw) return null;
+        const [viewId, queryPart] = raw.split('?');
+        if (!viewId) return null;
+        let param = null;
+        if (queryPart) {
+            const params = new URLSearchParams(queryPart);
+            param = params.get('item') || params.get('category');
+        }
+        return { viewId, param };
+    }
+
+    function restoreViewFromHash() {
+        try {
+            const target = parseHash();
+            if (!target || !['home', 'catalog', 'about', 'product', 'cart', 'favorites'].includes(target.viewId)) return;
+            if (target.viewId === 'home' || target.viewId === 'about') {
+                app.navigate(target.viewId, null, false);
+            } else if (target.viewId === 'catalog') {
+                app.navigate('catalog', target.param, false);
+            } else if (target.viewId === 'product') {
+                if (target.param) app.navigate('product', target.param, false);
+            } else {
+                app.navigate(target.viewId, null, false);
+            }
+        } catch (err) {
+            console.warn('تعذّر استرجاع الصفحة من الرابط:', err);
+        }
+    }
+    window.restoreViewFromHash = restoreViewFromHash;
+
+    // دعم أزرار الرجوع (back) والتقدم (forward) في المتصفح
+    window.addEventListener('popstate', () => {
+        try {
+            const target = parseHash();
+            if (target && target.viewId && window.app && typeof window.app.navigate === 'function') {
+                app.navigate(target.viewId, target.param, false);
+            }
+        } catch (err) {
+            console.warn('تعذّر تنفيذ رجوع/تقدم المتصفح:', err);
+        }
+    });
+
+
+    // ==========================================
     // نمط تصميم: State Manager لإدارة الحالات
     // ==========================================
     const AppState = {
@@ -3197,44 +3249,8 @@ document.addEventListener("DOMContentLoaded", () => {
         hideGlobalLoader();
     });
 
-    // [جديد] استعادة الصفحة التي كان عليها الزائر عند إعادة التحميل من رابط الصفحة
-    function parseHash() {
-        const raw = location.hash.slice(1);
-        if (!raw) return null;
-        const [viewId, queryPart] = raw.split('?');
-        if (!viewId) return null;
-        let param = null;
-        if (queryPart) {
-            const params = new URLSearchParams(queryPart);
-            param = params.get('item') || params.get('category');
-        }
-        return { viewId, param };
-    }
-
-    function restoreViewFromHash() {
-        const target = parseHash();
-        if (!target || !['home', 'catalog', 'about', 'product', 'cart', 'favorites'].includes(target.viewId)) return;
-        if (target.viewId === 'home' || target.viewId === 'about') {
-            app.navigate(target.viewId, null, false);
-        } else if (target.viewId === 'catalog') {
-            app.navigate('catalog', target.param, false);
-        } else if (target.viewId === 'product') {
-            if (target.param) app.navigate('product', target.param, false);
-        } else {
-            app.navigate(target.viewId, null, false);
-        }
-    }
-    window.restoreViewFromHash = restoreViewFromHash;
-
-    // دعم أزرار الرجوع والتقدم في المتصفح
-    window.addEventListener('popstate', () => {
-        const target = parseHash();
-        if (target && target.viewId) {
-            app.navigate(target.viewId, target.param, false);
-        }
-    });
-
-    // Timeout احتياطي لإخفاء اللودر حتى لو حدث خطأ
+    // (استعادة الصفحة عند التحديث + دعم أزرار الرجوع/التقدم: بقت مسجّلة فوق
+    // في أول السكريبت عشان تشتغل مهما حصل أي خطأ في باقي الكود تحت)
     setTimeout(hideGlobalLoader, 5000);
 
     checkLowStock();
