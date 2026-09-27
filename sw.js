@@ -1,5 +1,5 @@
 // Service Worker for Elforat Pharma PWA
-const CACHE_NAME = 'elforat-cache-v12';
+const CACHE_NAME = 'elforat-cache-v13';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -66,8 +66,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Images: cache-first (fast), but refresh the cache in the background
-  if (event.request.destination === 'image') {
+  // Images, JS, CSS: cache-first / stale-while-revalidate (فوري من الكاش،
+  // وبيتحدث في الخلفية) بدل ما ينتظر الشبكة زي قبل كده. ده بيدّي إحساس
+  // "cache lifetime" طويل في الزيارات المتكررة حتى إن هيدر Cache-Control
+  // بتاع GitHub Pages نفسه 10 دقايق بس (ومش قادرين نتحكم فيه من هنا).
+  // التحديثات لسه بتوصل: كل تاب بيفتح بيبعت طلب شبكة في الخلفية ويحدّث
+  // الكاش لأي زيارة جاية، وكمان أي تغيير حقيقي في الملفات بيتغطى برفع
+  // رقم CACHE_NAME فوق (بيمسح الكاش القديم بالكامل ويبدأ نضيف).
+  if (
+    event.request.destination === 'image' ||
+    event.request.destination === 'script' ||
+    event.request.destination === 'style'
+  ) {
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
         const fetchPromise = fetch(event.request)
@@ -88,7 +98,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // HTML/JS/CSS and everything else: network-first so updates are picked up
+  // HTML وأي حاجة تانية: network-first عشان الصفحة نفسها ومسارات التنقل
+  // تفضل دايماً أحدث نسخة أول ما تكون الشبكة متاحة.
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {

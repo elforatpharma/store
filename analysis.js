@@ -724,7 +724,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     const to = from + PRODUCTS_PAGE_SIZE - 1;
                     const { data: page, error } = await _supabase
                         .from('products')
-                        .select('*')
+                        // [تحسين أداء]: بنجيب بس الأعمدة اللي الواجهة فعلاً بتستخدمها
+                        // بدل select('*') اللي كان بيجيب كل عمود في الجدول (لو فيه
+                        // عمود نص طويل زي created_at أو أي حقل إداري مش مستخدم هنا،
+                        // كان بيتنقل مع كل منتج من غير داعي ويبطّئ الاستعلام والتحميل).
+                        .select('id,name,category,price,oldPrice,img,badge,desc,ingredients,size,stock,images,gallery,is_active')
                         .order('priority', { ascending: false })
                         // ترتيب ثانوي ثابت: لو كذا منتج ليهم نفس الـ priority، من غيره الترتيب
                         // بين الصفحات مش مضمون وممكن منتج يتكرر أو يتفوّت. (بيطابق index: idx_products_priority_id)
