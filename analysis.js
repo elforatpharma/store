@@ -1173,22 +1173,39 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         navigate: function (viewId, param = null, addToHistory = true) {
             const doNav = () => {
-                if (addToHistory) history.pushState({ viewId, param }, "", param ? `#${viewId}?item=${param}` : `#${viewId}`);
+                if (addToHistory) {
+                    // نحفظ مكان السكرول الحالي على السجل اللي هنسيبه، عشان لو
+                    // رجعنا له بعدين بزرار "رجوع" يرجعنا لنفس المكان بدل أول الصفحة
+                    try { history.replaceState({ ...(history.state || {}), scrollY: window.scrollY }, ""); } catch (_) { }
+                    history.pushState({ viewId, param, scrollY: 0 }, "", param ? `#${viewId}?item=${param}` : `#${viewId}`);
+                }
                 document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
 
                 updateNavMorph(viewId, viewId === 'catalog' ? param : null);
 
+                // لو جايين من زرار رجوع/تقدم وعندنا مكان سكرول محفوظ لنفس السجل ده،
+                // نرجّع لمكانه بالظبط بدل ما نطلّع دايماً لأول الصفحة
+                const restoreScrollY = (!addToHistory && history.state && typeof history.state.scrollY === 'number')
+                    ? history.state.scrollY : null;
+
                 if (['home', 'catalog', 'about'].includes(viewId)) {
                     document.getElementById('view-main').classList.add('active');
                     if (viewId === 'catalog') renderCatalog(param, this.searchTerm); else renderCatalog(null, this.searchTerm);
-                    const target = document.getElementById(viewId);
-                    if (target) window.scrollTo({ top: target.offsetTop - 80, behavior: "smooth" });
+                    if (restoreScrollY !== null) {
+                        window.scrollTo({ top: restoreScrollY, behavior: "auto" });
+                    } else {
+                        const target = document.getElementById(viewId);
+                        if (target) window.scrollTo({ top: target.offsetTop - 80, behavior: "smooth" });
+                    }
                 } else {
                     document.getElementById('view-' + viewId).classList.add('active');
-                    window.scrollTo({ top: 0, behavior: "smooth" });
                     if (viewId === 'product') renderProductDetails(param);
                     if (viewId === 'cart') { renderCart(); revalidateCoupon(); }
                     if (viewId === 'favorites') renderFavorites();
+                    window.scrollTo({
+                        top: restoreScrollY !== null ? restoreScrollY : 0,
+                        behavior: restoreScrollY !== null ? "auto" : "smooth"
+                    });
                 }
 
                 if (viewId === 'product') document.body.classList.add('show-mobile-bar');
