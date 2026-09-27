@@ -116,11 +116,19 @@
     <!-- Google Fonts: Cairo & Tajawal -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=optional" rel="stylesheet">
     
     <!-- FontAwesome Icons: loaded async so it doesn't block render (icons appear a beat later, layout doesn't shift) -->
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
+    <!-- تحسين Lighthouse "Font display": نعيد تعريف نفس خطوط FontAwesome بنفس
+         الـ src بتاعتها بس بإضافة font-display:swap، عشان النص يفضل ظاهر
+         (بالحرف الافتراضي) لحد ما خط الأيقونات يحمّل بدل ما يتأخر ظهور النص. -->
+    <style>
+      @font-face{font-family:"Font Awesome 6 Free";font-style:normal;font-weight:900;font-display:swap;src:url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-solid-900.woff2") format("woff2")}
+      @font-face{font-family:"Font Awesome 6 Free";font-style:normal;font-weight:400;font-display:swap;src:url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-regular-400.woff2") format("woff2")}
+      @font-face{font-family:"Font Awesome 6 Brands";font-style:normal;font-weight:400;font-display:swap;src:url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-brands-400.woff2") format("woff2")}
+    </style>
     
     <link rel="stylesheet" href="tailwind-built.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4" defer></script>
@@ -1520,7 +1528,7 @@
               <div class="bg-white rounded-xl p-1.5 flex items-center justify-center shrink-0">
                 <picture>
 <source srcset="logo-96.webp" type="image/webp">
-<img src="logo-96.png" alt="Elforat Pharma Logo" class="h-9 w-auto object-contain" loading="lazy" width="36" height="36">
+<img src="logo-96.png" alt="Elforat Pharma Logo" class="h-9 w-9 object-contain" loading="lazy" width="36" height="36">
 </picture>
               </div>
               <div class="flex items-baseline gap-1">
@@ -1531,9 +1539,9 @@
               رفيقتك في رحلة العناية بجمالك. نقدم لكِ أفضل منتجات العناية بالبشرة والشعر بتركيبات آمنة وفعالة تبرز إشراقتك الطبيعية.
             </p>
             <div class="flex gap-3 pt-1">
-              <a href="https://www.facebook.com/profile.php?id=61574765620560" target="_blank" class="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#c7c4d9] hover:bg-primary hover:text-white hover:border-primary transition-all"><i class="fa-brands fa-facebook-f text-sm"></i></a>
-              <a href="https://www.instagram.com/elforat_pharma_dr__asmaa_salem" target="_blank" class="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#c7c4d9] hover:bg-primary hover:text-white hover:border-primary transition-all"><i class="fa-brands fa-instagram text-sm"></i></a>
-              <a href="https://wa.me/201146809133" target="_blank" class="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#c7c4d9] hover:bg-primary hover:text-white hover:border-primary transition-all"><i class="fa-brands fa-whatsapp text-sm"></i></a>
+              <a href="https://www.facebook.com/profile.php?id=61574765620560" target="_blank" rel="noopener" aria-label="صفحتنا على فيسبوك" class="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#c7c4d9] hover:bg-primary hover:text-white hover:border-primary transition-all"><i class="fa-brands fa-facebook-f text-sm" aria-hidden="true"></i></a>
+              <a href="https://www.instagram.com/elforat_pharma_dr__asmaa_salem" target="_blank" rel="noopener" aria-label="صفحتنا على إنستجرام" class="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#c7c4d9] hover:bg-primary hover:text-white hover:border-primary transition-all"><i class="fa-brands fa-instagram text-sm" aria-hidden="true"></i></a>
+              <a href="https://wa.me/201146809133" target="_blank" rel="noopener" aria-label="تواصلي معنا عبر واتساب" class="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#c7c4d9] hover:bg-primary hover:text-white hover:border-primary transition-all"><i class="fa-brands fa-whatsapp text-sm" aria-hidden="true"></i></a>
             </div>
           </div>
 

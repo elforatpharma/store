@@ -95,26 +95,21 @@ window.VodafoneCashCheckout = (() => {
     return "desktop";
   }
 
-  // على أندرويد: بنحاول نفتح التطبيق نفسه مباشرة عن طريق الباكدج الصحيح
-  // (intent://) ولو مش مركب، بيقع تلقائيًا على صفحة Play Store (fallback_url) بدل
-  // ما يفشل بصمت. على آيفون/الكمبيوتر مفيش طريقة مضمونة لفتح التطبيق مباشرة
-  // فبنفتح صفحة المتجر/الموقع.
+  // ملحوظة مهمة: مفيش طريقة مضمونة من صفحة ويب إنها "تفتح" تطبيق مثبّت على
+  // الموبايل مباشرة (Launch) من غير ما التطبيق نفسه يكون مسجّل رابط/دومين خاص
+  // بيه إحنا مش عارفينه (App Links). أي محاولة intent:// من غير الداتا دي
+  // بترجع تفشل أو تقع على المتجر زي ما حصل. الحل المضمون التالي هو إن الزرار
+  // يودّي لصفحة التطبيق في المتجر، ومنها هي اللي فيها زرار "فتح" (لو مركب) أو
+  // "تثبيت" (لو مش مركب) - ده أقصى حاجة ممكن نضمنها من متصفح.
   function getOpenAppTarget(platform) {
-    if (platform === "android") {
-      return {
-        mode: "navigate",
-        url: `intent://#Intent;package=${ANDROID_PACKAGE};` +
-             `S.browser_fallback_url=${encodeURIComponent(PLAY_URL)};end`,
-      };
-    }
+    if (platform === "android") return { mode: "open", url: PLAY_URL };
     if (platform === "ios") return { mode: "open", url: IOS_URL };
     return { mode: "open", url: WEB_URL };
   }
 
   function openVodafoneCashApp() {
     const t = getOpenAppTarget(detectPlatform());
-    if (t.mode === "navigate") window.location.href = t.url;
-    else window.open(t.url, "_blank", "noopener");
+    window.open(t.url, "_blank", "noopener");
   }
 
   async function copyText(text) {

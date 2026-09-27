@@ -879,21 +879,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateNavMorph(activeId, activeParam = null) {
         const activeKey = activeParam ? `${activeId}:${activeParam}` : activeId;
+        let activeLink = null;
+
+        // مرحلة الكتابة (Write): تغيير الكلاسات بس، من غير أي قراءة لأبعاد العنصر
+        // جوه نفس اللوب - ده اللي كان بيسبب Forced Reflow (قراءة offsetWidth
+        // فورًا بعد تغيير هيقلب الـ layout).
         document.querySelectorAll('.nav-link').forEach(link => {
             const linkTarget = link.getAttribute('data-target');
             if (linkTarget === activeKey || (!activeParam && linkTarget === activeId)) {
                 link.classList.add('text-primary');
                 link.classList.remove('text-gray-900');
-
-                if (morphLine) {
-                    morphLine.style.width = `${link.offsetWidth}px`;
-                    morphLine.style.left = `${link.offsetLeft}px`;
-                }
+                activeLink = link;
             } else {
                 link.classList.add('text-gray-900');
                 link.classList.remove('text-primary');
             }
         });
+
+        // مرحلة القراءة (Read): بعد الفريم الجاي، لما الـ layout يكون خلص أصلاً
+        // (مش هيحصل Forced Synchronous Reflow جوه نفس الـ tick).
+        if (morphLine && activeLink) {
+            requestAnimationFrame(() => {
+                morphLine.style.width = `${activeLink.offsetWidth}px`;
+                morphLine.style.left = `${activeLink.offsetLeft}px`;
+            });
+        }
     }
 
     window.addEventListener('resize', () => {
@@ -1194,8 +1204,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (restoreScrollY !== null) {
                         window.scrollTo({ top: restoreScrollY, behavior: "auto" });
                     } else {
-                        const target = document.getElementById(viewId);
-                        if (target) window.scrollTo({ top: target.offsetTop - 80, behavior: "smooth" });
+                        // قراءة offsetTop بتتأجل لفريم جاي عشان مش نقرأها فورًا بعد
+                        // إضافة كلاس 'active' (تغيير هيقلب الـ layout) في نفس الـ tick
+                        requestAnimationFrame(() => {
+                            const target = document.getElementById(viewId);
+                            if (target) window.scrollTo({ top: target.offsetTop - 80, behavior: "smooth" });
+                        });
                     }
                 } else {
                     document.getElementById('view-' + viewId).classList.add('active');
@@ -1619,7 +1633,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <article class="pro-product-card p-3 sm:p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group opacity-0 animate-fade-in-up cursor-pointer" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
     <div class="flex items-center justify-between w-full mb-3 z-10">
         ${p.badge ? `<span class="badge-gold-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
-        <button onclick="event.stopPropagation();" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20">
+        <button onclick="event.stopPropagation();" data-favorite-btn="${sanitize(p.id)}" aria-label="${isFavorite ? 'إزالة من المفضلة' : 'أضف للمفضلة'}" aria-pressed="${isFavorite ? 'true' : 'false'}" title="${isFavorite ? 'إزالة من المفضلة' : 'أضف للمفضلة'}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20">
             ${isFavorite
                 ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
                 : `<i class="fa-regular fa-heart text-xs"></i>`
@@ -2301,7 +2315,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <article class="pro-product-card p-3 sm:p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group opacity-0 animate-fade-in-up cursor-pointer" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
     <div class="flex items-center justify-between w-full mb-3 z-10">
         ${p.badge ? `<span class="badge-gold-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
-        <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
+        <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" aria-label="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}" aria-pressed="${isFav ? 'true' : 'false'}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
             ${isFav
                     ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
                     : `<i class="fa-regular fa-heart text-xs"></i>`
@@ -2474,7 +2488,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <article class="pro-product-card p-3 sm:p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group opacity-0 animate-fade-in-up cursor-pointer" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
     <div class="flex items-center justify-between w-full mb-3 z-10">
         ${p.badge ? `<span class="badge-gold-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
-        <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
+        <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" aria-label="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}" aria-pressed="${isFav ? 'true' : 'false'}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
             ${isFav
                     ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
                     : `<i class="fa-regular fa-heart text-xs"></i>`
@@ -2919,11 +2933,20 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // الكود الإضافي ده بيضمن إنه أول ما توصل لآخر الصفحة تحت خالص، ينقل الخط فوراً لـ "عن الشركة"
+    // متأجّل بـ requestAnimationFrame (throttling) بدل ما يتنفذ في كل حدث scroll
+    // مباشرة - عشان قراءة offsetHeight متتكررش عشرات المرات في الثانية وتسبب
+    // Forced Reflow متكرر، وكمان passive:true عشان ميعطلش الـ scroll نفسه.
+    let scrollSpyTicking = false;
     window.addEventListener('scroll', () => {
-        if (Math.ceil(window.innerHeight + window.scrollY) >= document.body.offsetHeight - 30) {
-            updateNavMorph('about');
-        }
-    });
+        if (scrollSpyTicking) return;
+        scrollSpyTicking = true;
+        requestAnimationFrame(() => {
+            if (Math.ceil(window.innerHeight + window.scrollY) >= document.body.offsetHeight - 30) {
+                updateNavMorph('about');
+            }
+            scrollSpyTicking = false;
+        });
+    }, { passive: true });
 
     const scrollObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
