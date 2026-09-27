@@ -107,17 +107,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     window.restoreViewFromHash = restoreViewFromHash;
 
-    // دعم أزرار الرجوع (back) والتقدم (forward) في المتصفح
     window.addEventListener('popstate', () => {
         try {
             const target = parseHash();
-            if (target && target.viewId && window.app && typeof window.app.navigate === 'function') {
-                app.navigate(target.viewId, target.param, false);
+            // لو السجل اللي المتصفح رجعلنا له من غير هاش (أول صفحة قبل أي pushState)،
+            // نعتبره الهوم صراحة بدل ما نسيب الشكل زي ما هو (كان ده سبب إن أول
+            // ضغطة رجوع مكنتش بترجع لحاجة مفهومة، وبعدين ضغطة تانية كانت بتقفل الموقع).
+            const resolved = target && target.viewId ? target : { viewId: 'home', param: null };
+            if (window.app && typeof window.app.navigate === 'function') {
+                app.navigate(resolved.viewId, resolved.param, false);
             }
         } catch (err) {
             console.warn('تعذّر تنفيذ رجوع/تقدم المتصفح:', err);
         }
     });
+
+    // نثبّت "#home" كأول سجل في تاريخ التصفح من غير ما نضيف سجل زيادة (replaceState
+    // مش pushState)، عشان أول رجوع للخلف من أي صفحة تاني يبقى له مكان واضح يرجعله.
+    if (!parseHash()) {
+        try { history.replaceState({ viewId: 'home', param: null }, '', '#home'); } catch (_) { }
+    }
 
 
     // ==========================================
