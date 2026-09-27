@@ -118,9 +118,21 @@
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=optional" rel="stylesheet">
     
-    <!-- FontAwesome Icons: loaded async so it doesn't block render (icons appear a beat later, layout doesn't shift) -->
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
+    <!-- FontAwesome Icons: بدل ما نحمّل all.min.css (فيه تعريفات كل الأنماط:
+         solid/regular/brands/duotone/thin/sharp...إلخ)، بنحمّل بس الأنماط
+         الثلاثة المستخدمة فعليًا في الموقع (fa-solid / fa-regular / fa-brands)،
+         ده بيقلل الـ CSS غير المستخدم بشكل كبير. لسه محمّلين async عشان
+         مايبطأش الـ render. -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
+    </noscript>
     <!-- تحسين Lighthouse "Font display": نعيد تعريف نفس خطوط FontAwesome بنفس
          الـ src بتاعتها بس بإضافة font-display:swap، عشان النص يفضل ظاهر
          (بالحرف الافتراضي) لحد ما خط الأيقونات يحمّل بدل ما يتأخر ظهور النص. -->
@@ -198,17 +210,17 @@
 <!-- Action Items: Admin Dashboard, Wishlist, Cart with Counter Glow -->
 <div class="flex items-center gap-2 sm:gap-2.5">
 <!-- Mobile Menu Button -->
-<button id="mobile-menu-btn" class="xl:hidden w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:text-primary hover:bg-primary/5 transition-colors" onclick="app.toggleMobileMenu()">
-    <i class="fa-solid fa-bars text-base"></i>
+<button id="mobile-menu-btn" aria-label="فتح قائمة التصفح" aria-expanded="false" aria-controls="mobile-menu-panel" class="xl:hidden w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:text-primary hover:bg-primary/5 transition-colors" onclick="app.toggleMobileMenu()">
+    <i class="fa-solid fa-bars text-base" aria-hidden="true"></i>
 </button>
 <!-- Wishlist with Hover scale -->
-<button class="btn-fav w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center text-darkNavy hover:text-rose-500 hover:border-rose-300 transition-all relative shadow-sm" onclick="app.navigate('favorites')">
-<i class="fa-regular fa-heart text-sm"></i>
+<button aria-label="المفضلة" class="btn-fav w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center text-darkNavy hover:text-rose-500 hover:border-rose-300 transition-all relative shadow-sm" onclick="app.navigate('favorites')">
+<i class="fa-regular fa-heart text-sm" aria-hidden="true"></i>
 <span id="favorites-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow">0</span>
 </button>
 <!-- Cart with Glow Count -->
-<button class="w-9 h-9 rounded-full bg-white border border-purple-200 flex items-center justify-center text-darkNavy hover:text-primary hover:border-primary transition-all relative shadow-sm group" onclick="app.navigate('cart')">
-<i class="fa-solid fa-bag-shopping text-sm text-primary group-hover:scale-110 transition-transform"></i>
+<button aria-label="سلة المشتريات" class="w-9 h-9 rounded-full bg-white border border-purple-200 flex items-center justify-center text-darkNavy hover:text-primary hover:border-primary transition-all relative shadow-sm group" onclick="app.navigate('cart')">
+<i class="fa-solid fa-bag-shopping text-sm text-primary group-hover:scale-110 transition-transform" aria-hidden="true"></i>
 <span id="cart-badge" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gradient-to-r from-primary to-secondary text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-purple-glow animate-pulse">
             0
           </span>

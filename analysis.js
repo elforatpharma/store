@@ -1474,6 +1474,7 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleMobileMenu: function () {
             const panel = document.getElementById('mobile-menu-panel');
             const overlay = document.getElementById('mobile-menu-overlay');
+            const btn = document.getElementById('mobile-menu-btn');
             if (!panel || !overlay) return;
 
             const isClosed = panel.classList.contains('translate-x-full');
@@ -1483,12 +1484,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 panel.classList.add('translate-x-0');
                 overlay.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
+                if (btn) { btn.setAttribute('aria-expanded', 'true'); btn.setAttribute('aria-label', 'إغلاق قائمة التصفح'); }
             } else {
                 // إغلاق القائمة
                 panel.classList.add('translate-x-full');
                 panel.classList.remove('translate-x-0');
                 overlay.classList.add('hidden');
                 document.body.style.overflow = '';
+                if (btn) { btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-label', 'فتح قائمة التصفح'); }
             }
         },
 
@@ -1641,7 +1644,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </button>
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
-        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
+        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
         <span class="hidden sm:flex absolute bottom-2 left-2 items-center bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
@@ -2496,7 +2499,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </button>
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
-        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
+        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
         <span class="hidden sm:flex absolute bottom-2 left-2 items-center bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
