@@ -40,6 +40,7 @@
 
     <link rel="icon" type="image/png" href="favicon-32.png">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="tailwind-built.css">
 
     <!-- منع "قفلة" الصفحة عند الريفريش: لو الرابط فيه #hash لصفحة غير الرئيسية
          (كتالوج/منتج/سلة/مفضلة)، الصفحة الافتراضية (الهيرو) كانت بتترسم وتظهر
@@ -91,6 +92,7 @@
     <!-- تسريع المنتجات: فتح الاتصال بسوبابيز وخدمة الصور بدري + بدء طلب المنتجات قبل ما باقي السكريبتات تخلّص تحميل -->
     <link rel="preconnect" href="https://sidtdxchiqiogfkwbdui.supabase.co" crossorigin>
     <link rel="preconnect" href="https://wsrv.nl">
+    <link rel="preconnect" href="https://api.ipify.org">
     <script>
         (function () {
             try {
@@ -113,10 +115,15 @@
     <link rel="manifest" href="manifest.json">
 
     
-    <!-- Google Fonts: Cairo & Tajawal -->
+    <!-- Google Fonts: Cairo & Tajawal - محمّلة async (زي FontAwesome تحت) عشان
+         ملف الخط ده مش critical لأول رسم للصفحة (display=optional أصلاً بيسيب
+         النص يظهر بخط النظام البديل فورًا لحد ما Cairo/Tajawal يحملوا). -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=optional" rel="stylesheet">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=optional" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=optional" rel="stylesheet">
+    </noscript>
     
     <!-- FontAwesome Icons: بدل ما نحمّل all.min.css (فيه تعريفات كل الأنماط:
          solid/regular/brands/duotone/thin/sharp...إلخ)، بنحمّل بس الأنماط
@@ -142,7 +149,6 @@
       @font-face{font-family:"Font Awesome 6 Brands";font-style:normal;font-weight:400;font-display:swap;src:url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-brands-400.woff2") format("woff2")}
     </style>
     
-    <link rel="stylesheet" href="tailwind-built.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4" defer></script>
 
 </head>
@@ -247,7 +253,7 @@
     <div class="p-6">
         <div class="flex items-center justify-between mb-8">
             <span class="text-xl font-bold text-primary">القائمة</span>
-            <button onclick="app.toggleMobileMenu()" class="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+            <button onclick="app.toggleMobileMenu()" aria-label="إغلاق القائمة" class="p-2 text-gray-400 hover:text-gray-600 transition-colors">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
         </div>

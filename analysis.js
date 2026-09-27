@@ -3227,8 +3227,18 @@ document.addEventListener("DOMContentLoaded", () => {
         return id;
     }
 
+    // [تعديل أداء - Forced Reflow]: getDeviceType() كانت بتقرأ window.innerWidth
+    // مباشرة وقت ما بتتنادى (من trackStoreEvent/trackVisitor)، وده بيحصل بعد
+    // ما الصفحة تكون عملت رندر كبير (منتجات/هيرو)، فقراءة innerWidth في اللحظة
+    // دي بتجبر المتصفح يعمل reflow متزامن (forced synchronous layout) عشان
+    // يحسب القياسات الجديدة. بدل كده، بنقرأ العرض مرة واحدة بدري (قبل أي DOM
+    // تعديلات) ونحدّثها بس عند resize، وgetDeviceType() بقى بيقرأ من المتغير
+    // المخزّن ده بدل ما يعمل قراءة تفرض reflow في نص تنفيذ السكريبت.
+    let __cachedViewportWidth = window.innerWidth;
+    window.addEventListener('resize', () => { __cachedViewportWidth = window.innerWidth; }, { passive: true });
+
     function getDeviceType() {
-        const w = window.innerWidth;
+        const w = __cachedViewportWidth;
         if (w < 768) return 'mobile';
         if (w < 1024) return 'tablet';
         return 'desktop';
