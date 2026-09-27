@@ -23,9 +23,9 @@ window.VodafoneCashCheckout = (() => {
 
   const DEFAULT_WHATSAPP = "201146809133";
   const DEFAULT_PHONE = "01065863803"; // رقم التحويل الافتراضي (لو مفيش vodafone_cash_phone صالح في الإعدادات)
-  const ANDROID_PACKAGE = "com.vodafone.egypt.myvfcash"; // ⚠️ لازم تتأكدي منه، اسم الباكدج ممكن يختلف
+  const ANDROID_PACKAGE = "com.emeint.android.myservices"; // تطبيق فودافون كاش الصحيح (مؤكد من صاحبة المتجر)
   const PLAY_URL = "https://play.google.com/store/apps/details?id=" + ANDROID_PACKAGE;
-  const IOS_URL = "https://apps.apple.com/eg/app/my-vodafone-egypt/id1041819477"; // ⚠️ لازم تتأكدي إنه ده تطبيق فودافون كاش الصحيح
+  const IOS_URL = "https://apps.apple.com/eg/search?term=vodafone%20cash"; // مفيش آيدي آيفون مؤكد عندي - بيفتح نتيجة بحث بدل تخمين غلط
   const WEB_URL = "https://www.vodafone.com/eg/vodafone-cash";
   const LOGO_SRC = "vodafone-cash-logo.png"; // ⚠️ محتاجة اللوجو يترفع بنفس الاسم ده
 
@@ -95,11 +95,15 @@ window.VodafoneCashCheckout = (() => {
     return "desktop";
   }
 
+  // على أندرويد: بنحاول نفتح التطبيق نفسه مباشرة عن طريق الباكدج الصحيح
+  // (intent://) ولو مش مركب، بيقع تلقائيًا على صفحة Play Store (fallback_url) بدل
+  // ما يفشل بصمت. على آيفون/الكمبيوتر مفيش طريقة مضمونة لفتح التطبيق مباشرة
+  // فبنفتح صفحة المتجر/الموقع.
   function getOpenAppTarget(platform) {
     if (platform === "android") {
       return {
         mode: "navigate",
-        url: `intent://launch?id=${ANDROID_PACKAGE}#Intent;scheme=market;package=com.android.vending;` +
+        url: `intent://#Intent;package=${ANDROID_PACKAGE};` +
              `S.browser_fallback_url=${encodeURIComponent(PLAY_URL)};end`,
       };
     }
