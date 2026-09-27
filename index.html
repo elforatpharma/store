@@ -12,7 +12,7 @@
          ممكنة عن طريق <meta> لحد ما تتفعّل الهيدرز الحقيقية عبر
          Cloudflare أو استضافة بتدعم _headers (شوفي security-headers-README.md)
          ============================================================ -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://sidtdxchiqiogfkwbdui.supabase.co https://wsrv.nl; connect-src 'self' https://sidtdxchiqiogfkwbdui.supabase.co https://api.ipify.org; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://sidtdxchiqiogfkwbdui.supabase.co https://wsrv.nl; connect-src 'self' https://sidtdxchiqiogfkwbdui.supabase.co https://api.ipify.org; object-src 'none'; base-uri 'self'; form-action 'self';">
     <meta name="referrer" content="strict-origin-when-cross-origin">
 
     <title>متجر الفُرات فارما الإلكتروني | ELFORAT PHARMA STORE</title>
@@ -121,89 +121,9 @@
     <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     
+    <link rel="stylesheet" href="tailwind-built.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    
-    <script>
-        tailwind.config = {
-          theme: {
-            extend: {
-              fontFamily: {
-                sans: ['Tajawal', 'Cairo', 'sans-serif'],
-                display: ['Plus Jakarta Sans', 'Cairo', 'sans-serif'],
-              },
-              colors: {
-                surface: '#f9f9ff',
-                surfaceDim: '#d3daef',
-                surfaceBright: '#f9f9ff',
-                surfaceContainerLowest: '#ffffff',
-                surfaceContainerLow: '#f1f3ff',
-                surfaceContainer: '#e9edff',
-                surfaceContainerHigh: '#e1e8fd',
-                surfaceContainerHighest: '#dce2f7',
-                onSurface: '#141b2b',
-                primary: '#c59b3f',
-                onPrimary: '#ffffff',
-                primaryContainer: '#9a731c',
-                onPrimaryContainer: '#fcf8ee',
-                secondary: '#0c4a34',
-                onSecondary: '#ffffff',
-                secondaryContainer: '#003221',
-                onSecondaryContainer: '#7fb99c',
-                tertiary: '#00321e',
-                onTertiary: '#ffffff',
-                tertiaryContainer: '#004b30',
-                onTertiaryContainer: '#67be91',
-                error: '#ba1a1a',
-                onError: '#ffffff',
-                errorContainer: '#ffdad6',
-                onErrorContainer: '#93000a',
-                background: '#f9f9ff',
-                onBackground: '#141b2b',
-                surfaceVariant: '#dce2f7',
-                brandGradient: 'linear-gradient(90deg, #c59b3f 0%, #1e7b54 100%)',
-                brandGradientHover: 'linear-gradient(90deg, #9a731c 0%, #7a5900 100%)',
-                primarySurface: '#f3f6f4',
-                primaryBorder: '#eadbb6',
-                accentGlow: 'rgba(197, 155, 63, 0.35)',
-                success: '#1e7b54',
-                warning: '#f59e0b',
-                danger: '#ef4444',
 
-                darkNavy: '#141b2b',
-                deepGray: '#404943',
-                softBg: '#F3F6F4',
-              },
-              boxShadow: {
-                'purple-soft': '0 10px 25px -5px rgba(197, 155, 63, 0.08)',
-                'purple-glow': '0 8px 30px rgba(197, 155, 63, 0.32)',
-                'purple-card': '0 20px 40px -15px rgba(197, 155, 63, 0.16)',
-                'glass-glow': '0 0 25px rgba(197, 155, 63, 0.25)',
-              },
-              animation: {
-                'float-slow': 'floating 5s ease-in-out infinite',
-                'float-delayed': 'floating 6s ease-in-out 2s infinite',
-                'pulse-subtle': 'pulseSubtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                'shimmer': 'shimmer 2.5s infinite linear',
-              },
-              keyframes: {
-                floating: {
-                  '0%, 100%': { transform: 'translateY(0px)' },
-                  '50%': { transform: 'translateY(-10px)' },
-                },
-                pulseSubtle: {
-                  '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-                  '50%': { opacity: '0.85', transform: 'scale(1.03)' },
-                },
-                shimmer: {
-                  '0%': { backgroundPosition: '-200% 0' },
-                  '100%': { backgroundPosition: '200% 0' },
-                }
-              }
-            }
-          }
-        }
-    </script>
 </head>
 
 <body class="font-sans text-gray-900 antialiased overflow-x-hidden">
@@ -383,7 +303,7 @@
 <!-- Main Showcase Card -->
 <div class="relative rounded-3xl p-1.5 shadow-2xl bg-white/40 backdrop-blur-md border border-white/60">
 <div class="aspect-square max-h-[520px] rounded-2xl overflow-hidden relative group flex items-center justify-center shadow-inner bg-slate-100">
-<img src="hero-products.webp" alt="منتجات العناية بالبشرة والجمال الفرات فارما" class="hero-main-image w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" data-fallback-src="hero-products.webp" onerror="if (this.src !== this.dataset.fallbackSrc) this.src = this.dataset.fallbackSrc;">
+<img src="hero-products.webp" alt="منتجات العناية بالبشرة والجمال الفرات فارما" class="hero-main-image w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" data-fallback-src="logo.png" onerror="if (this.src !== this.dataset.fallbackSrc) { this.src = this.dataset.fallbackSrc; this.classList.remove('object-cover'); this.classList.add('object-contain', 'p-8'); }">
 <script>
     // بنحط src الصورة فورًا (قبل ما analysis.js يتحمّل أصلاً) لو عندنا نسخة
     // كاش جاهزة من زيارة سابقة - عشان الزائر العائد ميشوفش أي قفلة صورة بصورة.
@@ -1640,10 +1560,10 @@
     </footer>
 
 
-    <script src="welcome-offer.js"></script>
-    <script src="order-status.js"></script>
-    <script src="instapay.js?v=5"></script>
-    <script src="analysis.js"></script>
+    <script src="welcome-offer.js" defer></script>
+    <script src="order-status.js" defer></script>
+    <script src="instapay.js?v=5" defer></script>
+    <script src="analysis.js" defer></script>
     <script>
         // Touch/Swipe gesture support for carousel
         (function() {
