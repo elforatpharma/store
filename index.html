@@ -307,18 +307,29 @@
 <!-- Main Showcase Card -->
 <div class="relative rounded-3xl p-1.5 shadow-2xl bg-white/40 backdrop-blur-md border border-white/60">
 <div class="aspect-square max-h-[520px] rounded-2xl overflow-hidden relative group flex items-center justify-center shadow-inner bg-slate-100">
-<img src="hero-products.webp" alt="منتجات العناية بالبشرة والجمال الفرات فارما" class="hero-main-image w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" data-fallback-src="logo.png" onerror="if (this.src !== this.dataset.fallbackSrc) { this.src = this.dataset.fallbackSrc; this.classList.remove('object-cover'); this.classList.add('object-contain', 'p-8'); }">
+<img alt="منتجات العناية بالبشرة والجمال الفرات فارما" class="hero-main-image w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" data-fallback-src="logo.png" onerror="if (this.src !== this.dataset.fallbackSrc) { this.src = this.dataset.fallbackSrc; this.classList.remove('object-cover'); this.classList.add('object-contain', 'p-8'); }">
 <script>
-    // بنحط src الصورة فورًا (قبل ما analysis.js يتحمّل أصلاً) لو عندنا نسخة
-    // كاش جاهزة من زيارة سابقة - عشان الزائر العائد ميشوفش أي قفلة صورة بصورة.
-    // لو مفيش كاش (أول زيارة)، الصورة تفضل من غير src لحد ما القيمة الصح توصل.
+    // بنحدد src الصورة من هنا فقط (بدل ما تتحط في الـ HTML مباشرة) عشان
+    // منحملش نسختين مع بعض: لو عندنا كاش من زيارة سابقة فيه صورة براندنج
+    // مخصصة، بيتحط هو بس ويتحمّل مرة واحدة. لو مفيش كاش (أول زيارة)،
+    // بترجع لصورة hero-products.webp المحلية الافتراضية.
     (function () {
         try {
+            var img = document.currentScript.previousElementSibling;
+            if (!img) return;
             var cached = JSON.parse(localStorage.getItem('elforat_store_settings_cache_v1') || 'null');
             var url = cached && cached.data && cached.data.hero_image_url;
-            var img = document.currentScript.previousElementSibling;
-            if (url && img) img.src = url;
-        } catch (e) { }
+            if (url) {
+                // نمرر صورة البراندنج على wsrv.nl زي باقي صور المنتجات
+                // بدل ما تتحمّل بحجمها الخام (كانت بتوصل لـ 1200x1200 وهي
+                // معروضة في مساحة أصغر بكتير)
+                url = 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&w=900&q=75&output=webp';
+            }
+            img.src = url || 'hero-products.webp';
+        } catch (e) {
+            var img2 = document.currentScript.previousElementSibling;
+            if (img2) img2.src = 'hero-products.webp';
+        }
     })();
 </script>
 <div class="absolute inset-0 bg-gradient-to-t from-darkNavy/25 via-transparent to-transparent pointer-events-none"></div>
@@ -1452,8 +1463,10 @@
                             <option value="" disabled selected>اختر طريقة الدفع</option>
                             <option value="الدفع عند الاستلام">الدفع عند الاستلام</option>
                             <option value="instapay">InstaPay — تحويل فوري (إنستاباي)</option>
+                            <option value="vodafone_cash">فودافون كاش — تحويل فوري</option>
                         </select>
                         <p id="instapay-hint" class="hidden text-[11px] text-slate-500 leading-relaxed bg-purple-50 border border-purple-100 rounded-xl px-3 py-2">📱 بعد تأكيد الطلب ستظهر بيانات التحويل عبر InstaPay، ثم يُرسل إيصال التحويل على واتساب المتجر لتأكيد الدفع. يظل الطلب بانتظار تأكيد الدفع حتى تتم مراجعة الإيصال.</p>
+                        <p id="vodafone-cash-hint" class="hidden text-[11px] text-slate-500 leading-relaxed bg-red-50 border border-red-100 rounded-xl px-3 py-2">📱 بعد تأكيد الطلب ستظهر بيانات التحويل عبر فودافون كاش، ثم يُرسل إيصال التحويل على واتساب المتجر لتأكيد الدفع. يظل الطلب بانتظار تأكيد الدفع حتى تتم مراجعة الإيصال.</p>
                         <button type="submit" class="w-full py-4 bg-gradient-to-r from-primary to-secondary text-white rounded-full font-black shadow-purple-glow hover:shadow-lg hover:brightness-110 transition-all active:scale-95">تأكيد الطلب</button>
                     </form>
 
@@ -1570,6 +1583,7 @@
     <script src="welcome-offer.js" defer></script>
     <script src="order-status.js" defer></script>
     <script src="instapay.js?v=5" defer></script>
+    <script src="vodafone-cash.js?v=1" defer></script>
     <script src="analysis.js" defer></script>
     <script>
         // Touch/Swipe gesture support for carousel
@@ -1659,13 +1673,15 @@
         })();
     </script>
     <script>
-        // إظهار التنبيه المناسب عند اختيار الدفع عبر InstaPay
+        // إظهار التنبيه المناسب عند اختيار الدفع عبر InstaPay أو فودافون كاش
         document.addEventListener('DOMContentLoaded', () => {
             const sel = document.getElementById('cust-payment');
             const instapayHint = document.getElementById('instapay-hint');
+            const vodafoneCashHint = document.getElementById('vodafone-cash-hint');
             if (!sel) return;
             const sync = () => {
                 if (instapayHint) instapayHint.classList.toggle('hidden', sel.value !== 'instapay');
+                if (vodafoneCashHint) vodafoneCashHint.classList.toggle('hidden', sel.value !== 'vodafone_cash');
             };
             sel.addEventListener('change', sync);
             // بعد checkoutForm.reset() الـ select بيرجع للافتراضي من غير حدث change

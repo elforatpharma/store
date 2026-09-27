@@ -564,7 +564,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // في خطة Supabase الحالية. لو الخدمة اتأخرت أو فشلت لأي سبب، الـ onerror
     // في الـ <img> (شوفي handleImgError تحت) بيرجع تلقائياً للصورة الأصلية
     // بالحجم الكامل، فمفيش أي كسر في العرض حتى لو الخدمة الخارجية وقعت.
-    function getOptimizedImg(path, width = 500, quality = 70) {
+    function getOptimizedImg(path, width = 320, quality = 72) {
         const fullUrl = getFullImg(path);
         if (!fullUrl.startsWith('http')) return fullUrl; // لوجو محلي مثلاً - سيبه زي ما هو
         return `https://wsrv.nl/?url=${encodeURIComponent(fullUrl)}&w=${width}&q=${quality}&output=webp`;
@@ -584,7 +584,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     window.handleImgError = handleImgError;
 
-    const PRODUCTS_CACHE_KEY = 'elforat_products_cache_v3';
+    const PRODUCTS_CACHE_KEY = 'elforat_products_cache_v4';
     // الكاش بيتعرض فوراً حتى لو قديم (لحد 7 أيام)، وبعدها بيتحدّث من السيرفر في الخلفية
     const PRODUCTS_CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
     // [تعديل أداء]: قبل كده كل فتح للصفحة كان بيعمل تحديث كامل من سوبابيز في
@@ -623,7 +623,7 @@ document.addEventListener("DOMContentLoaded", () => {
             price: parseFloat(p.price) || 0,
             oldPrice: p.oldPrice || null,
             img: getFullImg(p.img),
-            imgThumb: getOptimizedImg(p.img, 500, 70),
+            imgThumb: getOptimizedImg(p.img, 320, 72),
             badge: p.badge || '',
             desc: p.desc || '',
             ingredients: p.ingredients || '',
@@ -2596,7 +2596,9 @@ document.addEventListener("DOMContentLoaded", () => {
             // ===== InstaPay: تحويل يدوي + إرسال الإيصال على واتساب =====
             // بنجيب رقم التحويل الحالي من الإعدادات قبل تسجيل الطلب؛ لو مش متاح مفيش طلب بيتسجل.
             const isInstapay = payment === 'instapay';
+            const isVodafoneCash = payment === 'vodafone_cash';
             let instapayConfig = null;
+            let vodafoneCashConfig = null;
             if (isInstapay) {
                 try {
                     if (!window.InstaPayCheckout) throw new Error('ملف الدفع عبر InstaPay (instapay.js) غير محمل.');
@@ -2608,12 +2610,25 @@ document.addEventListener("DOMContentLoaded", () => {
                     submitBtn.disabled = false;
                     return;
                 }
+            } else if (isVodafoneCash) {
+                try {
+                    if (!window.VodafoneCashCheckout) throw new Error('ملف الدفع عبر فودافون كاش (vodafone-cash.js) غير محمل.');
+                    submitBtn.innerText = 'جاري تجهيز بيانات التحويل...';
+                    vodafoneCashConfig = await window.VodafoneCashCheckout.loadConfig(_supabase);
+                } catch (vcErr) {
+                    showCustomAlert(vcErr.message || 'الدفع عبر فودافون كاش غير متاح حاليًا.', 'error');
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    return;
+                }
             }
             // الحالة والكود بييجوا من المصدر الموحّد (order-status.js) بدل نصوص متفرقة
             const orderStatusCode = window.OrderStatus ? window.OrderStatus.CODES.PENDING : 'pending';
             const orderStatus = isInstapay
                 ? window.InstaPayCheckout.ORDER_STATUS
-                : (window.OrderStatus ? window.OrderStatus.label(orderStatusCode, 'cod') : 'قيد التنفيذ');
+                : isVodafoneCash
+                    ? window.VodafoneCashCheckout.ORDER_STATUS
+                    : (window.OrderStatus ? window.OrderStatus.label(orderStatusCode, 'cod') : 'قيد التنفيذ');
             let instapayOrderNo = null;
 
             // [تحديث أمان]: إعادة جلب الأسعار الحقيقية من قاعدة البيانات والتحقق من الكوبون
@@ -2702,7 +2717,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     cart_total: finalTotal,
                     metadata: { payment, items_count: orderItems.length }
                 });
-                const paymentLabel = isInstapay ? window.InstaPayCheckout.PAYMENT_LABEL : payment;
+                const paymentLabel = isInstapay
+                    ? window.InstaPayCheckout.PAYMENT_LABEL
+                    : isVodafoneCash
+                        ? window.VodafoneCashCheckout.PAYMENT_LABEL
+                        : payment;
                 // merchant_order_id ثابت لنفس محاولة الشراء (حتى لو حصل reload/مشكلة شبكة)
                 // بدل توليد رقم جديد كل submit، عشان الحماية من تكرار الطلب تبقى فعلية
                 const merchantId = window.OrderStatus
@@ -2769,7 +2788,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (!minError && minOrder) orderData.id = minOrder.id;
                 }
 
-                // رقم الطلب المعروض للعميل في رسالة InstaPay
+                // رقم الطلب المعروض للعميل في رسالة InstaPay / فودافون كاش
                 instapayOrderNo = (orderData.id != null && /^\d{1,10}$/.test(String(orderData.id))) ? orderData.id : merchantId;
 
                 // كوبون الترحيب: أول طلب ناجح بيه = يتلغي فوراً
@@ -2815,6 +2834,33 @@ document.addEventListener("DOMContentLoaded", () => {
                     orderNo: instapayOrderNo,
                     total: paidTotal,
                     config: instapayConfig,
+                    onClose: () => app.navigate('home')
+                });
+                return;
+            }
+
+            if (isVodafoneCash) {
+                const paidTotal = finalTotal;
+                window.OrderStatus?.clearPendingMerchantOrderId?.();
+                cart = [];
+                saveCart();
+                appliedCoupon = null;
+                saveCoupon();
+                updateBadge();
+                checkoutForm.reset();
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+
+                trackStoreEvent('payment_started', {
+                    coupon_code: couponCode,
+                    cart_total: paidTotal,
+                    metadata: { provider: 'vodafone_cash' }
+                });
+
+                window.VodafoneCashCheckout.showPopup({
+                    orderNo: instapayOrderNo,
+                    total: paidTotal,
+                    config: vodafoneCashConfig,
                     onClose: () => app.navigate('home')
                 });
                 return;
@@ -3077,7 +3123,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 if (s.hero_image_url) {
-                    document.querySelectorAll('img[src="hero-products.webp"], img[src="hero-products.jpg"]').forEach(el => { el.src = s.hero_image_url; });
+                    // نعدّي صورة البراندنج على wsrv.nl برضه (زي باقي صور
+                    // المنتجات) بدل ما تتحمّل بحجمها الخام من Supabase مباشرة
+                    const optimizedHero = getOptimizedImg(s.hero_image_url, 900, 75);
+                    document.querySelectorAll('img[src="hero-products.webp"], img[src="hero-products.jpg"]').forEach(el => { el.src = optimizedHero; });
                 }
 
                 if (s.store_name) {

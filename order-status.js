@@ -28,6 +28,7 @@ window.OrderStatus = (() => {
     [CODES.PENDING]: {
       cod: 'قيد التنفيذ',
       instapay: 'بانتظار تأكيد الدفع - InstaPay',
+      vodafone_cash: 'بانتظار تأكيد الدفع - فودافون كاش',
     },
     [CODES.PAID]: { default: 'تم الدفع' },
     [CODES.PROCESSING]: { default: 'قيد التجهيز في الصيدلية 📦' },
