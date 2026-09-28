@@ -75,6 +75,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // لو الكود ده فضل في آخر الملف وحصل error قبله، مكانش بيتسجل خالص،
     // فكانت كل صفحة بترجع للهوم بعد الريفريش أو زرار رجوع/تقدم.
     // ==========================================
+    // بنقفل استرجاع السكرول الأوتوماتيكي بتاع المتصفح نفسه، عشان يفضل الكنترول
+    // بالكامل لكودنا (history.replaceState / scrollY تحت). لو سبناه شغال، المتصفح
+    // بيحاول يرجّع مكان السكرول بنفسه *قبل* ما renderCatalog/renderProductDetails
+    // يعيدوا بناء المحتوى، فبيرجع لمكان غلط أو لأول الصفحة، وكودنا بيتعارض معاه.
+    if ('scrollRestoration' in history) {
+        try { history.scrollRestoration = 'manual'; } catch (_) { }
+    }
+
     function parseHash() {
         const raw = location.hash.slice(1);
         if (!raw) return null;
@@ -125,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // نثبّت "#home" كأول سجل في تاريخ التصفح من غير ما نضيف سجل زيادة (replaceState
     // مش pushState)، عشان أول رجوع للخلف من أي صفحة تاني يبقى له مكان واضح يرجعله.
     if (!parseHash()) {
-        try { history.replaceState({ viewId: 'home', param: null }, '', '#home'); } catch (_) { }
+        try { history.replaceState({ viewId: 'home', param: null, scrollY: 0 }, '', '#home'); } catch (_) { }
     }
 
 
