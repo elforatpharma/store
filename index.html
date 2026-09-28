@@ -123,12 +123,12 @@
     <!-- FontAwesome Icons: بدل ما نحمّل all.min.css (فيه تعريفات كل الأنماط:
          solid/regular/brands/duotone/thin/sharp...إلخ)، بنحمّل بس الأنماط
          الثلاثة المستخدمة فعليًا في الموقع (fa-solid / fa-regular / fa-brands)،
-         ده بيقلل الـ CSS غير المستخدم بشكل كبير. لسه محمّلين async عشان
-         مايبطأش الـ render. -->
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+         ده بيقلل الـ CSS غير المستخدم بشكل كبير. لسه محمّلين async (media=print ثم all) عشان
+         مايبطأش الـ render، وبدون preload عشان نتجنب تحذير الكونسول. -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css" media="print" onload="this.media=\'all\'">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css" media="print" onload="this.media=\'all\'">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css" media="print" onload="this.media=\'all\'">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css" media="print" onload="this.media=\'all\'">
     <noscript>
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
