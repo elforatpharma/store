@@ -95,21 +95,33 @@ window.VodafoneCashCheckout = (() => {
     return "desktop";
   }
 
-  // ملحوظة مهمة: مفيش طريقة مضمونة من صفحة ويب إنها "تفتح" تطبيق مثبّت على
-  // الموبايل مباشرة (Launch) من غير ما التطبيق نفسه يكون مسجّل رابط/دومين خاص
-  // بيه إحنا مش عارفينه (App Links). أي محاولة intent:// من غير الداتا دي
-  // بترجع تفشل أو تقع على المتجر زي ما حصل. الحل المضمون التالي هو إن الزرار
-  // يودّي لصفحة التطبيق في المتجر، ومنها هي اللي فيها زرار "فتح" (لو مركب) أو
-  // "تثبيت" (لو مش مركب) - ده أقصى حاجة ممكن نضمنها من متصفح.
+  // محاولة تشغيل تطبيق "أنا فودافون" مباشرة على أندرويد عن طريق intent بالباكدج (MAIN/LAUNCHER)،
+  // ولو فشلت (التطبيق مش مركّب، أو المتصفح رفض intent من غير BROWSABLE) بيفتح صفحة Play زي الأول.
+  // ملحوظة: كروم بيضيف BROWSABLE تلقائياً، وأغلب التطبيقات مش بتعلنه على شاشتها الرئيسية، فالتشغيل
+  // المباشر مش مضمون على كل متصفح/جهاز. الحل المضمون: لو عرفتي الـ scheme الحقيقي للتطبيق
+  // (شوفي الشرح) حطيه في APP_SCHEME_URL وهيتستخدم بدل التشغيل بالباكدج.
+  const APP_SCHEME_URL = ""; // مثال: "someScheme://home" - سيبيه فاضي لحد ما تتأكدي منه
+
   function getOpenAppTarget(platform) {
-    if (platform === "android") return { mode: "open", url: PLAY_URL };
+    if (platform === "android") {
+      const fb = "S.browser_fallback_url=" + encodeURIComponent(PLAY_URL);
+      const m = APP_SCHEME_URL.match(/^([a-z][a-z0-9+.-]*):\/\/(.*)$/i);
+      if (m) {
+        return { mode: "navigate", url: `intent://${m[2]}#Intent;scheme=${m[1]};package=${ANDROID_PACKAGE};${fb};end` };
+      }
+      return {
+        mode: "navigate",
+        url: `intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=${ANDROID_PACKAGE};${fb};end`,
+      };
+    }
     if (platform === "ios") return { mode: "open", url: IOS_URL };
     return { mode: "open", url: WEB_URL };
   }
 
   function openVodafoneCashApp() {
     const t = getOpenAppTarget(detectPlatform());
-    window.open(t.url, "_blank", "noopener");
+    if (t.mode === "navigate") window.location.href = t.url;
+    else window.open(t.url, "_blank", "noopener");
   }
 
   async function copyText(text) {
