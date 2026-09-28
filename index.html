@@ -39,8 +39,8 @@
     <meta name="twitter:image" content="https://elforatpharma.github.io/store/hero-products.jpg">
 
     <link rel="icon" type="image/png" href="favicon-32.png">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="tailwind-built.css">
+    <link rel="stylesheet" href="style.min.css?v=14">
+    <link rel="stylesheet" href="tailwind-built.css?v=14">
 
     <!-- منع "قفلة" الصفحة عند الريفريش: لو الرابط فيه #hash لصفحة غير الرئيسية
          (كتالوج/منتج/سلة/مفضلة)، الصفحة الافتراضية (الهيرو) كانت بتترسم وتظهر
@@ -98,6 +98,15 @@
             try {
                 var base = 'https://sidtdxchiqiogfkwbdui.supabase.co';
                 var key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZHRkeGNoaXFpb2dma3diZHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTEyMTAsImV4cCI6MjA4OTY4NzIxMH0.QF1-67Qu2HfWJt3ANSegM87fykOYQBwqC7ggLG8LTVU';
+                // preload لصورة الهيرو على الديسكتوب بس (على الموبايل بتظهر تحت الشاشة الأولى)
+                try {
+                    var sc = JSON.parse(localStorage.getItem('elforat_store_settings_cache_v1') || 'null');
+                    var hu = sc && sc.data && sc.data.hero_image_url;
+                    hu = hu ? ('https://wsrv.nl/?url=' + encodeURIComponent(hu) + '&w=900&q=75&output=webp') : 'hero-products.webp';
+                    var pl = document.createElement('link');
+                    pl.rel = 'preload'; pl.as = 'image'; pl.href = hu; pl.media = '(min-width:1024px)';
+                    document.head.appendChild(pl);
+                } catch (e2) { }
                 window.__productsPrefetch = fetch(base + '/rest/v1/products?select=id,name,category,price,oldPrice,img,badge,desc,ingredients,size,stock,images,gallery,is_active&order=priority.desc,id.asc&limit=1000', {
                     headers: { apikey: key, Authorization: 'Bearer ' + key }
                 }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
@@ -107,6 +116,7 @@
 
     <!-- PWA & Mobile Meta -->
     <meta name="theme-color" content="#c59b3f">
+    <meta name="color-scheme" content="light">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -118,8 +128,11 @@
     <!-- Google Fonts: Cairo & Tajawal -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400..900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400..900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet"></noscript>
     
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
     <!-- FontAwesome Icons: بدل ما نحمّل all.min.css (فيه تعريفات كل الأنماط:
          solid/regular/brands/duotone/thin/sharp...إلخ)، بنحمّل بس الأنماط
          الثلاثة المستخدمة فعليًا في الموقع (fa-solid / fa-regular / fa-brands)،
@@ -328,7 +341,7 @@
 <!-- Main Showcase Card -->
 <div class="relative rounded-3xl p-1.5 shadow-2xl bg-white/40 backdrop-blur-md border border-white/60">
 <div class="aspect-square max-h-[520px] rounded-2xl overflow-hidden relative group flex items-center justify-center shadow-inner bg-slate-100">
-<img alt="منتجات العناية بالبشرة والجمال الفرات فارما" class="hero-main-image w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" data-fallback-src="logo.png" onerror="if (this.src !== this.dataset.fallbackSrc) { this.src = this.dataset.fallbackSrc; this.classList.remove('object-cover'); this.classList.add('object-contain', 'p-8'); }">
+<img alt="منتجات العناية بالبشرة والجمال الفرات فارما" decoding="async" width="520" height="520" class="hero-main-image w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" data-fallback-src="logo.png" onerror="if (this.src !== this.dataset.fallbackSrc) { this.src = this.dataset.fallbackSrc; this.classList.remove('object-cover'); this.classList.add('object-contain', 'p-8'); }">
 <script>
     // بنحدد src الصورة من هنا فقط (بدل ما تتحط في الـ HTML مباشرة) عشان
     // منحملش نسختين مع بعض: لو عندنا كاش من زيارة سابقة فيه صورة براندنج
@@ -369,7 +382,6 @@
 <div>
 <div class="text-xs font-black text-darkNavy">تركيبات طبيعية 100%</div>
 <div class="text-[10px] font-semibold text-slate-500">خالية من الكيماويات الضارة</div>
-</div>
 </div>
 </div>
 </div>
@@ -1602,11 +1614,11 @@
     </footer>
 
 
-    <script src="welcome-offer.js" defer></script>
-    <script src="order-status.js" defer></script>
-    <script src="instapay.js?v=5" defer></script>
-    <script src="vodafone-cash.js?v=1" defer></script>
-    <script src="analysis.js" defer></script>
+    <script src="welcome-offer.js?v=14" defer></script>
+    <script src="order-status.js?v=14" defer></script>
+    <script src="instapay.js?v=14" defer></script>
+    <script src="vodafone-cash.js?v=14" defer></script>
+    <script src="analysis.js?v=14" defer></script>
     <script>
         // Touch/Swipe gesture support for carousel
         (function() {
@@ -2009,7 +2021,7 @@
     <script>
         setTimeout(() => {
             document.documentElement.classList.remove('route-restoring');
-        }, 5000);
+        }, 2500);
     </script>
 
     <!-- تقييمات آراء العملاء: وقوف الماوس عليها (ديسكتوب) أو الضغط المطول عليها

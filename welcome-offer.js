@@ -108,6 +108,8 @@
       scheduleExpiry();
       emit();
     }
+    // السيرفر أكّد إن العرض لسه سارٍ → دلوقتي بس نظهر البانر (من غير ما يظهر ويختفي)
+    if (isEligible()) showBanner();
   }
 
   function expire(reason) {
@@ -193,8 +195,15 @@
     var el = document.createElement('div');
     el.setAttribute('dir', 'rtl');
     el.className = 'welcome-offer-banner';
+    var bottomOffset = 16;
+    try {
+      var cb = document.getElementById('cookie-consent-banner');
+      if (cb && !localStorage.getItem('elforat_cookie_consent') && !cb.classList.contains('translate-y-24')) {
+        bottomOffset = cb.offsetHeight + 28;
+      }
+    } catch (e) {}
     el.style.cssText =
-      'position:fixed;bottom:16px;right:16px;left:16px;max-width:420px;margin-inline:auto;z-index:99999;' +
+      'position:fixed;bottom:' + bottomOffset + 'px;right:16px;left:16px;max-width:420px;margin-inline:auto;z-index:99999;' +
       'background:linear-gradient(90deg,#4d3ceb 0%,#8536ff 100%);color:#fff;border-radius:16px;' +
       'padding:14px 16px;box-shadow:0 10px 30px rgba(77,60,235,.35);font-family:Tajawal,sans-serif;' +
       'display:flex;align-items:center;gap:12px;';
@@ -225,7 +234,11 @@
   }
 
   function init() {
-    if (isEligible()) { showBanner(); scheduleExpiry(); }
+    if (!isEligible()) return;
+    scheduleExpiry();
+    // لا نعرض البانر من التخمين المحلي (ممكن السيرفر يقول إن العرض خلص فيختفي بعد ثواني).
+    // الأساسي: reconcile() بيظهره بعد تأكيد السيرفر. ده مجرد احتياطي لو السيرفر/الـ IP اتأخروا.
+    setTimeout(function () { if (isEligible()) showBanner(); }, 6000);
   }
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

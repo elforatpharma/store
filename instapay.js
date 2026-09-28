@@ -31,7 +31,7 @@ window.InstaPayCheckout = (() => {
   const PLAY_URL = "https://play.google.com/store/apps/details?id=" + ANDROID_PACKAGE;
   const IOS_URL = "https://apps.apple.com/eg/app/instapay-egypt/id1592108795";
   const WEB_URL = "https://www.instapay.eg";
-  const LOGO_SRC = "instapay-logo.png";
+  const LOGO_SRC = "instapay-logo.webp";
 
   /* ---------- أدوات صغيرة ---------- */
 

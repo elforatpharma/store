@@ -96,6 +96,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return { viewId, param };
     }
 
+    function releaseRouteRestoring() {
+        requestAnimationFrame(() => document.documentElement.classList.remove('route-restoring'));
+    }
+
     function restoreViewFromHash() {
         try {
             const target = parseHash();
@@ -111,6 +115,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } catch (err) {
             console.warn('تعذّر استرجاع الصفحة من الرابط:', err);
+        } finally {
+            releaseRouteRestoring();
         }
     }
     window.restoreViewFromHash = restoreViewFromHash;
@@ -312,6 +318,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Alias for backward compatibility
     const NotificationManager = ToastManager;
+    window.ToastManager = ToastManager; // مطلوب لأن زر الإغلاق في التوست بيستدعيه من onclick جوه الـ HTML
 
     // ==========================================
     // نمط تصميم: Error Handler مركزي
@@ -374,14 +381,15 @@ document.addEventListener("DOMContentLoaded", () => {
         favorites: [],
 
         init() {
-            const saved = localStorage.getItem('elforat_favorites');
-            if (saved) {
-                this.favorites = JSON.parse(saved);
-            }
+            try {
+                const saved = localStorage.getItem('elforat_favorites');
+                const parsed = saved ? JSON.parse(saved) : [];
+                this.favorites = Array.isArray(parsed) ? parsed : [];
+            } catch (e) { this.favorites = []; }
         },
 
         save() {
-            localStorage.setItem('elforat_favorites', JSON.stringify(this.favorites));
+            try { localStorage.setItem('elforat_favorites', JSON.stringify(this.favorites)); } catch (e) { }
         },
 
         toggle(productId) {
@@ -402,19 +410,35 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         updateUI(productId) {
-            const btn = document.querySelector(`[data-favorite-btn="${productId}"]`);
-            if (btn) {
-                const isFav = this.isFavorite(productId);
+            const isFav = this.isFavorite(productId);
+            document.querySelectorAll(`[data-favorite-btn="${productId}"]`).forEach(btn => {
+                btn.setAttribute('aria-pressed', isFav ? 'true' : 'false');
                 btn.innerHTML = isFav
                     ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
                     : `<i class="fa-regular fa-heart text-xs"></i>`;
-            }
+            });
         },
 
         getCount() {
             return this.favorites.length;
         }
     };
+
+    // مستمع واحد للمفضلة (capture) بدل إضافة مستمعين جدد مع كل re-render.
+    // كان التكرار بيخلي الضغطة الواحدة تعمل toggle مرتين (يعني ولا حاجة) في صفحة المفضلة والمنتجات المشابهة،
+    // وكمان onclick الـ inline كان بيستدعي FavoritesManager وهو مش global فبيرمي ReferenceError.
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest && e.target.closest('.favorite-btn[data-favorite-btn]');
+        if (!btn) return;
+        e.stopPropagation();
+        e.preventDefault();
+        const productId = btn.getAttribute('data-favorite-btn');
+        FavoritesManager.toggle(productId);
+        if (document.getElementById('view-favorites')?.classList.contains('active')) {
+            updateBadge();
+            renderFavorites();
+        }
+    }, true);
 
     let productsDB = [];
     let cart = [];
@@ -424,16 +448,19 @@ document.addEventListener("DOMContentLoaded", () => {
     // دوال حفظ واسترجاع السلة (الجديدة)
     // ==========================================
     function loadCart() {
-        const savedCart = localStorage.getItem('elforat_cart');
-        if (savedCart) {
-            cart = JSON.parse(savedCart);
-        }
+        try {
+            const savedCart = localStorage.getItem('elforat_cart');
+            const parsed = savedCart ? JSON.parse(savedCart) : [];
+            cart = Array.isArray(parsed) ? parsed : [];
+        } catch (e) { cart = []; }
     }
 
     function saveCart() {
         // حفظ السلة لمدة 60 يوم
-        localStorage.setItem('elforat_cart', JSON.stringify(cart));
-        localStorage.setItem('elforat_cart_expiry', Date.now() + (60 * 24 * 60 * 60 * 1000));
+        try {
+            localStorage.setItem('elforat_cart', JSON.stringify(cart));
+            localStorage.setItem('elforat_cart_expiry', Date.now() + (60 * 24 * 60 * 60 * 1000));
+        } catch (e) { }
     }
 
     // ==========================================
@@ -454,11 +481,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function saveCoupon() {
-        if (appliedCoupon) {
-            localStorage.setItem('elforat_coupon', JSON.stringify(appliedCoupon));
-        } else {
-            localStorage.removeItem('elforat_coupon');
-        }
+        try {
+            if (appliedCoupon) {
+                localStorage.setItem('elforat_coupon', JSON.stringify(appliedCoupon));
+            } else {
+                localStorage.removeItem('elforat_coupon');
+            }
+        } catch (e) { }
     }
 
     function getCartSubtotal() {
@@ -550,12 +579,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // التحقق من انتهاء صلاحية السلة
     function checkCartExpiry() {
-        const expiry = localStorage.getItem('elforat_cart_expiry');
-        if (expiry && Date.now() > parseInt(expiry)) {
-            localStorage.removeItem('elforat_cart');
-            localStorage.removeItem('elforat_cart_expiry');
-            cart = [];
-        }
+        try {
+            const expiry = localStorage.getItem('elforat_cart_expiry');
+            if (expiry && Date.now() > parseInt(expiry)) {
+                localStorage.removeItem('elforat_cart');
+                localStorage.removeItem('elforat_cart_expiry');
+                cart = [];
+            }
+        } catch (e) { }
     }
 
     // دالة إصلاح المسارات لضمان ظهور الصور من فولدر uploads (النسخة الأصلية بالحجم الكامل)
@@ -661,9 +692,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function optimizePageImages(root = document) {
         root.querySelectorAll('img').forEach((img, index) => {
-            if (!img.hasAttribute('loading')) img.loading = index < 3 ? 'eager' : 'lazy';
             if (!img.hasAttribute('decoding')) img.decoding = 'async';
-            if (index === 0 && !img.hasAttribute('fetchpriority')) img.fetchPriority = 'high';
         });
     }
 
@@ -802,25 +831,16 @@ document.addEventListener("DOMContentLoaded", () => {
         return hadCache ? undefined : refresh;
     }
 
-    const imageObserver = new MutationObserver(mutations => {
-        mutations.forEach(m => {
-            m.addedNodes.forEach(node => {
-                if (node.nodeType !== 1) return;
-                if (node.tagName === 'IMG') optimizePageImages(node.parentElement || document);
-                else if (node.querySelectorAll) optimizePageImages(node);
-            });
-        });
-    });
-    imageObserver.observe(document.documentElement, { childList: true, subtree: true });
-    optimizePageImages();
+    optimizePageImages(); // مرة واحدة فقط (الكروت بتتولّد بـ loading=lazy/decoding=async جاهزين)
 
     // دالة عرض Skeleton Loading
     function renderSkeletonLoading() {
         const grid = document.getElementById('catalog-grid');
         if (!grid) return;
 
+        grid.__lastHtml = null;
         grid.innerHTML = Array(8).fill(0).map((_, i) => `
-            <div class="product-card opacity-0 animate-fade-in-up" style="animation-delay: ${i * 50}ms">
+            <div class="product-card">
                 <div class="product-visual-glass mb-6 skeleton-img aspect-square"></div>
                 <div class="px-1 space-y-2">
                     <div class="skeleton skeleton-text w-20 h-3"></div>
@@ -1057,7 +1077,25 @@ document.addEventListener("DOMContentLoaded", () => {
         return true;
     }
 
+    let __swalPromise = null;
+    function ensureSwal() {
+        if (typeof Swal !== 'undefined') return Promise.resolve(true);
+        if (__swalPromise) return __swalPromise;
+        __swalPromise = new Promise(resolve => {
+            const sc = document.createElement('script');
+            sc.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js';
+            sc.onload = () => resolve(true);
+            sc.onerror = () => { __swalPromise = null; resolve(false); };
+            document.head.appendChild(sc);
+        });
+        return __swalPromise;
+    }
+
     function openContactModal() {
+        return ensureSwal().then(() => _openContactModal());
+    }
+
+    function _openContactModal() {
         if (typeof Swal === 'undefined') {
             window.open('https://wa.me/201146809133', '_blank');
             return;
@@ -1119,6 +1157,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // نظام تقييمات المنتجات المتصل بقاعدة البيانات (reviews)
     // ==========================================
     function openAddReviewModal(productId, productName) {
+        return ensureSwal().then(() => _openAddReviewModal(productId, productName));
+    }
+
+    function _openAddReviewModal(productId, productName) {
         if (typeof Swal === 'undefined') return;
         Swal.fire({
             title: `<div class="text-base font-bold text-darkNavy">إضافة تقييم لـ ${productName || 'المنتج'}</div>`,
@@ -1214,7 +1256,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById('view-main').classList.add('active');
                     if (viewId === 'catalog') renderCatalog(param, this.searchTerm); else renderCatalog(null, this.searchTerm);
                     if (restoreScrollY !== null) {
-                        window.scrollTo({ top: restoreScrollY, behavior: "auto" });
+                        window.scrollTo({ top: restoreScrollY, behavior: "instant" });
+                    } else if (!addToHistory) {
+                        // استرجاع من الريفريش/الرجوع: قفزة فورية بدل سكرول متحرك بيبان كأن الصفحة بتتحرك
+                        const target = document.getElementById(viewId);
+                        window.scrollTo({ top: viewId === 'home' || !target ? 0 : Math.max(target.offsetTop - 80, 0), behavior: "instant" });
                     } else {
                         // قراءة offsetTop بتتأجل لفريم جاي عشان مش نقرأها فورًا بعد
                         // إضافة كلاس 'active' (تغيير هيقلب الـ layout) في نفس الـ tick
@@ -1230,7 +1276,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (viewId === 'favorites') renderFavorites();
                     window.scrollTo({
                         top: restoreScrollY !== null ? restoreScrollY : 0,
-                        behavior: restoreScrollY !== null ? "auto" : "smooth"
+                        behavior: addToHistory ? "smooth" : "instant"
                     });
                 }
 
@@ -1238,11 +1284,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 else document.body.classList.remove('show-mobile-bar');
             };
 
-            if (document.startViewTransition) {
-                document.startViewTransition(() => doNav());
-            } else {
-                doNav();
-            }
+            doNav();
             trackStoreEvent('page_view', { metadata: { view: viewId, item: param } });
         },
         handleSearch: function (query) {
@@ -1645,7 +1687,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function buildProductCard(p, index) {
         const isFavorite = FavoritesManager.isFavorite(p.id);
         return `
-<article class="pro-product-card p-3 sm:p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group opacity-0 animate-fade-in-up cursor-pointer" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
+<article class="pro-product-card p-3 sm:p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group cursor-pointer" onclick="app.navigate('product', '${sanitize(p.id)}')">
     <div class="flex items-center justify-between w-full mb-3 z-10">
         ${p.badge ? `<span class="badge-gold-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
         <button onclick="event.stopPropagation();" data-favorite-btn="${sanitize(p.id)}" aria-label="${isFavorite ? 'إزالة من المفضلة' : 'أضف للمفضلة'}" aria-pressed="${isFavorite ? 'true' : 'false'}" title="${isFavorite ? 'إزالة من المفضلة' : 'أضف للمفضلة'}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20">
@@ -1656,7 +1698,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </button>
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
-        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
+        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" decoding="async" width="320" height="320" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
         <span class="hidden sm:flex absolute bottom-2 left-2 items-center bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
@@ -1707,6 +1749,13 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>`;
     }
 
+    function setHtmlIfChanged(el, html) {
+        if (!el) return;
+        if (el.__lastHtml === html && el.firstChild) return;
+        el.innerHTML = html;
+        el.__lastHtml = html;
+    }
+
     function renderCatalog(filter = null, searchTerm = '', options = {}) {
         const grid = document.getElementById('catalog-grid');
         const bundlesSection = document.getElementById('bundles-section');
@@ -1746,6 +1795,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (products.length === 0) {
             if (grid) {
+                grid.__lastHtml = null;
                 grid.innerHTML = `
                     <div class="col-span-full flex flex-col items-center justify-center py-32 text-center animate-fade-in-up">
                         <div class="w-48 h-48 bg-gradient-to-br from-primary/10 to-secondary rounded-full flex items-center justify-center mb-8 shadow-inner">
@@ -1773,8 +1823,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (filter === 'مجموعات متكاملة') {
             const visibleBundles = products.slice(0, catalogVisibleCount);
             if (grid) {
-                grid.innerHTML = visibleBundles.map((p, index) => buildProductCard(p, index)).join('')
-                    + buildLoadMoreControl(products.length, catalogVisibleCount);
+                setHtmlIfChanged(grid, visibleBundles.map((p, index) => buildProductCard(p, index)).join('')
+                    + buildLoadMoreControl(products.length, catalogVisibleCount));
             }
             if (bundlesSection) bundlesSection.style.display = 'none';
             if (bundlesGrid) bundlesGrid.innerHTML = '';
@@ -1785,12 +1835,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const visibleIndividual = individualProducts.slice(0, catalogVisibleCount);
 
             if (grid) {
-                grid.innerHTML = visibleIndividual.map((p, index) => buildProductCard(p, index)).join('')
-                    + buildLoadMoreControl(individualProducts.length, catalogVisibleCount);
+                setHtmlIfChanged(grid, visibleIndividual.map((p, index) => buildProductCard(p, index)).join('')
+                    + buildLoadMoreControl(individualProducts.length, catalogVisibleCount));
             }
 
             if (bundleProducts.length > 0 && bundlesGrid && bundlesSection) {
-                bundlesGrid.innerHTML = bundleProducts.map((p, index) => buildProductCard(p, index)).join('');
+                setHtmlIfChanged(bundlesGrid, bundleProducts.map((p, index) => buildProductCard(p, index)).join(''));
                 bundlesSection.style.display = '';
             } else {
                 if (bundlesGrid) bundlesGrid.innerHTML = '';
@@ -1798,16 +1848,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // إضافة مستمعي الأحداث لأزرار المفضلة (للشبكتين معاً)
-        setTimeout(() => {
-            document.querySelectorAll('.favorite-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const productId = btn.getAttribute('data-favorite-btn');
-                    FavoritesManager.toggle(productId);
-                });
-            });
-        }, 0);
     }
 
     // بنك مراجعات عملاء بالعامية المصرية وتجارب حقيقية موثقة
@@ -2163,16 +2203,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // تفعيل دعم لوحة المفاتيح للمعرض المكبر
         initProductGalleryKeyboard();
 
-        // إضافة مستمعي الأحداث لأزرار المفضلة
-        setTimeout(() => {
-            document.querySelectorAll('.favorite-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const productId = btn.getAttribute('data-favorite-btn');
-                    FavoritesManager.toggle(productId);
-                });
-            });
-        }, 0);
     }
 
     // ==========================================
@@ -2327,7 +2357,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const isOutOfStock = p.stock <= 0;
 
             return `
-<article class="pro-product-card p-3 sm:p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group opacity-0 animate-fade-in-up cursor-pointer" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
+<article class="pro-product-card p-3 sm:p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group cursor-pointer" onclick="app.navigate('product', '${sanitize(p.id)}')">
     <div class="flex items-center justify-between w-full mb-3 z-10">
         ${p.badge ? `<span class="badge-gold-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
         <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" aria-label="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}" aria-pressed="${isFav ? 'true' : 'false'}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
@@ -2338,7 +2368,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </button>
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
-        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
+        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" decoding="async" width="320" height="320" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
         <span class="hidden sm:flex absolute bottom-2 left-2 items-center bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
@@ -2500,7 +2530,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const isFav = FavoritesManager.isFavorite(p.id);
 
             return `
-<article class="pro-product-card p-3 sm:p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group opacity-0 animate-fade-in-up cursor-pointer" style="animation-delay: ${index * 50}ms" onclick="app.navigate('product', '${sanitize(p.id)}')">
+<article class="pro-product-card p-3 sm:p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group cursor-pointer" onclick="app.navigate('product', '${sanitize(p.id)}')">
     <div class="flex items-center justify-between w-full mb-3 z-10">
         ${p.badge ? `<span class="badge-gold-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
         <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" aria-label="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}" aria-pressed="${isFav ? 'true' : 'false'}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
@@ -2511,7 +2541,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </button>
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
-        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
+        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" decoding="async" width="320" height="320" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
         <span class="hidden sm:flex absolute bottom-2 left-2 items-center bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
@@ -2540,18 +2570,6 @@ document.addEventListener("DOMContentLoaded", () => {
 </article>`;
         }).join('');
 
-        // إضافة مستمعي الأحداث لأزرار المفضلة
-        setTimeout(() => {
-            document.querySelectorAll('.favorite-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const productId = btn.getAttribute('data-favorite-btn');
-                    FavoritesManager.toggle(productId);
-                    updateBadge();
-                    renderFavorites();
-                });
-            });
-        }, 0);
     }
 
 
@@ -2979,7 +2997,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // بيجيب IP الزائر من خدمة خارجية مجانية
     async function getVisitorIP() {
         try {
-            const res = await fetch('https://api.ipify.org?format=json');
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), 3500);
+            const res = await fetch('https://api.ipify.org?format=json', { signal: ctrl.signal });
+            clearTimeout(t);
             const data = await res.json();
             return data.ip;
         } catch (e) {
@@ -3164,7 +3185,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     // نعدّي صورة البراندنج على wsrv.nl برضه (زي باقي صور
                     // المنتجات) بدل ما تتحمّل بحجمها الخام من Supabase مباشرة
                     const optimizedHero = getOptimizedImg(s.hero_image_url, 900, 75);
-                    document.querySelectorAll('img[src="hero-products.webp"], img[src="hero-products.jpg"]').forEach(el => { el.src = optimizedHero; });
+                    document.querySelectorAll('.hero-main-image').forEach(el => {
+                        if (el.getAttribute('src') === optimizedHero) return;
+                        const pre = new Image();
+                        pre.onload = () => { el.src = optimizedHero; }; // نبدّل بعد التحميل فقط عشان ميبقاش فيه وميض
+                        pre.src = optimizedHero;
+                    });
                 }
 
                 if (s.store_name) {
@@ -3382,6 +3408,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchProducts().then(() => {
         hideGlobalLoader();
         restoreViewFromHash();
+        setTimeout(checkLowStock, 4000);
     }).catch(() => {
         hideGlobalLoader();
     });
@@ -3390,7 +3417,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // في أول السكريبت عشان تشتغل مهما حصل أي خطأ في باقي الكود تحت)
     setTimeout(hideGlobalLoader, 5000);
 
-    runWhenIdle(checkLowStock);
     runWhenIdle(startCountdown);
 
     /* تم إلغاء إظهار شريط العروض الترويجية بناءً على طلب العميل */

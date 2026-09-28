@@ -55,8 +55,6 @@ body {
     /* إنشاء التدرج اللوني */
     background: #f9f9ff;
     
-    /* جعل الخلفية ثابتة أثناء السكرول لتعزيز تأثير الزجاج */
-    background-attachment: fixed;
     
     /* ضمان تغطية الخلفية للمساحة بالكامل */
     background-size: cover;
@@ -69,15 +67,14 @@ section, .view-section {
 }
 
 /* 4. إضافة تأثير Blur قوي على العناصر التي تحتاج خلفية زجاجية */
-.glass-effect, .product-card, .category-card, .favorite-btn, #favorites-grid .product-card {
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
+.glass-effect {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 /* --- الإعدادات العامة --- */
 body {
     font-family: 'Tajawal', sans-serif;
-    scroll-behavior: smooth;
     color: #111111;
     overflow-x: hidden;
 }
@@ -351,7 +348,6 @@ nav {
 /* نظام التنقل SPA */
 .view-section {
     display: none;
-    animation: fadeUp 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
 }
 .view-section.active { display: block; }
 
@@ -1316,9 +1312,7 @@ body {
 }
 
 .glass-nav {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.97);
   border-bottom: 1px solid rgba(226, 232, 240, 0.85);
 }
 
@@ -1542,11 +1536,6 @@ body.show-mobile-bar .welcome-offer-banner {
    جافاسكريبت (applyStoreBranding في analysis.js) يتأكد من الـ src
    النهائي (محلي أو من إعدادات المتجر) ويضيف كلاس is-ready */
 .hero-main-image {
-  opacity: 0;
-  transition: opacity 0.4s ease-out;
-}
-
-.hero-main-image.is-ready {
   opacity: 1;
 }
 
@@ -1602,4 +1591,18 @@ body.show-mobile-bar .welcome-offer-banner {
 @keyframes textShimmerSweep {
   0% { background-position: 130% 0; }
   55%, 100% { background-position: -30% 0; }
+}
+
+
+/* ========== Anti-flicker / performance layer ========== */
+html { scroll-behavior: auto; scrollbar-gutter: stable; -webkit-text-size-adjust: 100%; }
+/* حجز مكان الأيقونات قبل تحميل خط FontAwesome عشان النصوص متتحركش لما الأيقونات تظهر */
+i.fa-solid, i.fa-regular, i.fa-brands { display: inline-block; min-width: 1em; height: 1em; line-height: 1; text-align: center; }
+img { height: auto; }
+/* البقع الضبابية الكبيرة في الهيرو تقيلة جداً على الموبايل (blur 64px + أنيميشن) */
+@media (max-width: 1023.98px) {
+  #home .blur-3xl, #home .blur-2xl { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }

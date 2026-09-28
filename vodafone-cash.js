@@ -27,7 +27,7 @@ window.VodafoneCashCheckout = (() => {
   const PLAY_URL = "https://play.google.com/store/apps/details?id=" + ANDROID_PACKAGE;
   const IOS_URL = "https://apps.apple.com/eg/search?term=vodafone%20cash"; // مفيش آيدي آيفون مؤكد عندي - بيفتح نتيجة بحث بدل تخمين غلط
   const WEB_URL = "https://www.vodafone.com/eg/vodafone-cash";
-  const LOGO_SRC = "vodafone-cash-logo.png"; // ⚠️ محتاجة اللوجو يترفع بنفس الاسم ده
+  const LOGO_SRC = "vodafone-cash-logo.webp";
 
   /* ---------- أدوات صغيرة ---------- */
 
