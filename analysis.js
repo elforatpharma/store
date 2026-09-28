@@ -2661,6 +2661,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     submitBtn.innerText = 'جاري تجهيز بيانات التحويل...';
                     instapayConfig = await window.InstaPayCheckout.loadConfig(_supabase);
                 } catch (ipErr) {
+                    trackStoreEvent('payment_failed', { metadata: { provider: 'instapay', reason: 'config_unavailable', error: String(ipErr && ipErr.message || ipErr).slice(0, 200) } });
                     showCustomAlert(ipErr.message || 'الدفع عبر InstaPay غير متاح حاليًا.', 'error');
                     submitBtn.innerText = originalBtnText;
                     submitBtn.disabled = false;
@@ -2672,6 +2673,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     submitBtn.innerText = 'جاري تجهيز بيانات التحويل...';
                     vodafoneCashConfig = await window.VodafoneCashCheckout.loadConfig(_supabase);
                 } catch (vcErr) {
+                    trackStoreEvent('payment_failed', { metadata: { provider: 'vodafone_cash', reason: 'config_unavailable', error: String(vcErr && vcErr.message || vcErr).slice(0, 200) } });
                     showCustomAlert(vcErr.message || 'الدفع عبر فودافون كاش غير متاح حاليًا.', 'error');
                     submitBtn.innerText = originalBtnText;
                     submitBtn.disabled = false;
@@ -2850,6 +2852,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // الدفع الإلكتروني: ممنوع نفتح popup الدفع لو الطلب مش متسجل (العميل كان هيدفع على رقم طلب مش موجود)
                 if (!orderSaved && (isInstapay || isVodafoneCash)) {
+                    trackStoreEvent('payment_failed', {
+                        coupon_code: couponCode,
+                        cart_total: finalTotal,
+                        metadata: { provider: isInstapay ? 'instapay' : 'vodafone_cash', reason: 'order_not_saved' }
+                    });
                     submitBtn.innerText = originalBtnText;
                     submitBtn.disabled = false;
                     showCustomAlert('تعذر تسجيل طلبك الآن، ولم يتم خصم أي مبلغ. برجاء المحاولة مرة أخرى أو التواصل معنا على واتساب.', 'error');
@@ -2878,6 +2885,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 // بيشتغل حتى لو المتصفح قفل الصفحة فورًا بعد إتمام الطلب.
             } catch (err) {
                 console.error("خطأ في تسجيل الطلب بسوبابيز، جاري استكمال التحويل للواتساب...", err);
+                if (isInstapay || isVodafoneCash) {
+                    trackStoreEvent('payment_failed', { metadata: { provider: isInstapay ? 'instapay' : 'vodafone_cash', reason: 'exception', error: String(err && err.message || err).slice(0, 200) } });
+                }
             }
 
             if (isInstapay) {
@@ -3282,6 +3292,43 @@ document.addEventListener("DOMContentLoaded", () => {
         return id;
     }
 
+    // معرّف زائر دائم (localStorage) عشان نفرّق الزائر الجديد عن العائد عبر الجلسات.
+    // session_id (sessionStorage) بيتغير كل جلسة، أما ده فبيفضل ثابت لنفس المتصفح.
+    // ملحوظة: لو الزائر مسح بيانات المتصفح أو استخدم متصفح/وضع خصوصية تاني هيتحسب جديد.
+    const VISITOR_ID_KEY = 'elforat_visitor_id';
+    const VISITOR_FIRST_SEEN_KEY = 'elforat_visitor_first_seen';
+    let __visitorInfo = null;
+    function getVisitorInfo() {
+        if (__visitorInfo) return __visitorInfo;
+        const mk = () => (crypto && crypto.randomUUID) ? crypto.randomUUID() : `vis_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+        let id = null, firstSeen = null, storable = true;
+        try {
+            id = localStorage.getItem(VISITOR_ID_KEY);
+            firstSeen = localStorage.getItem(VISITOR_FIRST_SEEN_KEY);
+        } catch (e) { storable = false; }
+        // "عائد" = كان عنده معرّف محفوظ من قبل الجلسة دي. بنحدد ده مرة واحدة أول ما الصفحة تشتغل،
+        // فباقي أحداث نفس الجلسة (حتى بعد ما نكتب المعرّف) تفضل بنفس التصنيف.
+        let returning = !!id;
+        if (!id) {
+            id = mk();
+            firstSeen = new Date().toISOString();
+            try {
+                localStorage.setItem(VISITOR_ID_KEY, id);
+                localStorage.setItem(VISITOR_FIRST_SEEN_KEY, firstSeen);
+            } catch (e) { storable = false; }
+        }
+        // لو التخزين ممنوع مش هنقدر نميّز → نسجّل 'unknown' بدل ما نعد كل زيارة "جديد"
+        __visitorInfo = {
+            id,
+            firstSeen: firstSeen || null,
+            type: storable ? (returning ? 'returning' : 'new') : 'unknown'
+        };
+        return __visitorInfo;
+    }
+    function getVisitorId() { return getVisitorInfo().id; }
+    function isReturningVisitor() { return getVisitorInfo().type === 'returning'; }
+    getVisitorInfo(); // نثبّت التصنيف بدري قبل أي حدث
+
     // [تعديل أداء - Forced Reflow]: getDeviceType() كانت بتقرأ window.innerWidth
     // مباشرة وقت ما بتتنادى (من trackStoreEvent/trackVisitor)، وده بيحصل بعد
     // ما الصفحة تكون عملت رندر كبير (منتجات/هيرو)، فقراءة innerWidth في اللحظة
@@ -3352,13 +3399,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 medium: traffic.medium,
                 campaign: traffic.campaign,
                 device_type: getDeviceType(),
-                metadata: payload.metadata || {}
+                metadata: Object.assign({}, payload.metadata || {}, {
+                    visitor_id: getVisitorId(),
+                    visitor_type: getVisitorInfo().type
+                })
             }]);
         } catch (e) {
             console.warn('analytics event skipped:', eventName, e.message || e);
         }
     }
-    window.ElforatAnalytics = { getVisitorSessionId, getTrafficParams, getDeviceType, trackStoreEvent };
+    window.ElforatAnalytics = { getVisitorSessionId, getVisitorId, isReturningVisitor, getTrafficParams, getDeviceType, trackStoreEvent };
 
     // تسجيل زيارة جديدة في السيرفر
     async function trackVisitor() {
@@ -3376,7 +3426,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     device_type: getDeviceType(),
                     user_agent: navigator.userAgent || null
                 };
-                const { error: eventError } = await _supabase.from('visitor_events').insert([eventPayload]);
+                // visitor_id / visitor_type أعمدة اختيارية: لو مش متضافة في الجدول لسه، نعيد الإدخال من غيرها
+                // بدل ما نخسر تسجيل الزيارة كله (خطأ عمود ناقص = 42703 أو PGRST204).
+                const vi = getVisitorInfo();
+                let { error: eventError } = await _supabase.from('visitor_events')
+                    .insert([Object.assign({}, eventPayload, { visitor_id: vi.id, visitor_type: vi.type })]);
+                if (eventError && (eventError.code === '42703' || eventError.code === 'PGRST204' || /visitor_(id|type)/.test(eventError.message || ''))) {
+                    ({ error: eventError } = await _supabase.from('visitor_events').insert([eventPayload]));
+                }
                 if (!eventError) sessionStorage.setItem('elforat_visitor_event_tracked', 'true');
             }
 
