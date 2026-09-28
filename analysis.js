@@ -414,16 +414,50 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         async logError(error, context) {
+            const message = (error && error.message) || String(error);
+            // ملاحظة مهمة: عميل Supabase (اللي بنستخدمه هنا) بيرجّع أخطاء السيرفر
+            // كـ { error } جوّه الـ result ومش بيعمل throw. فلازم نقرأ res.error
+            // صريح - لو اعتمدنا على catch بس، الخطأ كان هيتحسب "نجح" والتسجيل
+            // مش هيكمّل للـ fallback. (ده كان سبب ضياع كل أخطاء الموقع)
+            let firstError = null;
             try {
-                await _supabase.from('error_logs').insert([{
-                    error_message: error.message,
-                    error_stack: error.stack,
+                const res = await _supabase.from('error_logs').insert([{
+                    error_message: message,
+                    error_stack: error && error.stack,
                     context: context,
                     timestamp: new Date().toISOString(),
                     user_agent: navigator.userAgent
                 }]);
+                if (res && res.error) firstError = res.error;
             } catch (e) {
-                console.warn('فشل تسجيل الخطأ:', e);
+                firstError = e;
+            }
+            if (!firstError) return; // اتسجل في error_logs تمام
+
+            // جدول error_logs مش موجود في المشروع دلوقتي، فالتسجيل كان
+            // بيضيع على الصمت. بنكتب في store_events كمان - هي شغالة فعلاً -
+            // عشان الخطأ يبقى ظاهر في الداتابيز.
+            console.warn('error_logs unavailable, falling back to store_events:', firstError.message || firstError);
+            try {
+                const traffic = getTrafficParams();
+                const res2 = await _supabase.from('store_events').insert([{
+                    session_id: getVisitorSessionId(),
+                    event_name: 'js_error',
+                    page_path: location.pathname + location.hash,
+                    source: traffic.source,
+                    medium: traffic.medium,
+                    campaign: traffic.campaign,
+                    device_type: getDeviceType(),
+                    metadata: {
+                        context: context || null,
+                        error_message: String(message).slice(0, 500),
+                        error_stack: error && error.stack ? String(error.stack).slice(0, 1000) : null,
+                        visitor_id: getVisitorId()
+                    }
+                }]);
+                if (res2 && res2.error) console.warn('store_events fallback failed:', res2.error.message || res2.error);
+            } catch (e2) {
+                console.warn('failed to log error anywhere:', e2.message || e2);
             }
         },
 
@@ -2165,6 +2199,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // أول ما العميلة تفتح صفحة السلة، والـ bindings المشتركة معاه من هنا.
     window.ElforatStore = {
         supabase: _supabase,
+        ErrorHandler: ErrorHandler,
         FavoritesManager: FavoritesManager,
         LOW_STOCK_THRESHOLD: LOW_STOCK_THRESHOLD,
         sanitize: sanitize,

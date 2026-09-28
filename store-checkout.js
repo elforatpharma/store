@@ -24,7 +24,17 @@
     var getTrafficParams = S.getTrafficParams;
     var getVisitorSessionId = S.getVisitorSessionId;
     var loadPaymentScripts = S.loadPaymentScripts;
+    var ErrorHandler = S.ErrorHandler;
     var app = window.app;
+
+    // تسجيل الأخطاء في جدول error_logs على السيرفر.
+    // قبل كده أي فشل في تسجيل الطلب كان بيختفي في console المتصفح بس
+    // (العميلة بتيجي تاخد رسالة واتساب عادية والمتجر ميعرفش إن الطلب
+    //  متسجلش في الداشبورد) - فأي عميلة بتعمل طلب ضايعة طلبها على الصمت.
+    function reportCheckoutError(err, context) {
+        try { console.error('[' + context + ']', err); } catch (_) { }
+        try { if (ErrorHandler && ErrorHandler.logError) ErrorHandler.logError(err, context); } catch (_) { }
+    }
 
     async function handleSubmit(checkoutForm, e) {
             e.preventDefault();
@@ -275,6 +285,12 @@
                 } else if (orderError) {
                     // console.error (مش warn): غالباً عمود ناقص (status_code..) أو صلاحيات RLS - الطلب هيتسجل ناقص بيانات
                     console.error('فشل إدخال الطلب بالحقول الكاملة، جاري المحاولة بالحد الأدنى:', orderError.code, orderError.message);
+                    // وبيتسجل على السيرفر كمان - غير كده الطلب بيضيع على الصمت
+                    // (العميلة بتاخد واتساب عادي والمتجر مش شايف حاجة في الداشبورد)
+                    reportCheckoutError(
+                        new Error('insert orders failed: ' + (orderError.code || '') + ' ' + (orderError.message || '') + ' | ' + (orderError.details || '')),
+                        'checkout:insert_orders_full'
+                    );
                     const minimalData = {
                         customerName: name,
                         phone: phone,
@@ -289,7 +305,23 @@
                     };
                     const { data: minOrder, error: minError } = await insertOnce(minimalData);
                     if (!minError && minOrder) { orderData.id = minOrder.id; orderSaved = true; }
-                    else console.error('فشل إدخال الطلب نهائياً:', minError);
+                    else {
+                        console.error('فشل إدخال الطلب نهائياً:', minError);
+                        reportCheckoutError(
+                            new Error('insert orders (minimal) failed: ' + ((minError && minError.code) || '') + ' ' + ((minError && minError.message) || '') + ' | ' + ((minError && minError.details) || '')),
+                            'checkout:insert_orders_minimal'
+                        );
+                    }
+                }
+
+                // العميلة على واتساب بس الطلب مش في الداشبورد = طلب ضايع.
+                // بنسجله على السيرفر عشان يبان في error_logs.
+                if (!orderSaved) {
+                    trackStoreEvent('checkout_failed', {
+                        coupon_code: couponCode,
+                        cart_total: finalTotal,
+                        metadata: { payment, items_count: orderItems.length, reason: 'order_not_saved' }
+                    });
                 }
 
                 // الدفع الإلكتروني: ممنوع نفتح popup الدفع لو الطلب مش متسجل (العميل كان هيدفع على رقم طلب مش موجود)
@@ -309,7 +341,7 @@
                 instapayOrderNo = (orderData.id != null && /^\d{1,10}$/.test(String(orderData.id))) ? orderData.id : merchantId;
 
                 // كوبون الترحيب: أول طلب ناجح بيه = يتلغي فوراً
-                if (couponCode && orderData.id != null && window.WelcomeOffer
+                if (couponCode && orderSaved && window.WelcomeOffer
                     && String(couponCode).toUpperCase() === window.WelcomeOffer.code) {
                     window.WelcomeOffer.markUsed();
                 }
@@ -326,7 +358,7 @@
                 // ده أأمن لأنه مش محتاج أي سر يتحط في كود الموقع العام، وأضمن لأنه
                 // بيشتغل حتى لو المتصفح قفل الصفحة فورًا بعد إتمام الطلب.
             } catch (err) {
-                console.error("خطأ في تسجيل الطلب بسوبابيز، جاري استكمال التحويل للواتساب...", err);
+                reportCheckoutError(err, 'checkout:insert_order');
                 if (isInstapay || isVodafoneCash) {
                     trackStoreEvent('payment_failed', { metadata: { provider: isInstapay ? 'instapay' : 'vodafone_cash', reason: 'exception', error: String(err && err.message || err).slice(0, 200) } });
                 }
