@@ -39,6 +39,31 @@
     <meta name="twitter:image" content="https://elforatpharma.github.io/store/hero-products.jpg">
 
     <link rel="icon" type="image/png" href="favicon-32.png">
+    <!-- (اتنقل فوق الـ CSS عشان السكريبت الـ inline كان بيستنى الـ stylesheets تخلّص قبل ما طلب المنتجات يبدأ: 655ms ضايعة)
+         تسريع المنتجات: فتح الاتصال بسوبابيز وخدمة الصور بدري + بدء طلب المنتجات قبل ما باقي السكريبتات تخلّص تحميل -->
+    <link rel="preconnect" href="https://sidtdxchiqiogfkwbdui.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://wsrv.nl">
+    <script>
+        (function () {
+            try {
+                var base = 'https://sidtdxchiqiogfkwbdui.supabase.co';
+                var key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZHRkeGNoaXFpb2dma3diZHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTEyMTAsImV4cCI6MjA4OTY4NzIxMH0.QF1-67Qu2HfWJt3ANSegM87fykOYQBwqC7ggLG8LTVU';
+                // preload لصورة الهيرو على الديسكتوب بس (على الموبايل بتظهر تحت الشاشة الأولى)
+                try {
+                    var sc = JSON.parse(localStorage.getItem('elforat_store_settings_cache_v1') || 'null');
+                    var hu = sc && sc.data && sc.data.hero_image_url;
+                    hu = hu ? ('https://wsrv.nl/?url=' + encodeURIComponent(hu) + '&w=900&q=75&output=webp') : 'hero-products.webp';
+                    var pl = document.createElement('link');
+                    pl.rel = 'preload'; pl.as = 'image'; pl.href = hu; pl.media = '(min-width:1024px)';
+                    document.head.appendChild(pl);
+                } catch (e2) { }
+                window.__productsPrefetch = fetch(base + '/rest/v1/products?select=id,name,category,price,oldPrice,img,badge,desc,ingredients,size,stock,images,gallery,is_active&order=priority.desc,id.asc&limit=1000', {
+                    headers: { apikey: key, Authorization: 'Bearer ' + key }
+                }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+            } catch (e) { window.__productsPrefetch = null; }
+        })();
+    </script>
+    <link rel="dns-prefetch" href="https://api.ipify.org">
     <link rel="stylesheet" href="style.min.css?v=15">
     <link rel="stylesheet" href="tailwind-built.css?v=15">
 
@@ -89,30 +114,6 @@
         }
     </style>
 
-    <!-- تسريع المنتجات: فتح الاتصال بسوبابيز وخدمة الصور بدري + بدء طلب المنتجات قبل ما باقي السكريبتات تخلّص تحميل -->
-    <link rel="preconnect" href="https://sidtdxchiqiogfkwbdui.supabase.co" crossorigin>
-    <link rel="preconnect" href="https://wsrv.nl">
-    <link rel="preconnect" href="https://api.ipify.org">
-    <script>
-        (function () {
-            try {
-                var base = 'https://sidtdxchiqiogfkwbdui.supabase.co';
-                var key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZHRkeGNoaXFpb2dma3diZHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTEyMTAsImV4cCI6MjA4OTY4NzIxMH0.QF1-67Qu2HfWJt3ANSegM87fykOYQBwqC7ggLG8LTVU';
-                // preload لصورة الهيرو على الديسكتوب بس (على الموبايل بتظهر تحت الشاشة الأولى)
-                try {
-                    var sc = JSON.parse(localStorage.getItem('elforat_store_settings_cache_v1') || 'null');
-                    var hu = sc && sc.data && sc.data.hero_image_url;
-                    hu = hu ? ('https://wsrv.nl/?url=' + encodeURIComponent(hu) + '&w=900&q=75&output=webp') : 'hero-products.webp';
-                    var pl = document.createElement('link');
-                    pl.rel = 'preload'; pl.as = 'image'; pl.href = hu; pl.media = '(min-width:1024px)';
-                    document.head.appendChild(pl);
-                } catch (e2) { }
-                window.__productsPrefetch = fetch(base + '/rest/v1/products?select=id,name,category,price,oldPrice,img,badge,desc,ingredients,size,stock,images,gallery,is_active&order=priority.desc,id.asc&limit=1000', {
-                    headers: { apikey: key, Authorization: 'Bearer ' + key }
-                }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
-            } catch (e) { window.__productsPrefetch = null; }
-        })();
-    </script>
 
     <!-- PWA & Mobile Meta -->
     <meta name="theme-color" content="#c59b3f">
@@ -2016,13 +2017,12 @@
     </script>
 
     <!-- شبكة أمان تانية: لو restoreViewFromHash في analysis.js لأي سبب مكملتش
-         (خطأ غير متوقع، أو الملف فشل يتحمّل، أو النت بطيء جداً)، نشيل إخفاء الصفحة
-         (route-restoring) بعد 4 ثواني بأي حال بدل ما تفضل مخفية للأبد.
-         (2.5 ثانية كانت قصيرة على نت ضعيف: الهوم كان بيظهر ثم يقفز لصفحة المنتج) -->
+         (خطأ غير متوقع، أو الملف فشل يتحمّل)، نشيل إخفاء الصفحة (route-restoring)
+         بعد 5 ثواني بأي حال بدل ما تفضل مخفية للأبد -->
     <script>
         setTimeout(() => {
             document.documentElement.classList.remove('route-restoring');
-        }, 4000);
+        }, 2500);
     </script>
 
     <!-- تقييمات آراء العملاء: وقوف الماوس عليها (ديسكتوب) أو الضغط المطول عليها
