@@ -3335,8 +3335,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    trackVisitor();
-    applyStoreBranding();
+    // [تعديل أداء - LCP Render Delay]: الحاجات دي (تتبع الزيارة، جلب هوية
+    // البراندنج، الهدايا، تنبيه المخزون المنخفض، عداد العرض) مالهاش تأثير على
+    // أول حاجة الزائر بيشوفها (نص الهيرو)، لكن كانت بتتنفذ فورًا في نفس اللحظة
+    // اللي المتصفح محتاج يرسم فيها الصفحة، فبتاخد نصيب من الـ main thread وقت
+    // أهم فريم. runWhenIdle بتأجلها لحد ما المتصفح يفضى (أو أقصى مهلة كحماية)
+    // عشان الرسم الأول ميتأخرش وراهم.
+    function runWhenIdle(fn, timeout = 2000) {
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(fn, { timeout });
+        } else {
+            setTimeout(fn, 200);
+        }
+    }
+
+    runWhenIdle(trackVisitor);
+    runWhenIdle(applyStoreBranding);
 
     // [جديد] استرجاع السلة وتحديث الرقم في الناف بار فوراً
     checkCartExpiry(); // التحقق من انتهاء صلاحية السلة
@@ -3354,7 +3368,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    loadGifts();
+    runWhenIdle(loadGifts);
     FavoritesManager.init(); // تهيئة نظام المفضلة
     updateBadge(); // تحديث شارة المفضلة عند التحميل
     fetchProducts().then(() => {
@@ -3368,8 +3382,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // في أول السكريبت عشان تشتغل مهما حصل أي خطأ في باقي الكود تحت)
     setTimeout(hideGlobalLoader, 5000);
 
-    checkLowStock();
-    startCountdown();
+    runWhenIdle(checkLowStock);
+    runWhenIdle(startCountdown);
 
     /* تم إلغاء إظهار شريط العروض الترويجية بناءً على طلب العميل */
 

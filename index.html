@@ -98,7 +98,7 @@
             try {
                 var base = 'https://sidtdxchiqiogfkwbdui.supabase.co';
                 var key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZHRkeGNoaXFpb2dma3diZHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTEyMTAsImV4cCI6MjA4OTY4NzIxMH0.QF1-67Qu2HfWJt3ANSegM87fykOYQBwqC7ggLG8LTVU';
-                window.__productsPrefetch = fetch(base + '/rest/v1/products?select=*&order=priority.desc&limit=1000', {
+                window.__productsPrefetch = fetch(base + '/rest/v1/products?select=id,name,category,price,oldPrice,img,badge,desc,ingredients,size,stock,images,gallery,is_active&order=priority.desc,id.asc&limit=1000', {
                     headers: { apikey: key, Authorization: 'Bearer ' + key }
                 }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
             } catch (e) { window.__productsPrefetch = null; }
@@ -151,6 +151,11 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4" defer></script>
 
+    <style>
+        /* SplitText effect (hero headline) */
+        .split-text .split-word { display: inline-block; will-change: transform, opacity; }
+        @media (prefers-reduced-motion: reduce) { .split-text .split-word { will-change: auto; } }
+    </style>
 </head>
 
 <body class="font-sans text-gray-900 antialiased overflow-x-hidden">
@@ -285,8 +290,75 @@
 <!-- Right Column: Hero Content -->
 <div class="lg:col-span-7 flex flex-col items-start text-right">
 <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display leading-tight sm:leading-tight lg:leading-tight mb-5 tracking-tight">
-<span class="drop-shadow-sm text-shimmer-gold">اصنعي جمالكِ الخاص</span>
+<span class="drop-shadow-sm text-shimmer-gold split-text" id="hero-split-text">اصنعي جمالكِ الخاص</span>
 </h1>
+<script>
+/* SplitText (vanilla) - نفس تأثير React Bits SplitText لكن بدون React/GSAP.
+   بيتنفذ فورًا بعد الـ h1 (قبل أول رسم) عشان النص ما يظهرش ثم يختفي.
+   splitType = words لأن تقطيع الحروف العربية بيفك اتصالها ببعض. */
+(function () {
+  var el = document.getElementById('hero-split-text');
+  if (!el) return;
+  var opts = {
+    stagger: 120,          // ms بين كل كلمة (delay)
+    duration: 1250,        // ms
+    easing: 'cubic-bezier(0.215, 0.61, 0.355, 1)', // power3.out
+    from: { opacity: 0, transform: 'translateY(40px)' },
+    to:   { opacity: 1, transform: 'translateY(0)' },
+    threshold: 0.1,
+    rootMargin: '-100px'
+  };
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce || !el.animate || !('IntersectionObserver' in window)) return; // النص يفضل ظاهر عادي
+
+  var text = el.textContent.trim();
+  var parts = text.split(/\s+/);
+  el.setAttribute('aria-label', text);
+  el.textContent = '';
+  var words = parts.map(function (w, i) {
+    var s = document.createElement('span');
+    s.className = 'split-word';
+    s.setAttribute('aria-hidden', 'true');
+    s.textContent = w;
+    s.style.opacity = '0';
+    el.appendChild(s);
+    if (i < parts.length - 1) el.appendChild(document.createTextNode(' '));
+    return s;
+  });
+
+  var played = false;
+  function play() {
+    if (played) return;
+    played = true;
+    var done = 0;
+    words.forEach(function (w, i) {
+      var a = w.animate([opts.from, opts.to], {
+        duration: opts.duration, delay: i * opts.stagger, easing: opts.easing, fill: 'both'
+      });
+      a.onfinish = function () {
+        w.style.opacity = '1';
+        a.cancel();
+        w.style.willChange = 'auto';
+        if (++done === words.length) {
+          el.dispatchEvent(new CustomEvent('splittext:complete', { bubbles: true }));
+          console.log('All words have animated!');
+        }
+      };
+    });
+  }
+
+  var io = new IntersectionObserver(function (entries) {
+    if (entries.some(function (e) { return e.isIntersecting; })) { io.disconnect(); play(); }
+  }, { threshold: opts.threshold, rootMargin: opts.rootMargin });
+  io.observe(el);
+
+  // أمان: لو الـ rootMargin مخلّى العنصر برا منطقة الرصد وهو ظاهر فعلاً، شغّلها بعد لحظة
+  setTimeout(function () {
+    var r = el.getBoundingClientRect();
+    if (!played && r.bottom > 0 && r.top < window.innerHeight) { io.disconnect(); play(); }
+  }, 600);
+})();
+</script>
 <p class="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mb-8 font-normal">
           نقدم لكِ أفضل المنتجات الطبيعية والعلاجية للعناية بالبشرة. حلول آمنة ومختبرة طبياً لتتألقي بإشراقة طبيعية تدوم طويلاً من خبراء التجميل في عالم الجمال.
         </p>
