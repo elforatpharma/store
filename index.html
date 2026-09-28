@@ -12,7 +12,7 @@
          ممكنة عن طريق <meta> لحد ما تتفعّل الهيدرز الحقيقية عبر
          Cloudflare أو استضافة بتدعم _headers (شوفي security-headers-README.md)
          ============================================================ -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://sidtdxchiqiogfkwbdui.supabase.co https://wsrv.nl; media-src 'self' https://actions.google.com; connect-src 'self' https://sidtdxchiqiogfkwbdui.supabase.co https://api.ipify.org; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://sidtdxchiqiogfkwbdui.supabase.co https://wsrv.nl; media-src 'self' https://actions.google.com; connect-src 'self' https://sidtdxchiqiogfkwbdui.supabase.co https://api.ipify.org; object-src 'none'; base-uri 'self'; form-action 'self';">
     <meta name="referrer" content="strict-origin-when-cross-origin">
 
     <title>متجر الفُرات فارما الإلكتروني | ELFORAT PHARMA STORE</title>
@@ -64,8 +64,8 @@
         })();
     </script>
     <link rel="dns-prefetch" href="https://api.ipify.org">
-    <link rel="stylesheet" href="style.min.css?v=15">
-    <link rel="stylesheet" href="tailwind-built.css?v=15">
+    <link rel="stylesheet" href="style.min.css?v=16">
+    <link rel="stylesheet" href="tailwind-built.css?v=16">
 
     <!-- منع "قفلة" الصفحة عند الريفريش: لو الرابط فيه #hash لصفحة غير الرئيسية
          (كتالوج/منتج/سلة/مفضلة)، الصفحة الافتراضية (الهيرو) كانت بتترسم وتظهر
@@ -134,31 +134,22 @@
     
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
-    <!-- FontAwesome Icons: بدل ما نحمّل all.min.css (فيه تعريفات كل الأنماط:
-         solid/regular/brands/duotone/thin/sharp...إلخ)، بنحمّل بس الأنماط
-         الثلاثة المستخدمة فعليًا في الموقع (fa-solid / fa-regular / fa-brands)،
-         ده بيقلل الـ CSS غير المستخدم بشكل كبير. لسه محمّلين async (media=print ثم all) عشان
-         مايبطأش الـ render، وبدون preload عشان نتجنب تحذير الكونسول. -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css" media="print" onload="this.media='all'">
-    <noscript>
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css">
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
-    </noscript>
-    <!-- تحسين Lighthouse "Font display": نعيد تعريف نفس خطوط FontAwesome بنفس
-         الـ src بتاعتها بس بإضافة font-display:swap، عشان النص يفضل ظاهر
-         (بالحرف الافتراضي) لحد ما خط الأيقونات يحمّل بدل ما يتأخر ظهور النص. -->
-    <style>
-      @font-face{font-family:"Font Awesome 6 Free";font-style:normal;font-weight:900;font-display:swap;src:url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-solid-900.woff2") format("woff2")}
-      @font-face{font-family:"Font Awesome 6 Free";font-style:normal;font-weight:400;font-display:swap;src:url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-regular-400.woff2") format("woff2")}
-      @font-face{font-family:"Font Awesome 6 Brands";font-style:normal;font-weight:400;font-display:swap;src:url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-brands-400.woff2") format("woff2")}
-    </style>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+    <!-- FontAwesome Icons: بنستخدم fa-subset.css بدل ملفات cdnjs.
+         Sheets الأصلية (fontawesome + solid + regular + brands) = ~100 KB
+         Almost كله تعريفات لأيقونات (~2500 rule) إحنا بنستخدم 44 بس،
+         وده اللي كان بيخلي Lighthouse يقول "Reduce unused CSS ~14 KiB".
+         fa-subset.css = 3.5 KB فيه القواعد الأساسية + الأيقونات المستخدمة بس
+         (متولّد من tools/build-fa-subset.js). الخطوط نفسها لسه من cdnjs.
+         لازم تتولّد تاني بعد أي إضافة لأيقونة جديدة:
+             node tools/build-fa-subset.js -->
+    <link rel="stylesheet" href="fa-subset.css?v=16">
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4" defer></script>
+    <!-- عميل Supabase مصغّر محلي (~1.5 KiB بدل 29 KiB من supabase-js v2 الكامل).
+         نفس الـ API بالظبط (from/select/insert/upsert/rpc) فأي كود موجود مش متغيّر.
+         السبب: supabase-js كان بيحمّل auth + realtime + storage + postgrest كامل،
+         وأكتر من نصه مبيتستخدمش خالص (Lighthouse unused JS). -->
+    <script src="supabase-lite.js?v=16" defer></script>
 
 </head>
 
@@ -1618,11 +1609,12 @@
     </footer>
 
 
-    <script src="welcome-offer.js?v=15" defer></script>
-    <script src="order-status.js?v=15" defer></script>
-    <script src="instapay.js?v=15" defer></script>
-    <script src="vodafone-cash.js?v=15" defer></script>
-    <script src="analysis.js?v=15" defer></script>
+    <!-- instapay.js / vodafone-cash.js / order-status.js مش محمّلين هنا بعد دلوقتي:
+         كلهم بيتستخدموا وقت تأكيد الطلب بس (45 KiB خام كان بيتحمّلوا مع الصفحة
+         من غير ما حد يستخدمهم). analysis.js بيحمّلهم بالتوازي لما العميل يفتح
+         صفحة السلة/الدفع من خلال loadPaymentScripts(). -->
+    <script src="welcome-offer.js?v=16" defer></script>
+    <script src="analysis.js?v=16" defer></script>
     <script>
         // Touch/Swipe gesture support for carousel
         (function() {

@@ -15,11 +15,15 @@
 window.VodafoneCashCheckout = (() => {
   const PAYMENT_VALUE = "vodafone_cash";
   const PAYMENT_LABEL = "فودافون كاش";
-  // النص بييجي من المصدر الموحّد (order-status.js) بدل ما يتكرر هنا لوحده
-  const ORDER_STATUS = window.OrderStatus
-    ? window.OrderStatus.label(window.OrderStatus.CODES.PENDING, 'vodafone_cash')
-    : "بانتظار تأكيد الدفع - فودافون كاش";
-  const ORDER_STATUS_CODE = window.OrderStatus ? window.OrderStatus.CODES.PENDING : 'pending';
+  // النص بييجي من المصدر الموحّد (order-status.js) بدل ما يتكرر هنا لوحده.
+  // getters مش ثوابت عشان الملفين دول بيتحمّلوا مع بعض وبأى ترتيب (loadPaymentScripts
+  // في analysis.js بيحمّلهم بالتوازي)، والقراءة كلها وقت تأكيد الطلب.
+  const FALLBACK_STATUS = "بانتظار تأكيد الدفع - فودافون كاش";
+  function orderStatus() {
+    return window.OrderStatus
+      ? window.OrderStatus.label(window.OrderStatus.CODES.PENDING, 'vodafone_cash')
+      : FALLBACK_STATUS;
+  }
 
   const DEFAULT_WHATSAPP = "201146809133";
   const DEFAULT_PHONE = "01065863803"; // رقم التحويل الافتراضي (لو مفيش vodafone_cash_phone صالح في الإعدادات)
@@ -346,5 +350,9 @@ window.VodafoneCashCheckout = (() => {
     return { close };
   }
 
-  return { PAYMENT_VALUE, PAYMENT_LABEL, ORDER_STATUS, ORDER_STATUS_CODE, loadConfig, showPopup, buildWhatsAppUrl };
+  return {
+    PAYMENT_VALUE, PAYMENT_LABEL, loadConfig, showPopup, buildWhatsAppUrl,
+    get ORDER_STATUS() { return orderStatus(); },
+    get ORDER_STATUS_CODE() { return window.OrderStatus ? window.OrderStatus.CODES.PENDING : 'pending'; }
+  };
 })();

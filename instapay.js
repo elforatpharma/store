@@ -16,11 +16,15 @@
 window.InstaPayCheckout = (() => {
   const PAYMENT_VALUE = "instapay";
   const PAYMENT_LABEL = "InstaPay";
-  // النص بييجي من المصدر الموحّد (order-status.js) بدل ما يتكرر هنا لوحده
-  const ORDER_STATUS = window.OrderStatus
-    ? window.OrderStatus.label(window.OrderStatus.CODES.PENDING, 'instapay')
-    : "بانتظار تأكيد الدفع - InstaPay";
-  const ORDER_STATUS_CODE = window.OrderStatus ? window.OrderStatus.CODES.PENDING : 'pending';
+  // النص بييجي من المصدر الموحّد (order-status.js) بدل ما يتكرر هنا لوحده.
+  // getters مش ثوابت عشان الملفين دول بيتحمّلوا مع بعض وبأى ترتيب (loadPaymentScripts
+  // في analysis.js بيحمّلهم بالتوازي)، والقراءة كلها وقت تأكيد الطلب.
+  const FALLBACK_STATUS = "بانتظار تأكيد الدفع - InstaPay";
+  function orderStatus() {
+    return window.OrderStatus
+      ? window.OrderStatus.label(window.OrderStatus.CODES.PENDING, 'instapay')
+      : FALLBACK_STATUS;
+  }
 
   const DEFAULT_WHATSAPP = "201146809133";
   // رابط الدفع الخاص بحساب المالك (m.salama.insta@instapay) - بيفتح تطبيق
@@ -366,5 +370,9 @@ window.InstaPayCheckout = (() => {
     return { close };
   }
 
-  return { PAYMENT_VALUE, PAYMENT_LABEL, ORDER_STATUS, ORDER_STATUS_CODE, loadConfig, showPopup, buildWhatsAppUrl, getOpenAppTarget, normalizeLink };
+  return {
+    PAYMENT_VALUE, PAYMENT_LABEL, loadConfig, showPopup, buildWhatsAppUrl, getOpenAppTarget, normalizeLink,
+    get ORDER_STATUS() { return orderStatus(); },
+    get ORDER_STATUS_CODE() { return window.OrderStatus ? window.OrderStatus.CODES.PENDING : 'pending'; }
+  };
 })();

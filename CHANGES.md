@@ -1,4 +1,46 @@
-# ملخص الإصلاحات (نسخة v14)
+# ملخص الإصلاحات (نسخة v16)
+
+## v16: تقليل الـ JavaScript غير المستخدم (Lighthouse "Reduce unused JavaScript")
+
+التحليل كان بيقول **46 KiB** جافاسكريبت بيتحمّل ويتقرا ويتحلّل من غير ما حد يستخدمه.
+اتقسم على مصدرين، والاتنين اتقفلوا:
+
+### 1. مكتبة Supabase الكاملة (28.9 KiB من jsDelivr)
+`@supabase/supabase-js@2.45.4` كانت بتتحمّل من CDN وقلبها كله (auth + realtime + storage
++ postgrest) مقابل استعلامات جداول بسيطة. اتعمل بدلها **`supabase-lite.js`** (3.9 KiB مضغوط)
+عميل REST صغير بيدعم اللي الموقع بيستخدمه بس: `from/select/insert/upsert/eq/gte/in/order/range/
+single/maybeSingle/rpc`. مفيش أي تغيير في كود الاستعلامات في أي ملف.
+`index.html` بقى بيحمله محلي بدل الـ CDN.
+
+### 2. `analysis.js` (42.7 KiB، 26 KiB منهم مش مستخدمين)
+اتقسم لملفين بيتحمّلوا وقت الحاجة:
+
+| الملف | مضغوط | بيتحمّل إمتى |
+|---|---|---|
+| `store-product.js` | 10.0 KiB | أول فتح لصفحة منتج (+ `prefetch` عند الـ hover/tap على أي بطاقة منتج) |
+| `store-checkout.js` | 6.3 KiB | أول فتح لصفحة السلة |
+| `order-status.js` + `instapay.js` + `vodafone-cash.js` | 17.2 KiB | أول فتح لصفحة السلة |
+
+النتيجة: **30 KiB أقل** في أول تحميل للصفحة (76.5 KiB → 45.3 KiB مضغوط).
+
+تفاصيل التنفيذ:
+- `analysis.js` بيعرّف `window.ElforatStore` كسياق مشترك (دوال + getters لـ `productsDB`
+  و`cart` و`appliedCoupon` عشان الملفين يشوفوا آخر قيمة بعد أي إعادة تعيين).
+- حارس الإرسال (submit)فضل في `analysis.js` عن قصد: لو `store-checkout.js` لسه بيحمّل،
+  ماتحصلش submit عادي من المتصفح (reload + ضياع بيانات العميلة). الحارس بيستنى
+  `loadPaymentScripts()` الأول.
+- `app.navigate()` بقى بيرجّع Promise دايماً، و`restoreViewFromHash()` بقى `async` بيستناه،
+  عشان شاشة `route-restoring` تفضل مخفية لحد ما صفحة المنتج تتبني (بعد تحميل الـ chunk).
+- `instapay.js` و`vodafone-cash.js`: `ORDER_STATUS` و`ORDER_STATUS_CODE` بقوا getters
+  بيقرا من `window.OrderStatus` وقت الاستخدام، عشان تحميل الملفات الثلاثة بالتوازي
+  ميكونش فيه ترتيب مطلوب.
+- ملفات الـ lazy **مش** مت precache في الـ Service Worker (وإلا هنرجّع التحميل المسبق من غير فايدة).
+
+### أخطاء قديمة اتكشفت بالصدفة واتصلحت
+- `FavoritesManager` و`openAddReviewModal` مش كانوا global، والـ `onclick` جوه الـ HTML
+  بiestدعيهم ⇒ ReferenceError في أزرار المفضلة وفي زرار "اكتب تقييمك" بصفحة المنتج.
+- `window.FavoritesManager` كان بيتقرا **قبل** ما الـ `const` يتكوّن (TDZ) وبيكسر
+  `analysis.js` كله — لازم التعريف يكون بعد نفسه.
 
 ## أسباب الفليكر (الهيدر بيروح ويرجع، الصفحة بتقفز)
 1. `style.css`: كل `.view-section` كان عليه أنيميشن `fadeUp` (شفافية + إزاحة 20px) عند كل فتح وكل تنقل، فالصفحة كلها (والهيدر معاها) بتنزل وتطلع. اتشال.
@@ -34,8 +76,8 @@
 
 ## لسه محتاج منك
 - `hero-products.webp` مش في الملفات اللي رفعتيها. اتأكدي إنه موجود في الريبو. كمان `og:image` بيشاور على `hero-products.jpg`، وفيسبوك/واتساب مش هيعرضوا webp بشكل موثوق.
-- عند كل نشر: غيّري `?v=14` في index.html و`CACHE_NAME` في sw.js.
+- عند كل نشر: ارفعي `?v=16` في index.html و`CACHE_NAME` في sw.js مع بعض (وكمان أي ملف lazy جديد بياخد نفس الرقم).
 - امسحي `instapay-logo.png` و`vodafone-cash-logo.png` القديمين بعد ما تتأكدي.
 - `supabaseClient.js` مش متحمّل في أي مكان (analysis.js بيعمل client لوحده)، ممكن تمسحيه.
 - الـ anon key ظاهر في الكود (ده طبيعي)، والحماية الفعلية لازم تكون من RLS على جداول orders / offer_countdowns / settings.
-- أقوى خطوة إضافية للسرعة: استضافة الخطوط وFontAwesome وsupabase-js محلياً (مقدرتش أنزلهم لأن الشبكة مقفولة عندي).
+- اتعملت محلياً: `supabase-lite.js` بدل `supabase-js` من الـ CDN. اللي فاضل للسرعة: استضافة الخطوط وFontAwesome محلياً (مقدرتش أنزلهم لأن الشبكة مقفولة عندي).

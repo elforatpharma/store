@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     const supabaseUrl = 'https://sidtdxchiqiogfkwbdui.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZHRkeGNoaXFpb2dma3diZHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMTEyMTAsImV4cCI6MjA4OTY4NzIxMH0.QF1-67Qu2HfWJt3ANSegM87fykOYQBwqC7ggLG8LTVU';
-    const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    const _supabase = createSupabaseClient(supabaseUrl, supabaseKey);
 
     // ==========================================
     // [مهم] دعم الريفريش وأزرار الرجوع/التقدم في المتصفح
@@ -77,8 +77,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // بنقفل استرجاع السكرول الأوتوماتيكي بتاع المتصفح نفسه، عشان يفضل الكنترول
     // بالكامل لكودنا (history.replaceState / scrollY تحت). لو سبناه شغال، المتصفح
-    // بيحاول يرجّع مكان السكرول بنفسه *قبل* ما renderCatalog/renderProductDetails
-    // يعيدوا بناء المحتوى، فبيرجع لمكان غلط أو لأول الصفحة، وكودنا بيتعارض معاه.
+    // بيحاول يرجّع مكان السكرول بنفسه *قبل* ما renderCatalog (أو ملف
+    // store-product.js للصفحة) يعيدوا بناء المحتوى، فبيرجع لمكان غلط أو لأول
+    // الصفحة، وكودنا بيتعارض معاه.
     if ('scrollRestoration' in history) {
         try { history.scrollRestoration = 'manual'; } catch (_) { }
     }
@@ -96,22 +97,80 @@ document.addEventListener("DOMContentLoaded", () => {
         return { viewId, param };
     }
 
+    // ==========================================
+    // تحميل الكود اللي مش محتاجه لحد ما يبقى مطلوب (Lazy chunks)
+    // ==========================================
+    // analysis.js كان فيه كود صفحات لسه الزائر ماوصلش ليها (صفحة المنتج
+    // كانت ~10 KiB مضغوط لوحدها، وصفحة الدفع ~5 KiB). فقلناه لملفات مستقلة
+    // بيتحمّلوا أول ماحد يطلبها.
+    // الطريقة بسيطة: نفس الـ Promise بيرجّع لكل نداءات لنفس الملف، والـ prefetch
+    // بيحط <link rel="prefetch"> عشان المتصفح يجيبه في الخلفية قبل الضغط.
+    const STORE_CHUNKS = {
+        product: 'store-product.js?v=16',
+        checkout: 'store-checkout.js?v=16'
+    };
+    const __storeChunkPromises = Object.create(null);
+
+    function loadStoreChunk(src) {
+        if (__storeChunkPromises[src]) return __storeChunkPromises[src];
+        __storeChunkPromises[src] = new Promise(function (resolve, reject) {
+            const s = document.createElement('script');
+            s.src = src;
+            s.onload = resolve;
+            s.onerror = function () {
+                delete __storeChunkPromises[src]; // خلّيه يجرب تاني لو فشل
+                reject(new Error('تعذّر تحميل ' + src));
+            };
+            document.head.appendChild(s);
+        });
+        return __storeChunkPromises[src];
+    }
+
+    function prefetchStoreChunk(src) {
+        if (__storeChunkPromises[src]) return;
+        if (document.querySelector('link[data-prefetch="' + src + '"]')) return;
+        const l = document.createElement('link');
+        l.rel = 'prefetch';
+        l.as = 'script';
+        l.href = src;
+        l.setAttribute('data-prefetch', src);
+        document.head.appendChild(l);
+    }
+
+    // تسخين ملف صفحة المنتج قبل ما العميلة تضغط فعلاً: أول ما مؤشرها/
+    // إيدها بتعدّي على أي بطاقة منتج، نحمّل الملف في الخلفية.
+    // (على الموبايل: touchstart. على الديسكتوب: pointerenter/focusin.
+    //  pointerdown كمان مهم لأنه بيسبق click، فبيدي chance إن الطلب يطلع
+    //  قبل ما navigate يستنى الملف أصلاً - مهم على شبكة بطيئة.)
+    function warmProductChunk(e) {
+        const t = e.target;
+        if (t && t.closest && t.closest('#catalog-grid, #bundles-grid, #related-products-grid')) {
+            prefetchStoreChunk(STORE_CHUNKS.product);
+        }
+    }
+    ['pointerenter', 'pointerdown', 'focusin', 'touchstart'].forEach(function (ev) {
+        document.addEventListener(ev, warmProductChunk, { passive: true, capture: true });
+    });
+
     function releaseRouteRestoring() {
         requestAnimationFrame(() => document.documentElement.classList.remove('route-restoring'));
     }
 
-    function restoreViewFromHash() {
+    async function restoreViewFromHash() {
         try {
             const target = parseHash();
             if (!target || !['home', 'catalog', 'about', 'product', 'cart', 'favorites'].includes(target.viewId)) return;
+            // بنستنى لحد ما القسم يبان فعلاً (صفحة المنتج محتاجة lazy chunk)
+            // عشان شاشة الاسترجاع تفضل مخفية لحد ما المحتوى يتبني، بدل ما
+            // البانتير يتفك ويبان قسم فاضي.
             if (target.viewId === 'home' || target.viewId === 'about') {
-                app.navigate(target.viewId, null, false);
+                await app.navigate(target.viewId, null, false);
             } else if (target.viewId === 'catalog') {
-                app.navigate('catalog', target.param, false);
+                await app.navigate('catalog', target.param, false);
             } else if (target.viewId === 'product') {
-                if (target.param) app.navigate('product', target.param, false);
+                if (target.param) await app.navigate('product', target.param, false);
             } else {
-                app.navigate(target.viewId, null, false);
+                await app.navigate(target.viewId, null, false);
             }
         } catch (err) {
             console.warn('تعذّر استرجاع الصفحة من الرابط:', err);
@@ -431,6 +490,11 @@ document.addEventListener("DOMContentLoaded", () => {
             return this.favorites.length;
         }
     };
+    // أزرار المفضلة في بطاقات المنتجات (الكتالوج/المفضلة/ذات صلة) بتربط
+    // onclick="FavoritesManager.toggle('...')" جوه الـ HTML، فلازم الكائن يبقى
+    // global - من غير السطر ده الـ onclick بيرمي ReferenceError.
+    // (التعريف هنا مش فوق، عشان الـ const بيتبني فعلاً قبل ما نقرأه - TDZ.)
+    window.FavoritesManager = FavoritesManager;
 
     // مستمع واحد للمفضلة (capture) بدل إضافة مستمعين جدد مع كل re-render.
     // كان التكرار بيخلي الضغطة الواحدة تعمل toggle مرتين (يعني ولا حاجة) في صفحة المفضلة والمنتجات المشابهة،
@@ -1279,9 +1343,30 @@ document.addEventListener("DOMContentLoaded", () => {
                         });
                     }
                 } else {
-                    document.getElementById('view-' + viewId).classList.add('active');
-                    if (viewId === 'product') renderProductDetails(param);
-                    if (viewId === 'cart') { renderCart(); revalidateCoupon(); }
+                    const viewEl = document.getElementById('view-' + viewId);
+                    if (viewEl) viewEl.classList.add('active');
+                    if (viewId === 'product') {
+                        // صفحة المنتج في ملف lazy (store-product.js): بنقفل
+                        // القسم المسجّل الأول لحد ما يتبني المحتوى، وبعدها بنرسم
+                        // ونعمل سكرول. الـ prefetch بيجيب الملف قبل كده من أول
+                        // hover/tap على بطاقة منتج، فالتأخير بيبقى غير محسوس.
+                        document.body.classList.add('show-mobile-bar');
+                        return loadStoreChunk(STORE_CHUNKS.product).then(function () {
+                            window.ElforatProduct.render(param);
+                            window.scrollTo({ top: restoreScrollY !== null ? restoreScrollY : 0, behavior: 'instant' });
+                        }).catch(function (err) {
+                            console.error('product chunk failed', err);
+                            showCustomAlert('تعذّر تحميل صفحة المنتج، برجاء تحديث الصفحة.', 'error');
+                        });
+                    }
+                    if (viewId === 'cart') {
+                        // ملفات الدفع + منطق التأكيد: كلهم lazy، بنبدأ تحميلهم
+                        // بمجرد فتح السلة عشان يكونوا جاهزين لحظة الضغط على تأكيد.
+                        loadStoreChunk(STORE_CHUNKS.checkout);
+                        loadPaymentScripts();
+                        renderCart();
+                        revalidateCoupon();
+                    }
                     if (viewId === 'favorites') renderFavorites();
                     window.scrollTo({
                         top: restoreScrollY !== null ? restoreScrollY : 0,
@@ -1289,12 +1374,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
                 }
 
-                if (viewId === 'product') document.body.classList.add('show-mobile-bar');
-                else document.body.classList.remove('show-mobile-bar');
+                if (viewId !== 'product') document.body.classList.remove('show-mobile-bar');
             };
 
-            doNav();
+            // ترتيب مهم: doNav الأول لأنه يحدّث الـ hash (pushState) وtrackStoreEvent
+            // بيسجّل location.hash في الحدث.
+            const viewReady = doNav();
             trackStoreEvent('page_view', { metadata: { view: viewId, item: param } });
+            // بيرجّع Promise دايماً (حتى لو القسم اترسم على طول) عشان
+            // restoreViewFromHash يقدر يستنى لحد ما المحتوى يبقى جاهز.
+            return Promise.resolve(viewReady);
         },
         handleSearch: function (query) {
             // إلغاء أي توقيت بحث سابق (Debounce)
@@ -1411,6 +1500,11 @@ document.addEventListener("DOMContentLoaded", () => {
             trackStoreEvent('buy_now', { product_id: String(id), product_name: product?.name || null, metadata: { qty: Number(qty) || 1 } });
             this.addToCart(id, qty, true);
             this.navigate('cart');
+        },
+        // زرار "اكتب تقييمك" في صفحة المنتج بيناديها من onclick جوه الـ HTML،
+        // والـ openAddReviewModal جوه الـ IIFE مش شايف من برّه من غير السطر ده.
+        openAddReviewModal: function (productId, productName) {
+            return openAddReviewModal(productId, productName);
         },
         // ==========================================
         // تطبيق كود الكوبون في صفحة السلة
@@ -1859,561 +1953,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
-    // بنك مراجعات عملاء بالعامية المصرية وتجارب حقيقية موثقة
-    const REVIEW_POOL = [
-        { name: 'نورا أحمد', text: 'المنتج فعلاً روعة، حسيت بالفرق من أول أسبوع، شكراً الفرات فارما 🌸', stars: 5 },
-        { name: 'ياسمين محمد', text: 'بجد ما كنتش متوقعة النتيجة دي، جربت كتير قبل كده ومحدش وصل للنتيجة دي، تسلم إيديكم 🌟', stars: 5 },
-        { name: 'مريم سامي', text: 'حبيته أوي، ريحته حلوة وملمسه خفيف على البشرة، هطلب تاني أكيد 💕', stars: 5 },
-        { name: 'Hagar Nader', text: 'الاسكراب تحفة جداً للبشرة وعجب ماما وأخواتي كلهم، تسلم إيدك بجد ❤️', stars: 5 },
-        { name: 'HeBa Gaber', text: 'الغسول جميل أوي بينضف البشرة وحلو أوي عشان المسام الواسعة والفرشة تحسيها بتعمل مساج للوش كده. تسلم إيدك بجد 🌸', stars: 5 },
-        { name: 'دينا حسن', text: 'من أحسن حاجات جربتها في العناية، حاسة إن بشرتي بقت أنعم بشكل واضح', stars: 5 },
-        { name: 'رنا إبراهيم', text: 'خدمة عملاء محترمة جداً وردوا عليا بسرعة، والمنتج فوق الوصف 👌', stars: 5 },
-        { name: 'Alaa Ashraf', text: 'عايزة أشكرك على لوشن جلد الوزة.. جميل جداً ويفضل مرطب الجسم فترة طويلة، وفعلاً جلد الوزة بدأ يقل عندي الحمدلله وكمية قليلة بترطب جزء كبير 🌸', stars: 5 },
-        { name: 'هبة الله كريم', text: 'تجربتي معاكم كانت جميلة من الأول للآخر، ربنا يبارك في شغلكم 🌸', stars: 5 },
-        { name: 'نهى فؤاد', text: 'حسيت إني لقيت المنتج اللي كنت بدور عليه من زمان، شكراً ليكم ❤️', stars: 5 },
-        { name: 'الأميرة جودي', text: 'بالنسبة لكريم الهالات، ماشاء الله لاحظت إن فيه تفتيح بسيط تحت العين ودي حاجة كويسة جداً في أول أيام.. ربنا يحسن ما بين إيديكي 🌺', stars: 5 },
-        { name: 'آية جمال', text: 'الجودة عالية والسعر مناسب جداً بالنسبالها، هرشحه لكل صحابي', stars: 5 },
-        { name: 'منة الله شعبان', text: 'أول مرة أثق في منتج مصري بالشكل ده، فعلاً بيعمل اللي بيقوله', stars: 5 },
-        { name: 'Amany Abdelrahim', text: 'السيروم كويس ومختلف فعلاً عن أي سيروم استخدمته قبل كده، ملمسه ناعم جميل ومبيلزقش زي الباقي، وبيطري الشعر ورائحته هادية وجميلة 💕', stars: 5 },
-        { name: 'شيماء عبد الله', text: 'استخدمته أسبوعين بس وحاسة بفرق حقيقي، ميرسي لتعبكم معانا 🌸', stars: 5 },
-        { name: 'أسماء رمضان', text: 'كل اللي كتبوه في الوصف حقيقي، مش دعاية وبس. شكراً جداً 🙏', stars: 5 },
-        { name: 'زهرة البنفسجي', text: 'السيرم تحفة بجد كفاية ريحته وسرعة ترطيبه للشعر، الريحة مش مزعجة خالص هادية وجميلة وبيرطب الشعر جداً 🌸', stars: 5 },
-        { name: 'عميلة موثقة', text: 'جل الترطيب والنضارة ده خطير بأمانة.. لمعة كوري ونضارة مش طبيعية، وبيفتح أنسجة البشرة جداً وخلّصني من الهالات السودة ✨', stars: 5 },
-        { name: 'عميلة موثقة', text: 'الليپ بالم بجد عالجلي تشققات الشفاه قسماً بالله، وبقت موردة ولامعة وشكلها جذاب جداً 💄', stars: 5 },
-        { name: 'عميلة موثقة', text: 'استخدمت سيرم Guzel-Gold كذا يوم، بيساعد فعلاً على تقليل الهيشان ومش بيسيب طبقة دهنية، وريحته خفيفة ومقبولة والتركيبة مدروسة جداً 🌿', stars: 5 },
-        { name: 'عميلة موثقة', text: 'جل تقشير الرجل اختراع بجد، بيشيل كل الجلد الميت من الرجل تحفة تحفة 🦶✨', stars: 5 },
-        { name: 'Eman Abdellatif', text: 'السيرم حلو أوي تسلمي، تحسيه كله مواد طبيعية كده وريحته هادية وبيطري الشعر 🌿', stars: 5 },
-        { name: 'جنى وليد', text: 'كنت مترددة أطلب الأول بس بجد يستاهل كل قرش فيه', stars: 5 },
-        { name: 'عميلة موثقة', text: 'جربت كريم النضارة تحفة فنية.. والغسول اختراع عشان الفرشة بتنضف من القلب وتخلي الوش منور 🌸', stars: 5 },
-        { name: 'عميلة موثقة', text: 'قلل تساقط الشعر عندي الحمد لله أخد حوالي أسبوعين وجاب نتيجة ممتازة.. تسلم إيدك ع المنتج القمر ده ❤️', stars: 5 },
-        { name: 'عميلة موثقة', text: 'ملمسه زي اللوشن وخفيف، استخدمته قبل النوم وصحيت شعري طري وناعم ومترطب عن كل يوم 💆‍♀️', stars: 5 }
-    ];
-
-    function computeReviewSeed(id) {
-        const str = String(id);
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            hash = (hash * 31 + str.charCodeAt(i)) % 100000;
-        }
-        return hash;
-    }
-
-    function getReviewsForProduct(id, count = 4) {
-        const seed = computeReviewSeed(id);
-        const start = seed % REVIEW_POOL.length;
-        const selected = [];
-        for (let i = 0; i < count; i++) {
-            selected.push(REVIEW_POOL[(start + i) % REVIEW_POOL.length]);
-        }
-        return selected;
-    }
-
-    function computeReviewCountForId(id) {
-        const seed = computeReviewSeed(id);
-        return 42 + (seed % 190); // عدد تقييمات متفاوت بين المنتجات
-    }
-
-    function renderProductDetails(id) {
-        const p = productsDB.find(prod => prod.id == id);
-        const container = document.getElementById('product-details-container');
-        if (!container || !p) return;
-        trackStoreEvent('product_view', {
-            product_id: String(p.id),
-            product_name: p.name,
-            metadata: { category: p.category, price: p.price, stock: p.stock }
-        });
-
-        // خريطة الصور الإضافية لكل منتج (معرض صور متعدد)
-        const productGalleries = {
-            'كريم لعلاج جلد الوزة': [
-                p.img,
-                'product-gallery/keratosis-1.png',
-                'product-gallery/keratosis-2.png',
-                'product-gallery/keratosis-3.jpg'
-            ],
-            'keratosis': [
-                p.img,
-                'product-gallery/keratosis-1.png',
-                'product-gallery/keratosis-2.png',
-                'product-gallery/keratosis-3.jpg'
-            ],
-            'ليب بالم': [
-                p.img,
-                'product-gallery/lip-balm-1.png',
-                'product-gallery/lip-balm-2.png'
-            ],
-            'balm': [
-                p.img,
-                'product-gallery/lip-balm-1.png',
-                'product-gallery/lip-balm-2.png'
-            ],
-            'بالم': [
-                p.img,
-                'product-gallery/lip-balm-1.png',
-                'product-gallery/lip-balm-2.png'
-            ],
-            'تنت': [
-                p.img,
-                'product-gallery/lip-balm-1.png',
-                'product-gallery/lip-balm-2.png'
-            ],
-            'مرطب شفايف': [
-                p.img,
-                'product-gallery/lip-balm-1.png',
-                'product-gallery/lip-balm-2.png'
-            ],
-            'lip': [
-                p.img,
-                'product-gallery/lip-balm-1.png',
-                'product-gallery/lip-balm-2.png'
-            ],
-            'سيروم': [
-                p.img,
-                'product-gallery/guzel-gold-1.jpg',
-                'product-gallery/guzel-gold-2.jpg',
-                'product-gallery/guzel-gold-3.jpg',
-                'product-gallery/guzel-gold-4.jpg',
-                'product-gallery/guzel-gold-5.jpg'
-            ],
-            'guzel': [
-                p.img,
-                'product-gallery/guzel-gold-1.jpg',
-                'product-gallery/guzel-gold-2.jpg',
-                'product-gallery/guzel-gold-3.jpg',
-                'product-gallery/guzel-gold-4.jpg',
-                'product-gallery/guzel-gold-5.jpg'
-            ],
-            'serum': [
-                p.img,
-                'product-gallery/guzel-gold-1.jpg',
-                'product-gallery/guzel-gold-2.jpg',
-                'product-gallery/guzel-gold-3.jpg',
-                'product-gallery/guzel-gold-4.jpg',
-                'product-gallery/guzel-gold-5.jpg'
-            ]
-        };
-
-        // فحص ما إذا كان للمنتج معرض صور مخصص بالاسم أو المعرف
-        let extraImgs = null;
-        const pNameLower = (p.name || '').toLowerCase();
-        for (const [key, imgs] of Object.entries(productGalleries)) {
-            if (pNameLower.includes(key.toLowerCase()) || (p.desc && p.desc.toLowerCase().includes(key.toLowerCase()))) {
-                extraImgs = imgs;
-                break;
-            }
-        }
-
-        // إذا لم يكن له صور إضافية خاصة، يتم عرض صورته الرسمية فقط
-        // [تصحيح]: صور معرض المنتج اللي بتتضاف من لوحة التحكم (inventory.html)
-        // بتتخزن في عمود "gallery" في Supabase، مش "images"، فكان الكود هنا
-        // بيدوّر على عمود فاضي دايمًا وبالتالي صور المعرض الجديدة ما كانتش
-        // بتظهر في المتجر رغم إنها بتتحفظ صح في قاعدة البيانات.
-        function parseGalleryField(val) {
-            if (!val) return [];
-            if (Array.isArray(val)) return val.filter(Boolean);
-            if (typeof val === 'string') {
-                try {
-                    const parsed = JSON.parse(val);
-                    if (Array.isArray(parsed)) return parsed.filter(Boolean);
-                } catch (e) {
-                    if (val.trim().startsWith('http')) return [val.trim()];
-                }
-            }
-            return [];
-        }
-        let dbImgs = parseGalleryField(p.gallery);
-        if (dbImgs.length === 0) dbImgs = parseGalleryField(p.images); // توافق مع أي بيانات قديمة كانت مخزنة باسم images
-        const candidateImgs = dbImgs.length > 0 ? dbImgs : (extraImgs || []);
-        let mergedImgs = [];
-        if (p.img) mergedImgs.push(getFullImg(p.img));
-        candidateImgs.forEach(im => {
-            if (im && typeof im === 'string') {
-                const full = getFullImg(im);
-                if (!mergedImgs.includes(full)) mergedImgs.push(full);
-            }
-        });
-        const images = mergedImgs.length > 0 ? mergedImgs : (p.img ? [getFullImg(p.img)] : ['logo.png']);
-
-        // تهيئة حالة المعرض مباشرة (بدون الاعتماد على سكربت مضمّن داخل innerHTML)
-        window.productImages = images;
-        window.currentImageIndex = 0;
-        window.zoomImageIndex = 0;
-
-        container.innerHTML = `
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-start">
-                <!-- معرض الصور -->
-                <div class="space-y-4">
-                    <div class="product-visual-glass aspect-square flex items-center justify-center p-4 sm:p-6 md:p-8 rounded-3xl overflow-hidden group relative bg-white/50 border border-purple-100/60 shadow-lg">
-                        <img id="main-product-img" src="${sanitize(images[0])}" loading="lazy" class="max-h-full max-w-full object-contain transition-all duration-500 hover:scale-105 cursor-zoom-in drop-shadow-xl" onerror="this.src='logo.png'" onclick="openImageZoom('${jsArg(images[0])}')">
-                        <!-- أزرار التنقل للمعرض (تظهر فقط عند وجود أكثر من صورة) -->
-                        ${images.length > 1 ? `
-                        <button onclick="changeProductImage('prev')" class="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white active:scale-90 z-20" title="الصورة السابقة">
-                            <i class="fa-solid fa-chevron-left text-sm"></i>
-                        </button>
-                        <button onclick="changeProductImage('next')" class="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white active:scale-90 z-20" title="الصورة التالية">
-                            <i class="fa-solid fa-chevron-right text-sm"></i>
-                        </button>
-                        <div class="absolute top-4 left-4 bg-darkNavy/70 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full z-10">
-                            <span id="gallery-current-idx">1</span> / ${images.length}
-                        </div>
-                        ` : ''}
-                        <!-- زر التكبير -->
-                        <button onclick="openImageZoom(window.productImages ? window.productImages[window.currentImageIndex || 0] : '${jsArg(images[0])}')" class="absolute bottom-4 right-4 w-10 h-10 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white z-20" title="تكبير الصورة">
-                            <i class="fa-solid fa-expand text-xs"></i>
-                        </button>
-                    </div>
-                    ${images.length > 1 ? `
-                    <div class="flex gap-3 justify-center flex-wrap pt-2">
-                        ${images.map((img, idx) => `
-                            <button onclick="changeProductImage(${idx})" 
-                                    class="thumbnail-btn w-14 h-14 sm:w-20 sm:h-20 bg-white/80 rounded-2xl p-1.5 border-2 ${idx === 0 ? 'border-primary shadow-purple-soft scale-105' : 'border-purple-100 hover:border-primary/50'} transition-all overflow-hidden relative group"
-                                    data-index="${idx}">
-                                <img src="${sanitize(img)}" loading="lazy" class="w-full h-full object-contain rounded-xl thumbnail-img group-hover:scale-105 transition-transform" onerror="this.src='logo.png'">
-                            </button>
-                        `).join('')}
-                    </div>
-                    ` : ''}
-                </div>
-                
-                <!-- معلومات المنتج مع تابات -->
-                <div class="flex flex-col text-right space-y-6">
-                    <div class="space-y-3">
-                        <p class="text-primary font-bold text-[10px] uppercase tracking-[0.3em]">${sanitize(p.category)}</p>
-                        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-black leading-tight tracking-tight">${sanitize(p.name)}</h1>
-                        <div class="flex items-center gap-4 pt-2 flex-wrap">
-                            <span class="text-2xl sm:text-3xl font-bold text-primary">${sanitize(p.price)} ج.م</span>
-                            ${p.oldPrice ? `<span class="text-lg text-gray-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
-                            ${p.stock <= LOW_STOCK_THRESHOLD && p.stock > 0 ? `<span class="text-xs bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full font-bold low-stock-alert shadow-sm">⚠️ متبقي ${p.stock} فقط!</span>` : ''}
-                            ${p.stock === 0 ? `<span class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-full font-bold shadow-sm">❌ نفذ من المخزون</span>` : ''}
-                        </div>
-                        <div class="flex items-center gap-3 pt-2">
-                            <button id="main-fav-btn" 
-                                    onclick="handleMainFavorite('${jsArg(p.id)}'); event.stopPropagation();" 
-                                    class="w-12 h-12 rounded-full flex items-center justify-center transition-all ${FavoritesManager.isFavorite(p.id) ? 'bg-primary text-white shadow-lg' : 'bg-gray-100 text-gray-400'}">
-                                <svg class="w-6 h-6" fill="${FavoritesManager.isFavorite(p.id) ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- نظام التابات المحسن -->
-                    <div class="border-b border-gray-200">
-                        <div class="flex gap-6" role="tablist">
-                            <button onclick="switchTab('desc')" 
-                                    id="tab-btn-desc"
-                                    class="tab-btn pb-3 border-b-2 border-primary text-primary font-bold text-sm transition-all relative"
-                                    role="tab"
-                                    aria-selected="true"
-                                    aria-controls="tab-desc">
-                                الوصف
-                                <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary transform scale-x-100 transition-transform"></span>
-                            </button>
-                            <button onclick="switchTab('ingredients')" 
-                                    id="tab-btn-ingredients"
-                                    class="tab-btn pb-3 border-b-2 border-transparent text-gray-500 font-bold text-sm transition-all hover:text-gray-700"
-                                    role="tab"
-                                    aria-selected="false"
-                                    aria-controls="tab-ingredients">
-                                المكونات
-                            </button>
-                            <button onclick="switchTab('reviews')" 
-                                    id="tab-btn-reviews"
-                                    class="tab-btn pb-3 border-b-2 border-transparent text-gray-500 font-bold text-sm transition-all hover:text-gray-700"
-                                    role="tab"
-                                    aria-selected="false"
-                                    aria-controls="tab-reviews">
-                                التقييمات
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="tab-desc" class="tab-content text-gray-600 leading-relaxed animate-fade-in-up">
-                        ${renderFormattedText(p.desc, 'أفضل منتجات العناية المختارة بعناية فائقة لضمان أفضل النتائج لبشرتك وشعرك.')}
-                        ${p.size ? `<p class="mt-4 text-sm font-medium"><strong>الحجم:</strong> ${sanitize(p.size)}</p>` : ''}
-                    </div>
-                    
-                    <div id="tab-ingredients" class="tab-content hidden text-gray-600 leading-relaxed">
-                        ${renderFormattedText(p.ingredients, 'مكونات طبيعية 100% بدون مواد حافظة أو كحول. مناسب لجميع أنواع البشرة والشعر.')}
-                    </div>
-                    
-                    <div id="tab-reviews" class="tab-content hidden text-gray-600 leading-relaxed">
-                        <div class="flex items-center gap-2 mb-4">
-                            <div class="flex text-yellow-400 text-lg">★★★★★</div>
-                            <span class="text-sm font-bold">(${p.rating || '4.9'}/5 من ${computeReviewCountForId(p.id)} تقييم)</span>
-                        </div>
-                        <div class="space-y-4">
-                            ${getReviewsForProduct(p.id, 4).map(r => `
-                            <div class="bg-gray-50 p-4 rounded-2xl">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-xs">${sanitize(r.name.charAt(0))}</div>
-                                    <span class="font-bold text-sm">${sanitize(r.name)}</span>
-                                    <div class="flex text-yellow-400 text-xs mr-auto">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
-                                </div>
-                                <p class="text-sm text-gray-600">${sanitize(r.text)}</p>
-                            </div>`).join('')}
-                        </div>
-                        <button onclick="app.openAddReviewModal('${jsArg(p.id)}', '${jsArg(p.name)}')" class="mt-4 w-full py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-all text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-star text-amber-400"></i> إضافة تقييمك وتجربتك</button>
-                    </div>
-                    
-                    <!-- أزرار الإجراء -->
-                    <div class="space-y-3 pt-4 border-t border-gray-100">
-                        <div class="flex items-center gap-4">
-                            <div class="flex border-2 border-gray-200 rounded-full" dir="ltr">
-                                <button onclick="const qtyInput = document.getElementById('product-qty'); const newVal = Math.max(1, parseInt(qtyInput.value) - 1); qtyInput.value = newVal;" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-l-full active:scale-95">-</button>
-                                <input id="product-qty" type="number" value="1" min="1" max="${p.stock}" class="w-12 text-center font-bold border-x-2 border-gray-200 focus:outline-none" readonly>
-                                <button onclick="const qtyInput = document.getElementById('product-qty'); const newVal = Math.min(${p.stock}, parseInt(qtyInput.value) + 1); qtyInput.value = newVal;" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-r-full active:scale-95">+</button>
-                            </div>
-                            <button onclick="app.addToCart('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">أضف للحقيبة</button>
-                        </div>
-                        <button onclick="app.buyNow('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="btn-dark w-full text-white font-bold uppercase text-sm tracking-widest py-4 active:scale-95">اشتري الآن</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- شريط شراء ثابت للموبايل -->
-            <div id="mobile-buy-bar" class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-purple-100 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] px-4 py-3">
-                <div class="flex items-center gap-3">
-                    <div class="flex flex-col shrink-0 pl-1">
-                        <span class="text-base font-extrabold text-primary leading-tight">${sanitize(p.price)} <span class="text-[11px] font-bold text-slate-500">ج.م</span></span>
-                        ${p.oldPrice ? `<span class="text-[11px] text-slate-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
-                    </div>
-                    <button onclick="app.addToCart('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold text-xs uppercase tracking-widest py-3.5 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">أضف للحقيبة</button>
-                    <button onclick="app.buyNow('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="btn-dark text-white font-bold text-xs uppercase tracking-widest py-3.5 px-5 active:scale-95">اشتري الآن</button>
-                </div>
-            </div>
-            
-            <!-- نافذة تكبير الصور (Modal) -->
-            <div id="image-zoom-modal" class="fixed inset-0 bg-black/95 z-[9999] hidden items-center justify-center" onclick="closeImageZoom()">
-                <button onclick="closeImageZoom()" class="absolute top-6 right-6 text-white hover:text-primary transition-colors">
-                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-                <button onclick="changeZoomImage(-1)" class="absolute left-6 top-1/2 -translate-y-1/2 text-white hover:text-primary transition-colors">
-                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                </button>
-                <button onclick="changeZoomImage(1)" class="absolute right-6 top-1/2 -translate-y-1/2 text-white hover:text-primary transition-colors">
-                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                </button>
-                <img id="zoomed-image" src="" class="max-w-[90vw] max-h-[90vh] object-contain" onclick="event.stopPropagation()">
-                <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-4 py-2 rounded-full">
-                    <span id="zoom-counter">1 / 3</span>
-                </div>
-            </div>`;
-
-        // تحديث Breadcrumb
-        const breadcrumbCategory = document.getElementById('breadcrumb-category');
-        if (breadcrumbCategory) {
-            breadcrumbCategory.textContent = p.category;
-        }
-
-        // عرض المنتجات ذات الصلة
-        renderRelatedProducts(p.id, p.category);
-
-        // تفعيل دعم لوحة المفاتيح للمعرض المكبر
-        initProductGalleryKeyboard();
-
-    }
-
     // ==========================================
-    // دوال معرض منتج واحدة (Global scope) لتجنب مشاكل السكربتات المضمّنة
+    // صفحة تفاصيل المنتج + المعرض + المراجعات + المنتجات ذات الصلة انتقلت
+    // لملف مستقل (store-product.js): بيتحمّل أول ما حد يفتح منتج، ومتسخّم
+    // مسبقاً عند الـ hover/tap على أي بطاقة منتج (prefetchStoreChunk).
     // ==========================================
-    function changeProductImage(arg) {
-        const imgs = Array.isArray(window.productImages) ? window.productImages : [];
-        if (imgs.length === 0) return;
-
-        if (arg === 'prev') {
-            window.currentImageIndex = (window.currentImageIndex - 1 + imgs.length) % imgs.length;
-        } else if (arg === 'next') {
-            window.currentImageIndex = (window.currentImageIndex + 1) % imgs.length;
-        } else {
-            window.currentImageIndex = Number(arg) % imgs.length;
-        }
-
-        const mainImg = document.getElementById('main-product-img');
-        if (!mainImg) return;
-        mainImg.style.opacity = '0';
-        mainImg.style.transform = 'scale(0.95)';
-
-        setTimeout(() => {
-            mainImg.src = window.productImages[window.currentImageIndex];
-            mainImg.style.opacity = '1';
-            mainImg.style.transform = 'scale(1)';
-        }, 200);
-
-        // تحديث الثمبنيلز والعداد
-        const counter = document.getElementById('gallery-current-idx');
-        if (counter) counter.textContent = (window.currentImageIndex % window.productImages.length) + 1;
-
-        document.querySelectorAll('.thumbnail-btn').forEach((btn, idx) => {
-            if (idx === window.currentImageIndex) {
-                btn.classList.add('border-primary', 'shadow-purple-soft', 'scale-105');
-                btn.classList.remove('border-purple-100');
-            } else {
-                btn.classList.remove('border-primary', 'shadow-purple-soft', 'scale-105');
-                btn.classList.add('border-purple-100');
-            }
-        });
-    }
-
-    function openImageZoom(imgSrc) {
-        const modal = document.getElementById('image-zoom-modal');
-        const zoomedImg = document.getElementById('zoomed-image');
-        const counter = document.getElementById('zoom-counter');
-        if (!modal || !zoomedImg || !Array.isArray(window.productImages) || window.productImages.length === 0) return;
-
-        // البحث عن индекс الصورة الحالية
-        window.zoomImageIndex = window.productImages.indexOf(imgSrc);
-        if (window.zoomImageIndex === -1) window.zoomImageIndex = 0;
-
-        zoomedImg.src = window.productImages[window.zoomImageIndex];
-        counter.textContent = (window.zoomImageIndex + 1) + ' / ' + window.productImages.length;
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeImageZoom() {
-        const modal = document.getElementById('image-zoom-modal');
-        if (!modal) return;
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        document.body.style.overflow = '';
-    }
-
-    function changeZoomImage(direction) {
-        const zoomedImg = document.getElementById('zoomed-image');
-        const counter = document.getElementById('zoom-counter');
-        if (!zoomedImg || !Array.isArray(window.productImages) || window.productImages.length === 0) return;
-
-        if (direction === -1) {
-            window.zoomImageIndex = (window.zoomImageIndex - 1 + window.productImages.length) % window.productImages.length;
-        } else {
-            window.zoomImageIndex = (window.zoomImageIndex + 1) % window.productImages.length;
-        }
-
-        zoomedImg.style.opacity = '0';
-        zoomedImg.style.transform = 'scale(0.95)';
-
-        setTimeout(() => {
-            zoomedImg.src = window.productImages[window.zoomImageIndex];
-            zoomedImg.style.opacity = '1';
-            zoomedImg.style.transform = 'scale(1)';
-            counter.textContent = (window.zoomImageIndex + 1) + ' / ' + window.productImages.length;
-        }, 150);
-    }
-
-    function switchTab(tabName) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-        document.getElementById('tab-' + tabName).classList.remove('hidden');
-
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('border-primary', 'text-primary');
-            btn.classList.add('border-transparent', 'text-gray-500');
-            btn.setAttribute('aria-selected', 'false');
-        });
-
-        const activeBtn = document.getElementById('tab-btn-' + tabName);
-        if (activeBtn) {
-            activeBtn.classList.remove('border-transparent', 'text-gray-500');
-            activeBtn.classList.add('border-primary', 'text-primary');
-            activeBtn.setAttribute('aria-selected', 'true');
-        }
-    }
-
-    function initProductGalleryKeyboard() {
-        document.removeEventListener('keydown', productGalleryKeyHandler);
-        document.addEventListener('keydown', productGalleryKeyHandler);
-    }
-
-    function productGalleryKeyHandler(e) {
-        const modal = document.getElementById('image-zoom-modal');
-        if (!modal || modal.classList.contains('hidden')) return;
-
-        if (e.key === 'ArrowLeft') changeZoomImage(1);
-        if (e.key === 'ArrowRight') changeZoomImage(-1);
-        if (e.key === 'Escape') closeImageZoom();
-    }
-
-    // تصدير دوال المعرض للاستخدام في onclicks المضمّنة داخل innerHTML
-    window.changeProductImage = changeProductImage;
-    window.openImageZoom = openImageZoom;
-    window.closeImageZoom = closeImageZoom;
-    window.changeZoomImage = changeZoomImage;
-    window.switchTab = switchTab;
-    window.initProductGalleryKeyboard = initProductGalleryKeyboard;
-    window.renderRelatedProducts = renderRelatedProducts;
-
-    // دالة عرض المنتجات ذات الصلة
-    function renderRelatedProducts(currentId, category) {
-        const relatedSection = document.getElementById('related-products');
-        const relatedGrid = document.getElementById('related-products-grid');
-
-        if (!relatedSection || !relatedGrid) return;
-
-        // جلب منتجات من نفس الفئة باستثناء المنتج الحالي
-        const relatedProducts = productsDB
-            .filter(p => p.category === category && p.id !== currentId)
-            .slice(0, 4);
-
-        if (relatedProducts.length === 0) {
-            relatedSection.classList.add('hidden');
-            return;
-        }
-
-        relatedSection.classList.remove('hidden');
-        relatedGrid.innerHTML = relatedProducts.map((p, index) => {
-            const isFav = FavoritesManager.isFavorite(p.id);
-            const isOutOfStock = p.stock <= 0;
-
-            return `
-<article class="pro-product-card p-3 sm:p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group cursor-pointer" onclick="app.navigate('product', '${jsArg(p.id)}')">
-    <div class="flex items-center justify-between w-full mb-3 z-10">
-        ${p.badge ? `<span class="badge-gold-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
-        <button onclick="event.stopPropagation(); FavoritesManager.toggle('${jsArg(p.id)}');" data-favorite-btn="${sanitize(p.id)}" aria-label="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}" aria-pressed="${isFav ? 'true' : 'false'}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
-            ${isFav
-                    ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
-                    : `<i class="fa-regular fa-heart text-xs"></i>`
-                }
-        </button>
-    </div>
-    <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
-        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" decoding="async" width="320" height="320" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${jsArg(p.img)}')">
-        <span class="hidden sm:flex absolute bottom-2 left-2 items-center bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
-    </div>
-    <div class="flex flex-col flex-1">
-        <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] font-bold text-primary">${sanitize(p.category || 'العناية')}</span>
-            ${isOutOfStock
-                    ? '<span class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">نفذت الكمية</span>'
-                    : p.stock <= LOW_STOCK_THRESHOLD
-                        ? `<span class="text-[10px] bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-bold">متبقي ${p.stock}</span>`
-                        : ''
-                }
-        </div>
-        <h3 class="font-extrabold text-darkNavy text-sm line-clamp-2 leading-snug mb-2 group-hover:text-primary transition-colors">
-            ${sanitize(p.name)}
-        </h3>
-        <div class="mt-auto pt-3 border-t border-slate-100">
-            <div class="flex items-baseline justify-between mb-3">
-                <div class="flex items-baseline gap-2">
-                    <span class="text-lg sm:text-xl font-black text-darkNavy font-display">${sanitize(p.price)} <span class="text-xs font-bold text-slate-500">ج.م</span></span>
-                    ${p.oldPrice ? `<span class="text-xs text-slate-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
-                </div>
-            </div>
-            ${!isOutOfStock ? `
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="event.stopPropagation(); app.buyNow('${jsArg(p.id)}')" class="btn-dark py-2.5 text-xs font-bold shadow-sm">اشتري الآن</button>
-                    <button onclick="event.stopPropagation(); app.addToCart('${jsArg(p.id)}', 1)" class="btn-add-cart py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
-                        <i class="fa-solid fa-cart-plus text-xs"></i>
-                        <span>أضف للحقيبة</span>
-                    </button>
-                </div>
-            ` : ''}
-        </div>
-    </div>
-</article>`;
-        }).join('');
-    }
 
     function renderCart() {
         const container = document.getElementById('cart-items-container');
@@ -2584,407 +2128,80 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ==========================================
-    // 6. كود إرسال الطلب للسيرفر والتحويل الفوري للواتساب 🔥
+    // تحميل ملفات الدفع عند الحاجة فقط (Lazy)
     // ==========================================
+    // instapay.js + vodafone-cash.js + order-status.js (~45 KiB خام) كانوا
+    // <script defer> بيحمّلوا مع الصفحة، ومعظم الزوار مش بيضغطوا "تأكيد الطلب"
+    // أصلاً، فكانت بايتة نايمة في الشبكة. دلوقتي بنحمّلهم لحظة ما العميلة تفتح
+    // صفحة السلة/الدفع (أو لحظة التأكيد كشبكة أمان)، والتلاتة بالتوازي.
+    // ترتيب التحميل مش مهم لأن instapay/vodafone-cash بقوا يقرأوا حالة الطلب
+    // وقت الطلب (getters) مش وقت تحميل الملف.
+    const PAYMENT_SCRIPTS = ['order-status.js?v=16', 'instapay.js?v=16', 'vodafone-cash.js?v=16'];
+    let __paymentScriptsPromise = null;
+    function loadPaymentScripts() {
+        if (__paymentScriptsPromise) return __paymentScriptsPromise;
+        __paymentScriptsPromise = Promise.all(PAYMENT_SCRIPTS.map(function (src) {
+            return new Promise(function (resolve) {
+                if ((window.OrderStatus && src.indexOf('order-status') === 0)
+                    || (window.InstaPayCheckout && src.indexOf('instapay') === 0)
+                    || (window.VodafoneCashCheckout && src.indexOf('vodafone-cash') === 0)) {
+                    resolve(); return;
+                }
+                const s = document.createElement('script');
+                s.src = src;
+                s.onload = resolve;
+                s.onerror = resolve; // لو فشل ملف، الكود القديم هيطلّع رسالة واضحة للمستخدم
+                document.head.appendChild(s);
+            });
+        }));
+        return __paymentScriptsPromise;
+    }
+
+    // ==========================================
+    // 6. كود إرسال الطلب للسيرفر انتقل لملف مستقل (store-checkout.js)
+    // ==========================================
+    // معالج "تأكيد الطلب" كان ~400 سطر جوا analysis.js وبيتحمّل مع الصفحة
+    // مع إن أغلب الزائرين بيفرجوا بس ومش بيوصلوا مرحلة الدفع. بقى chunk بيتحمّل
+    // أول ما العميلة تفتح صفحة السلة، والـ bindings المشتركة معاه من هنا.
+    window.ElforatStore = {
+        supabase: _supabase,
+        FavoritesManager: FavoritesManager,
+        LOW_STOCK_THRESHOLD: LOW_STOCK_THRESHOLD,
+        sanitize: sanitize,
+        jsArg: jsArg,
+        getFullImg: getFullImg,
+        renderFormattedText: renderFormattedText,
+        renderCart: renderCart,
+        saveCart: saveCart,
+        saveCoupon: saveCoupon,
+        updateBadge: updateBadge,
+        showCustomAlert: showCustomAlert,
+        normalizeEgyptPhone: normalizeEgyptPhone,
+        getCartDiscount: getCartDiscount,
+        trackStoreEvent: trackStoreEvent,
+        getTrafficParams: getTrafficParams,
+        getVisitorSessionId: getVisitorSessionId,
+        loadPaymentScripts: loadPaymentScripts,
+        get productsDB() { return productsDB; },
+        get cart() { return cart; },
+        set cart(v) { cart = v; },
+        get appliedCoupon() { return appliedCoupon; },
+        set appliedCoupon(v) { appliedCoupon = v; }
+    };
+
+    // حارس الإرسال: لازم يفضل هنا (مش في الـ chunk) عشان لو ملف الدفعة لسه
+    // بيحمّل ما يحصلش submit عادي من المتصفح (reload + ضياع بيانات العميلة).
     const checkoutForm = document.getElementById('checkout-form');
     if (checkoutForm) {
-        checkoutForm.onsubmit = async (e) => {
+        checkoutForm.addEventListener('submit', function (e) {
             e.preventDefault();
-
-            const submitBtn = checkoutForm.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.innerText;
-            submitBtn.innerText = 'جاري تحويلك للواتساب...';
-            submitBtn.disabled = true;
-
-            const nameEl = document.getElementById('cust-name');
-            const phoneEl = document.getElementById('cust-phone');
-            const addressEl = document.getElementById('cust-address');
-            const paymentEl = document.getElementById('cust-payment');
-
-            if (!nameEl || !phoneEl || !addressEl || !paymentEl) {
-                showCustomAlert('يوجد خطأ في النموذج. يرجى التأكد من الحقول.', 'error');
-                submitBtn.innerText = originalBtnText;
-                submitBtn.disabled = false;
-                return;
-            }
-
-            const name = nameEl.value;
-            const phone = normalizeEgyptPhone(phoneEl.value);
-            const address = addressEl.value;
-            const payment = paymentEl.value;
-
-            // [حماية من السبام]: فحص حقل المصيدة (Honeypot) - إذا تم ملؤه فهو روبوت سبام
-            const honeypotEl = document.getElementById('cust-fax-verify');
-            if (honeypotEl && honeypotEl.value.trim() !== '') {
-                console.warn('تم حظر محاولة إرسال روبوتية عبر Honeypot');
-                submitBtn.innerText = originalBtnText;
-                submitBtn.disabled = false;
-                return;
-            }
-
-
-            if (cart.length === 0) {
-                showCustomAlert('سلة المشتريات فارغة! ضيفي منتجات عشان تقدري تكملي الطلب.', 'error');
-                submitBtn.innerText = originalBtnText;
-                submitBtn.disabled = false;
-                return;
-            }
-
-            const phoneRegex = /^01[0-9]{9}$/;
-            if (!phoneRegex.test(phone)) {
-                showCustomAlert('عفواً، برجاء إدخال رقم هاتف صحيح يتكون من 11 رقم ويبدأ بـ 01', 'error');
-                submitBtn.innerText = originalBtnText;
-                submitBtn.disabled = false;
-                return;
-            }
-
-            // كوبون الترحيب انتهت زيارته الأولى → نشيله ونوقف الطلب عشان العميلة تشوف السعر الحقيقي
-            if (appliedCoupon && window.WelcomeOffer && !window.WelcomeOffer.guard(appliedCoupon.code).ok) {
-                appliedCoupon = null;
-                saveCoupon();
-                renderCart();
-                showCustomAlert('كوبون الترحيب صالح لأول زيارة فقط وقد انتهى، تم إزالته من السلة. راجعي الإجمالي وأكملي الطلب.', 'error');
-                submitBtn.innerText = originalBtnText;
-                submitBtn.disabled = false;
-                return;
-            }
-
-            // ===== InstaPay: تحويل يدوي + إرسال الإيصال على واتساب =====
-            // بنجيب رقم التحويل الحالي من الإعدادات قبل تسجيل الطلب؛ لو مش متاح مفيش طلب بيتسجل.
-            const isInstapay = payment === 'instapay';
-            const isVodafoneCash = payment === 'vodafone_cash';
-            let instapayConfig = null;
-            let vodafoneCashConfig = null;
-            if (isInstapay) {
-                try {
-                    if (!window.InstaPayCheckout) throw new Error('ملف الدفع عبر InstaPay (instapay.js) غير محمل.');
-                    submitBtn.innerText = 'جاري تجهيز بيانات التحويل...';
-                    instapayConfig = await window.InstaPayCheckout.loadConfig(_supabase);
-                } catch (ipErr) {
-                    trackStoreEvent('payment_failed', { metadata: { provider: 'instapay', reason: 'config_unavailable', error: String(ipErr && ipErr.message || ipErr).slice(0, 200) } });
-                    showCustomAlert(ipErr.message || 'الدفع عبر InstaPay غير متاح حاليًا.', 'error');
-                    submitBtn.innerText = originalBtnText;
-                    submitBtn.disabled = false;
-                    return;
-                }
-            } else if (isVodafoneCash) {
-                try {
-                    if (!window.VodafoneCashCheckout) throw new Error('ملف الدفع عبر فودافون كاش (vodafone-cash.js) غير محمل.');
-                    submitBtn.innerText = 'جاري تجهيز بيانات التحويل...';
-                    vodafoneCashConfig = await window.VodafoneCashCheckout.loadConfig(_supabase);
-                } catch (vcErr) {
-                    trackStoreEvent('payment_failed', { metadata: { provider: 'vodafone_cash', reason: 'config_unavailable', error: String(vcErr && vcErr.message || vcErr).slice(0, 200) } });
-                    showCustomAlert(vcErr.message || 'الدفع عبر فودافون كاش غير متاح حاليًا.', 'error');
-                    submitBtn.innerText = originalBtnText;
-                    submitBtn.disabled = false;
-                    return;
-                }
-            }
-            // الحالة والكود بييجوا من المصدر الموحّد (order-status.js) بدل نصوص متفرقة
-            const orderStatusCode = window.OrderStatus ? window.OrderStatus.CODES.PENDING : 'pending';
-            const orderStatus = isInstapay
-                ? window.InstaPayCheckout.ORDER_STATUS
-                : isVodafoneCash
-                    ? window.VodafoneCashCheckout.ORDER_STATUS
-                    : (window.OrderStatus ? window.OrderStatus.label(orderStatusCode, 'cod') : 'قيد التنفيذ');
-            let instapayOrderNo = null;
-
-            // [تحديث أمان]: إعادة جلب الأسعار الحقيقية من قاعدة البيانات والتحقق من الكوبون
-            // لمنع أي تلاعب محتمل في localStorage أو أدوات المطور (DevTools)
-            const dbPriceMap = new Map();
-            if (Array.isArray(productsDB)) {
-                productsDB.forEach(p => {
-                    if (p && p.id != null) dbPriceMap.set(String(p.id), Number(p.price) || 0);
-                });
-            }
-
-            try {
-                const itemIds = cart.filter(i => !i.isGift && i.id).map(i => i.id);
-                if (itemIds.length) {
-                    const { data: verifiedProducts, error: pErr } = await _supabase
-                        .from('products')
-                        .select('id, price')
-                        .in('id', itemIds);
-                    if (!pErr && Array.isArray(verifiedProducts)) {
-                        verifiedProducts.forEach(p => {
-                            if (p && p.id != null) dbPriceMap.set(String(p.id), Number(p.price) || 0);
-                        });
-                    }
-                }
-            } catch (pFetchErr) {
-                console.warn('تعذر جلب الأسعار الحية، الاعتماد على productsDB الموثوقة:', pFetchErr);
-            }
-
-            let subtotal = 0;
-            const orderItems = [];
-
-            cart.forEach(item => {
-                let verifiedPrice = Number(item.price || 0);
-                if (!item.isGift && item.id != null && dbPriceMap.has(String(item.id))) {
-                    verifiedPrice = dbPriceMap.get(String(item.id));
-                }
-                const qty = Math.max(1, parseInt(item.qty) || 1);
-                const itemTotal = item.isGift ? 0 : (verifiedPrice * qty);
-                subtotal += itemTotal;
-                orderItems.push({
-                    id: item.id,
-                    name: item.name,
-                    qty: qty,
-                    price: item.isGift ? 0 : verifiedPrice,
-                    isGift: item.isGift || false
-                });
+            loadStoreChunk(STORE_CHUNKS.checkout).then(function () {
+                if (window.ElforatCheckout) window.ElforatCheckout.handleSubmit(checkoutForm, e);
+            }).catch(function (err) {
+                console.error('checkout chunk failed', err);
+                showCustomAlert('تعذّر تحميل بيانات الدفع. برجاء تحديث الصفحة والمحاولة مرة أخرى.', 'error');
             });
-
-            // ===== التحقق من الكوبون مباشرة من قاعدة البيانات =====
-            let verifiedDiscountAmount = 0;
-            let verifiedCouponCode = null;
-            if (appliedCoupon && appliedCoupon.code) {
-                try {
-                    const today = new Date().toISOString().split('T')[0];
-                    const { data: dbCoupon } = await _supabase
-                        .from('coupons')
-                        .select('code, discount_percentage, min_amount, max_uses, used_count')
-                        .eq('code', String(appliedCoupon.code).trim())
-                        .eq('is_active', true)
-                        .gte('expiry_date', today)
-                        .maybeSingle();
-
-                    if (dbCoupon && Number(dbCoupon.discount_percentage) > 0) {
-                        const usesOk = (dbCoupon.max_uses == null) || (Number(dbCoupon.used_count) || 0) < Number(dbCoupon.max_uses);
-                        if (usesOk) {
-                            verifiedCouponCode = dbCoupon.code;
-                            const pct = Number(dbCoupon.discount_percentage);
-                            verifiedDiscountAmount = Math.round(((subtotal * pct) / 100) * 100) / 100;
-                        }
-                    }
-                } catch (cErr) {
-                    console.warn('تعذر التحقق من الكوبون من السيرفر:', cErr);
-                    verifiedDiscountAmount = getCartDiscount(subtotal);
-                    verifiedCouponCode = appliedCoupon.code;
-                }
-            }
-
-            const discountAmount = verifiedDiscountAmount;
-            const finalTotal = Math.max(subtotal - discountAmount, 0);
-            const couponCode = verifiedCouponCode;
-            const traffic = getTrafficParams();
-
-            try {
-                trackStoreEvent('checkout_started', {
-                    coupon_code: couponCode,
-                    cart_total: finalTotal,
-                    metadata: { payment, items_count: orderItems.length }
-                });
-                const paymentLabel = isInstapay
-                    ? window.InstaPayCheckout.PAYMENT_LABEL
-                    : isVodafoneCash
-                        ? window.VodafoneCashCheckout.PAYMENT_LABEL
-                        : payment;
-                // merchant_order_id ثابت لنفس محاولة الشراء (حتى لو حصل reload/مشكلة شبكة)
-                // بدل توليد رقم جديد كل submit، عشان الحماية من تكرار الطلب تبقى فعلية
-                const cartFingerprint = [phone, finalTotal, orderItems.map(i => (i.id ?? i.name) + 'x' + (i.qty ?? 1)).join(',')].join('|');
-                const merchantId = window.OrderStatus
-                    ? window.OrderStatus.getOrCreateMerchantOrderId(cartFingerprint)
-                    : ('elforat-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8));
-                const orderData = {
-                    customerName: name,
-                    phone: phone,
-                    address: address,
-                    total: finalTotal,
-                    status: orderStatus,
-                    status_code: orderStatusCode,
-                    payment_status: 'pending',
-                    date: new Date().toLocaleString('ar-EG'),
-                    items: orderItems,
-                    payment_method: paymentLabel,
-                    merchant_order_id: merchantId,
-                    coupon_code: couponCode,
-                    discount_amount: discountAmount,
-                    session_id: getVisitorSessionId(),
-                    traffic_source: traffic.source,
-                    traffic_campaign: traffic.campaign
-                };
-
-                // إدخال idempotent: لو نفس merchant_order_id اتسجل قبل كده (retry بعد
-                // reload/مشكلة شبكة)، بيرجّع الطلب الموجود بدل ما يعمل نسخة تانية.
-                // محتاج unique constraint على عمود merchant_order_id (شوفي migration.sql)
-                const insertOnce = window.OrderStatus
-                    ? (data) => window.OrderStatus.insertOrderIdempotent(_supabase, data)
-                    : (data) => _supabase.from('orders').insert([data]).select('id').single()
-                        .then(r => ({ data: r.data, error: r.error }));
-
-                const { data: insertedOrder, error: orderError } = await insertOnce(orderData);
-                let orderSaved = !!(insertedOrder && !orderError);
-
-                if (!orderError && insertedOrder) {
-                    orderData.id = insertedOrder.id;
-                    trackStoreEvent('order_created', { coupon_code: couponCode, cart_total: finalTotal, metadata: { payment, items_count: orderItems.length } });
-                } else if (orderError && /WELCOME10_ALREADY_USED/.test(orderError.message || '')) {
-                    // السيرفر رفض الطلب: كوبون الترحيب استُخدم قبل كده بنفس رقم الهاتف.
-                    // مفيش fallback هنا (كان هيسجّل الطلب بالخصم من غير كود الكوبون).
-                    window.WelcomeOffer?.expire('already_used');
-                    appliedCoupon = null;
-                    saveCoupon();
-                    renderCart();
-                    showCustomAlert('كوبون الترحيب WELCOME10 استُخدم قبل كده بنفس رقم الهاتف، تم إلغاؤه. راجعي الإجمالي وأكملي الطلب.', 'error');
-                    submitBtn.innerText = originalBtnText;
-                    submitBtn.disabled = false;
-                    return;
-                } else if (orderError) {
-                    // console.error (مش warn): غالباً عمود ناقص (status_code..) أو صلاحيات RLS - الطلب هيتسجل ناقص بيانات
-                    console.error('فشل إدخال الطلب بالحقول الكاملة، جاري المحاولة بالحد الأدنى:', orderError.code, orderError.message);
-                    const minimalData = {
-                        customerName: name,
-                        phone: phone,
-                        address: address,
-                        total: finalTotal,
-                        status: orderStatus,
-                        // بنحافظ على merchant_order_id حتى في أقل نسخة من الطلب عشان
-                        // الحماية من التكرار تفضل شغالة لو النسخة الكاملة فشلت
-                        merchant_order_id: merchantId,
-                        date: new Date().toLocaleString('ar-EG'),
-                        items: orderItems
-                    };
-                    const { data: minOrder, error: minError } = await insertOnce(minimalData);
-                    if (!minError && minOrder) { orderData.id = minOrder.id; orderSaved = true; }
-                    else console.error('فشل إدخال الطلب نهائياً:', minError);
-                }
-
-                // الدفع الإلكتروني: ممنوع نفتح popup الدفع لو الطلب مش متسجل (العميل كان هيدفع على رقم طلب مش موجود)
-                if (!orderSaved && (isInstapay || isVodafoneCash)) {
-                    trackStoreEvent('payment_failed', {
-                        coupon_code: couponCode,
-                        cart_total: finalTotal,
-                        metadata: { provider: isInstapay ? 'instapay' : 'vodafone_cash', reason: 'order_not_saved' }
-                    });
-                    submitBtn.innerText = originalBtnText;
-                    submitBtn.disabled = false;
-                    showCustomAlert('تعذر تسجيل طلبك الآن، ولم يتم خصم أي مبلغ. برجاء المحاولة مرة أخرى أو التواصل معنا على واتساب.', 'error');
-                    return;
-                }
-
-                // رقم الطلب المعروض للعميل في رسالة InstaPay / فودافون كاش
-                instapayOrderNo = (orderData.id != null && /^\d{1,10}$/.test(String(orderData.id))) ? orderData.id : merchantId;
-
-                // كوبون الترحيب: أول طلب ناجح بيه = يتلغي فوراً
-                if (couponCode && orderData.id != null && window.WelcomeOffer
-                    && String(couponCode).toUpperCase() === window.WelcomeOffer.code) {
-                    window.WelcomeOffer.markUsed();
-                }
-
-                // زيادة عداد استخدام الكوبون بعد نجاح الطلب
-                if (couponCode) {
-                    _supabase.rpc('increment_coupon_use', { p_code: couponCode })
-                        .then(() => { })
-                        .catch((e) => console.warn('زيادة استخدام الكوبون فشلت:', e));
-                }
-
-                // ملحوظة: إشعار تيليجرام بقى بيتبعت تلقائيًا من Supabase نفسها
-                // (Database Webhook على INSERT في جدول orders) بدل ما يتبعت من هنا.
-                // ده أأمن لأنه مش محتاج أي سر يتحط في كود الموقع العام، وأضمن لأنه
-                // بيشتغل حتى لو المتصفح قفل الصفحة فورًا بعد إتمام الطلب.
-            } catch (err) {
-                console.error("خطأ في تسجيل الطلب بسوبابيز، جاري استكمال التحويل للواتساب...", err);
-                if (isInstapay || isVodafoneCash) {
-                    trackStoreEvent('payment_failed', { metadata: { provider: isInstapay ? 'instapay' : 'vodafone_cash', reason: 'exception', error: String(err && err.message || err).slice(0, 200) } });
-                }
-            }
-
-            if (isInstapay) {
-                const paidTotal = finalTotal;
-                window.OrderStatus?.clearPendingMerchantOrderId?.();
-                cart = [];
-                saveCart();
-                appliedCoupon = null;
-                saveCoupon();
-                updateBadge();
-                checkoutForm.reset();
-                submitBtn.innerText = originalBtnText;
-                submitBtn.disabled = false;
-
-                trackStoreEvent('payment_started', {
-                    coupon_code: couponCode,
-                    cart_total: paidTotal,
-                    metadata: { provider: 'instapay' }
-                });
-
-                window.InstaPayCheckout.showPopup({
-                    orderNo: instapayOrderNo,
-                    total: paidTotal,
-                    config: instapayConfig,
-                    onClose: () => app.navigate('home')
-                });
-                return;
-            }
-
-            if (isVodafoneCash) {
-                const paidTotal = finalTotal;
-                window.OrderStatus?.clearPendingMerchantOrderId?.();
-                cart = [];
-                saveCart();
-                appliedCoupon = null;
-                saveCoupon();
-                updateBadge();
-                checkoutForm.reset();
-                submitBtn.innerText = originalBtnText;
-                submitBtn.disabled = false;
-
-                trackStoreEvent('payment_started', {
-                    coupon_code: couponCode,
-                    cart_total: paidTotal,
-                    metadata: { provider: 'vodafone_cash' }
-                });
-
-                window.VodafoneCashCheckout.showPopup({
-                    orderNo: instapayOrderNo,
-                    total: paidTotal,
-                    config: vodafoneCashConfig,
-                    onClose: () => app.navigate('home')
-                });
-                return;
-            }
-
-            let message = `*طلب جديد من موقع Elforat Pharma* 🛍️\n\n`;
-            message += `👤 *اسم العميل:* ${name}\n`;
-            message += `📞 *رقم الهاتف:* ${phone}\n`;
-            message += `📍 *العنوان:* ${address}\n`;
-            message += `💳 *طريقة الدفع:* ${payment}\n\n`;
-            message += `*المنتجات المطلوبة:*\n`;
-
-            cart.forEach(item => {
-                const itemTotal = item.price * item.qty;
-                const priceText = item.isGift ? 'مجاناً 🎁' : `${itemTotal} ج.م`;
-                message += `▫️ ${item.name} (الكمية: ${item.qty}) = ${priceText}\n`;
-            });
-
-            message += `\n🧾 *الإجمالي الفرعي:* ${subtotal} ج.م\n`;
-            if (discountAmount > 0) {
-                message += `🏷️ *خصم كود (${couponCode}):* -${discountAmount} ج.م\n`;
-            }
-            message += `💰 *الإجمالي المطلوب:* ${finalTotal} ج.م\n`;
-            message += `\nشكراً لاختيارك الفرات فارما! 🌺`;
-
-            window.OrderStatus?.clearPendingMerchantOrderId?.();
-            cart = [];
-            saveCart(); // [جديد] مسح المنتجات من التخزين بعد إرسال الطلب بنجاح
-            appliedCoupon = null;
-            saveCoupon(); // مسح الكوبون بعد إتمام الطلب بنجاح
-// صوت التنبيه مخصص للوحة التحكم فقط
-            updateBadge();
-            checkoutForm.reset();
-
-            submitBtn.innerText = originalBtnText;
-            submitBtn.disabled = false;
-
-            const encodedMessage = encodeURIComponent(message);
-            const whatsappNumber = "201146809133";
-
-            window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
-
-            setTimeout(() => {
-                app.navigate('home');
-            }, 1000);
-        };
+        }, true);
     }
     // ==========================================
     // 7. كود الـ Scroll Spy مع الخط المتحرك
