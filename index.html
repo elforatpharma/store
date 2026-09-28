@@ -12,7 +12,7 @@
          ممكنة عن طريق <meta> لحد ما تتفعّل الهيدرز الحقيقية عبر
          Cloudflare أو استضافة بتدعم _headers (شوفي security-headers-README.md)
          ============================================================ -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://sidtdxchiqiogfkwbdui.supabase.co https://wsrv.nl; connect-src 'self' https://sidtdxchiqiogfkwbdui.supabase.co https://api.ipify.org; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://sidtdxchiqiogfkwbdui.supabase.co https://wsrv.nl; media-src 'self' https://actions.google.com; connect-src 'self' https://sidtdxchiqiogfkwbdui.supabase.co https://api.ipify.org; object-src 'none'; base-uri 'self'; form-action 'self';">
     <meta name="referrer" content="strict-origin-when-cross-origin">
 
     <title>متجر الفُرات فارما الإلكتروني | ELFORAT PHARMA STORE</title>
@@ -39,8 +39,8 @@
     <meta name="twitter:image" content="https://elforatpharma.github.io/store/hero-products.jpg">
 
     <link rel="icon" type="image/png" href="favicon-32.png">
-    <link rel="stylesheet" href="style.min.css?v=14">
-    <link rel="stylesheet" href="tailwind-built.css?v=14">
+    <link rel="stylesheet" href="style.min.css?v=15">
+    <link rel="stylesheet" href="tailwind-built.css?v=15">
 
     <!-- منع "قفلة" الصفحة عند الريفريش: لو الرابط فيه #hash لصفحة غير الرئيسية
          (كتالوج/منتج/سلة/مفضلة)، الصفحة الافتراضية (الهيرو) كانت بتترسم وتظهر
@@ -1614,11 +1614,11 @@
     </footer>
 
 
-    <script src="welcome-offer.js?v=14" defer></script>
-    <script src="order-status.js?v=14" defer></script>
-    <script src="instapay.js?v=14" defer></script>
-    <script src="vodafone-cash.js?v=14" defer></script>
-    <script src="analysis.js?v=14" defer></script>
+    <script src="welcome-offer.js?v=15" defer></script>
+    <script src="order-status.js?v=15" defer></script>
+    <script src="instapay.js?v=15" defer></script>
+    <script src="vodafone-cash.js?v=15" defer></script>
+    <script src="analysis.js?v=15" defer></script>
     <script>
         // Touch/Swipe gesture support for carousel
         (function() {
@@ -2016,12 +2016,13 @@
     </script>
 
     <!-- شبكة أمان تانية: لو restoreViewFromHash في analysis.js لأي سبب مكملتش
-         (خطأ غير متوقع، أو الملف فشل يتحمّل)، نشيل إخفاء الصفحة (route-restoring)
-         بعد 5 ثواني بأي حال بدل ما تفضل مخفية للأبد -->
+         (خطأ غير متوقع، أو الملف فشل يتحمّل، أو النت بطيء جداً)، نشيل إخفاء الصفحة
+         (route-restoring) بعد 4 ثواني بأي حال بدل ما تفضل مخفية للأبد.
+         (2.5 ثانية كانت قصيرة على نت ضعيف: الهوم كان بيظهر ثم يقفز لصفحة المنتج) -->
     <script>
         setTimeout(() => {
             document.documentElement.classList.remove('route-restoring');
-        }, 2500);
+        }, 4000);
     </script>
 
     <!-- تقييمات آراء العملاء: وقوف الماوس عليها (ديسكتوب) أو الضغط المطول عليها

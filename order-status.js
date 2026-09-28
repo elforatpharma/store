@@ -49,20 +49,28 @@ window.OrderStatus = (() => {
   const PENDING_KEY = 'elforat_pending_merchant_id';
   const TTL_MS = 15 * 60 * 1000; // 15 دقيقة - بعدها بيتحسب attempt جديد
 
-  function getOrCreateMerchantOrderId() {
+  function newId() {
+    try { if (crypto && crypto.randomUUID) return 'elforat-' + crypto.randomUUID(); } catch (_) { }
+    return 'elforat-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+  }
+
+  // fingerprint (اختياري): بصمة محتوى الطلب (تليفون + إجمالي + منتجات). لو السلة اتغيرت
+  // بين محاولتين، بيتولّد رقم جديد بدل ما نرجّع طلب قديم بمحتوى مختلف.
+  function getOrCreateMerchantOrderId(fingerprint) {
+    const fp = fingerprint == null ? '' : String(fingerprint);
     try {
       const raw = sessionStorage.getItem(PENDING_KEY);
       if (raw) {
         const saved = JSON.parse(raw);
-        if (saved && saved.id && (Date.now() - saved.ts) < TTL_MS) {
+        if (saved && saved.id && (Date.now() - saved.ts) < TTL_MS && (saved.fp || '') === fp) {
           return saved.id;
         }
       }
     } catch (_) { /* sessionStorage غير متاح - نكمل عادي */ }
 
-    const id = 'elforat-' + Date.now();
+    const id = newId();
     try {
-      sessionStorage.setItem(PENDING_KEY, JSON.stringify({ id, ts: Date.now() }));
+      sessionStorage.setItem(PENDING_KEY, JSON.stringify({ id, ts: Date.now(), fp }));
     } catch (_) { }
     return id;
   }
@@ -101,6 +109,9 @@ window.OrderStatus = (() => {
       if (existing.data) {
         return { data: existing.data, error: null, wasDuplicate: true };
       }
+      // التكرار اتأكد (23505) يعني الطلب متسجل فعلاً، بس القراءة ممنوعة بـ RLS للـ anon
+      // (وده الصح أمنياً). نعتبره نجاح من غير id بدل ما نفشل ونحاول نسجله تاني.
+      return { data: { id: null }, error: null, wasDuplicate: true };
     }
     return { data, error, wasDuplicate: false };
   }

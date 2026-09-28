@@ -180,10 +180,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // دالة Sanitize للحماية من XSS
     // ==========================================
+    // بيهرّب & < > " ' (الدالة القديمة كانت بتهرّب < > & بس، فعلامات الاقتباس كانت بتفلت من الـ attributes)
     function sanitize(str) {
-        const el = document.createElement('div');
-        el.textContent = str ?? '';
-        return el.innerHTML;
+        return String(str ?? '').replace(/[&<>"']/g, ch => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+        ));
+    }
+
+    // لقيمة جوه '...' في onclick/onerror inline: الـ HTML entities بتتفك قبل ما JS يشتغل،
+    // فـ sanitize لوحدها مش كفاية هناك. هنا كل حرف غير حرف/رقم/شرطة بيتحول لـ \uXXXX.
+    function jsArg(str) {
+        return String(str ?? '').replace(/[^A-Za-z0-9_\-]/g, ch =>
+            '\\u' + ch.charCodeAt(0).toString(16).padStart(4, '0'));
     }
 
     // تنسيق النصوص متسلسلة الأسطر والنقاط والقوائم
@@ -1243,6 +1251,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     try { history.replaceState({ ...(history.state || {}), scrollY: window.scrollY }, ""); } catch (_) { }
                     history.pushState({ viewId, param, scrollY: 0 }, "", param ? `#${viewId}?item=${param}` : `#${viewId}`);
                 }
+                const mainWasActive = !!document.getElementById('view-main')?.classList.contains('active');
                 document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
 
                 updateNavMorph(viewId, viewId === 'catalog' ? param : null);
@@ -1266,7 +1275,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         // إضافة كلاس 'active' (تغيير هيقلب الـ layout) في نفس الـ tick
                         requestAnimationFrame(() => {
                             const target = document.getElementById(viewId);
-                            if (target) window.scrollTo({ top: target.offsetTop - 80, behavior: "smooth" });
+                            if (target) window.scrollTo({ top: target.offsetTop - 80, behavior: mainWasActive ? "smooth" : "instant" });
                         });
                     }
                 } else {
@@ -1276,7 +1285,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (viewId === 'favorites') renderFavorites();
                     window.scrollTo({
                         top: restoreScrollY !== null ? restoreScrollY : 0,
-                        behavior: addToHistory ? "smooth" : "instant"
+                        behavior: "instant" // تبديل قسم كامل: سكرول متحرك من مكان قديم بيبان كأن الصفحة بتقفز
                     });
                 }
 
@@ -1341,9 +1350,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const suggestionsHTML = `
                 <div class="py-2">
                     ${suggestions.map(p => `
-                        <div onclick="app.navigate('product', '${sanitize(p.id)}'); app.hideSearchSuggestions();" 
+                        <div onclick="app.navigate('product', '${jsArg(p.id)}'); app.hideSearchSuggestions();" 
                              class="flex items-center gap-3 px-4 py-3 hover:bg-primary/5 cursor-pointer transition-colors group">
-                            <img src="${sanitize(getOptimizedImg(p.img, 80, 70))}" loading="lazy" class="w-10 h-10 object-contain rounded-lg bg-gray-50 group-hover:scale-110 transition-transform" onerror="handleImgError(this, '${sanitize(p.img)}')">
+                            <img src="${sanitize(getOptimizedImg(p.img, 80, 70))}" loading="lazy" class="w-10 h-10 object-contain rounded-lg bg-gray-50 group-hover:scale-110 transition-transform" onerror="handleImgError(this, '${jsArg(p.img)}')">
                             <div class="flex-1 text-right">
                                 <p class="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">${sanitize(p.name)}</p>
                                 <p class="text-xs text-gray-500">${sanitize(p.category)}</p>
@@ -1687,7 +1696,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function buildProductCard(p, index) {
         const isFavorite = FavoritesManager.isFavorite(p.id);
         return `
-<article class="pro-product-card p-3 sm:p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group cursor-pointer" onclick="app.navigate('product', '${sanitize(p.id)}')">
+<article class="pro-product-card p-3 sm:p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group cursor-pointer" onclick="app.navigate('product', '${jsArg(p.id)}')">
     <div class="flex items-center justify-between w-full mb-3 z-10">
         ${p.badge ? `<span class="badge-gold-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
         <button onclick="event.stopPropagation();" data-favorite-btn="${sanitize(p.id)}" aria-label="${isFavorite ? 'إزالة من المفضلة' : 'أضف للمفضلة'}" aria-pressed="${isFavorite ? 'true' : 'false'}" title="${isFavorite ? 'إزالة من المفضلة' : 'أضف للمفضلة'}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20">
@@ -1698,7 +1707,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </button>
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
-        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" decoding="async" width="320" height="320" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
+        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" decoding="async" width="320" height="320" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${jsArg(p.img)}')">
         <span class="hidden sm:flex absolute bottom-2 left-2 items-center bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
@@ -1720,8 +1729,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-2">
-                <button onclick="event.stopPropagation(); app.buyNow('${sanitize(p.id)}')" class="btn-dark py-2.5 text-xs font-bold shadow-sm">اشتري الآن</button>
-                <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}')" class="btn-add-cart py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
+                <button onclick="event.stopPropagation(); app.buyNow('${jsArg(p.id)}')" class="btn-dark py-2.5 text-xs font-bold shadow-sm">اشتري الآن</button>
+                <button onclick="event.stopPropagation(); app.addToCart('${jsArg(p.id)}')" class="btn-add-cart py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
                     <i class="fa-solid fa-cart-plus text-xs"></i>
                     <span>أضف للسلة</span>
                 </button>
@@ -2035,7 +2044,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <!-- معرض الصور -->
                 <div class="space-y-4">
                     <div class="product-visual-glass aspect-square flex items-center justify-center p-4 sm:p-6 md:p-8 rounded-3xl overflow-hidden group relative bg-white/50 border border-purple-100/60 shadow-lg">
-                        <img id="main-product-img" src="${sanitize(images[0])}" loading="lazy" class="max-h-full max-w-full object-contain transition-all duration-500 hover:scale-105 cursor-zoom-in drop-shadow-xl" onerror="this.src='logo.png'" onclick="openImageZoom('${sanitize(images[0])}')">
+                        <img id="main-product-img" src="${sanitize(images[0])}" loading="lazy" class="max-h-full max-w-full object-contain transition-all duration-500 hover:scale-105 cursor-zoom-in drop-shadow-xl" onerror="this.src='logo.png'" onclick="openImageZoom('${jsArg(images[0])}')">
                         <!-- أزرار التنقل للمعرض (تظهر فقط عند وجود أكثر من صورة) -->
                         ${images.length > 1 ? `
                         <button onclick="changeProductImage('prev')" class="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white active:scale-90 z-20" title="الصورة السابقة">
@@ -2049,7 +2058,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                         ` : ''}
                         <!-- زر التكبير -->
-                        <button onclick="openImageZoom(window.productImages ? window.productImages[window.currentImageIndex || 0] : '${sanitize(images[0])}')" class="absolute bottom-4 right-4 w-10 h-10 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white z-20" title="تكبير الصورة">
+                        <button onclick="openImageZoom(window.productImages ? window.productImages[window.currentImageIndex || 0] : '${jsArg(images[0])}')" class="absolute bottom-4 right-4 w-10 h-10 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white z-20" title="تكبير الصورة">
                             <i class="fa-solid fa-expand text-xs"></i>
                         </button>
                     </div>
@@ -2079,7 +2088,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                         <div class="flex items-center gap-3 pt-2">
                             <button id="main-fav-btn" 
-                                    onclick="handleMainFavorite('${sanitize(p.id)}'); event.stopPropagation();" 
+                                    onclick="handleMainFavorite('${jsArg(p.id)}'); event.stopPropagation();" 
                                     class="w-12 h-12 rounded-full flex items-center justify-center transition-all ${FavoritesManager.isFavorite(p.id) ? 'bg-primary text-white shadow-lg' : 'bg-gray-100 text-gray-400'}">
                                 <svg class="w-6 h-6" fill="${FavoritesManager.isFavorite(p.id) ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -2144,7 +2153,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <p class="text-sm text-gray-600">${sanitize(r.text)}</p>
                             </div>`).join('')}
                         </div>
-                        <button onclick="app.openAddReviewModal('${p.id}', '${sanitize(p.name)}')" class="mt-4 w-full py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-all text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-star text-amber-400"></i> إضافة تقييمك وتجربتك</button>
+                        <button onclick="app.openAddReviewModal('${jsArg(p.id)}', '${jsArg(p.name)}')" class="mt-4 w-full py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-all text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-star text-amber-400"></i> إضافة تقييمك وتجربتك</button>
                     </div>
                     
                     <!-- أزرار الإجراء -->
@@ -2155,9 +2164,9 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <input id="product-qty" type="number" value="1" min="1" max="${p.stock}" class="w-12 text-center font-bold border-x-2 border-gray-200 focus:outline-none" readonly>
                                 <button onclick="const qtyInput = document.getElementById('product-qty'); const newVal = Math.min(${p.stock}, parseInt(qtyInput.value) + 1); qtyInput.value = newVal;" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-r-full active:scale-95">+</button>
                             </div>
-                            <button onclick="app.addToCart('${p.id}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">أضف للحقيبة</button>
+                            <button onclick="app.addToCart('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">أضف للحقيبة</button>
                         </div>
-                        <button onclick="app.buyNow('${p.id}', document.getElementById('product-qty').value)" class="btn-dark w-full text-white font-bold uppercase text-sm tracking-widest py-4 active:scale-95">اشتري الآن</button>
+                        <button onclick="app.buyNow('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="btn-dark w-full text-white font-bold uppercase text-sm tracking-widest py-4 active:scale-95">اشتري الآن</button>
                     </div>
                 </div>
             </div>
@@ -2169,8 +2178,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span class="text-base font-extrabold text-primary leading-tight">${sanitize(p.price)} <span class="text-[11px] font-bold text-slate-500">ج.م</span></span>
                         ${p.oldPrice ? `<span class="text-[11px] text-slate-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
                     </div>
-                    <button onclick="app.addToCart('${p.id}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold text-xs uppercase tracking-widest py-3.5 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">أضف للحقيبة</button>
-                    <button onclick="app.buyNow('${p.id}', document.getElementById('product-qty').value)" class="btn-dark text-white font-bold text-xs uppercase tracking-widest py-3.5 px-5 active:scale-95">اشتري الآن</button>
+                    <button onclick="app.addToCart('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold text-xs uppercase tracking-widest py-3.5 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">أضف للحقيبة</button>
+                    <button onclick="app.buyNow('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="btn-dark text-white font-bold text-xs uppercase tracking-widest py-3.5 px-5 active:scale-95">اشتري الآن</button>
                 </div>
             </div>
             
@@ -2357,10 +2366,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const isOutOfStock = p.stock <= 0;
 
             return `
-<article class="pro-product-card p-3 sm:p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group cursor-pointer" onclick="app.navigate('product', '${sanitize(p.id)}')">
+<article class="pro-product-card p-3 sm:p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group cursor-pointer" onclick="app.navigate('product', '${jsArg(p.id)}')">
     <div class="flex items-center justify-between w-full mb-3 z-10">
         ${p.badge ? `<span class="badge-gold-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
-        <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" aria-label="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}" aria-pressed="${isFav ? 'true' : 'false'}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
+        <button onclick="event.stopPropagation(); FavoritesManager.toggle('${jsArg(p.id)}');" data-favorite-btn="${sanitize(p.id)}" aria-label="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}" aria-pressed="${isFav ? 'true' : 'false'}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
             ${isFav
                     ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
                     : `<i class="fa-regular fa-heart text-xs"></i>`
@@ -2368,7 +2377,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </button>
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
-        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" decoding="async" width="320" height="320" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
+        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" decoding="async" width="320" height="320" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${jsArg(p.img)}')">
         <span class="hidden sm:flex absolute bottom-2 left-2 items-center bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
@@ -2393,8 +2402,8 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             ${!isOutOfStock ? `
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="event.stopPropagation(); app.buyNow('${sanitize(p.id)}')" class="btn-dark py-2.5 text-xs font-bold shadow-sm">اشتري الآن</button>
-                    <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}', 1)" class="btn-add-cart py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
+                    <button onclick="event.stopPropagation(); app.buyNow('${jsArg(p.id)}')" class="btn-dark py-2.5 text-xs font-bold shadow-sm">اشتري الآن</button>
+                    <button onclick="event.stopPropagation(); app.addToCart('${jsArg(p.id)}', 1)" class="btn-add-cart py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
                         <i class="fa-solid fa-cart-plus text-xs"></i>
                         <span>أضف للحقيبة</span>
                     </button>
@@ -2442,13 +2451,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="flex flex-row-reverse justify-between items-center pt-4">
                         <span class="text-base font-bold text-primary">${sanitize(item.price * item.qty)} ج.م</span>
                         <div class="flex border border-gray-100 rounded-full" dir="ltr">
-                            <button onclick="app.updateQty('${sanitize(item.id)}', 1)" class="px-3 py-1 text-primary font-bold">+</button>
+                            <button onclick="app.updateQty('${jsArg(item.id)}', 1)" class="px-3 py-1 text-primary font-bold">+</button>
                             <span class="px-4 py-1 text-xs font-bold">${item.qty}</span>
-                            <button onclick="app.updateQty('${sanitize(item.id)}', -1)" class="px-3 py-1 text-primary font-bold">-</button>
+                            <button onclick="app.updateQty('${jsArg(item.id)}', -1)" class="px-3 py-1 text-primary font-bold">-</button>
                         </div>
                     </div>
                 </div>
-                <button onclick="app.removeItem('${sanitize(item.id)}')" class="text-gray-300 hover:text-red-500 transition-colors">×</button>
+                <button onclick="app.removeItem('${jsArg(item.id)}')" class="text-gray-300 hover:text-red-500 transition-colors">×</button>
             </div>`;
         }).join('');
 
@@ -2530,10 +2539,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const isFav = FavoritesManager.isFavorite(p.id);
 
             return `
-<article class="pro-product-card p-3 sm:p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group cursor-pointer" onclick="app.navigate('product', '${sanitize(p.id)}')">
+<article class="pro-product-card p-3 sm:p-4 border border-purple-100/90 shadow-purple-soft flex flex-col justify-between relative group cursor-pointer" onclick="app.navigate('product', '${jsArg(p.id)}')">
     <div class="flex items-center justify-between w-full mb-3 z-10">
         ${p.badge ? `<span class="badge-gold-shimmer text-white text-[11px] font-black px-3 py-1 rounded-full shadow-sm flex items-center gap-1">${sanitize(p.badge)}</span>` : `<span class="w-8"></span>`}
-        <button onclick="event.stopPropagation(); FavoritesManager.toggle('${sanitize(p.id)}');" data-favorite-btn="${sanitize(p.id)}" aria-label="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}" aria-pressed="${isFav ? 'true' : 'false'}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
+        <button onclick="event.stopPropagation(); FavoritesManager.toggle('${jsArg(p.id)}');" data-favorite-btn="${sanitize(p.id)}" aria-label="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}" aria-pressed="${isFav ? 'true' : 'false'}" class="favorite-btn btn-fav w-8 h-8 rounded-full bg-white/95 shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-200 flex items-center justify-center transition-all z-20" title="${isFav ? 'إزالة من المفضلة' : 'أضف للمفضلة'}">
             ${isFav
                     ? `<i class="fa-solid fa-heart text-xs text-rose-500"></i>`
                     : `<i class="fa-regular fa-heart text-xs"></i>`
@@ -2541,7 +2550,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </button>
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
-        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" decoding="async" width="320" height="320" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${sanitize(p.img)}')">
+        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" decoding="async" width="320" height="320" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${jsArg(p.img)}')">
         <span class="hidden sm:flex absolute bottom-2 left-2 items-center bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
@@ -2559,8 +2568,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-2">
-                <button onclick="event.stopPropagation(); app.buyNow('${sanitize(p.id)}')" class="btn-dark py-2.5 text-xs font-bold shadow-sm">اشتري الآن</button>
-                <button onclick="event.stopPropagation(); app.addToCart('${sanitize(p.id)}', 1)" class="btn-add-cart py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
+                <button onclick="event.stopPropagation(); app.buyNow('${jsArg(p.id)}')" class="btn-dark py-2.5 text-xs font-bold shadow-sm">اشتري الآن</button>
+                <button onclick="event.stopPropagation(); app.addToCart('${jsArg(p.id)}', 1)" class="btn-add-cart py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
                     <i class="fa-solid fa-cart-plus text-xs"></i>
                     <span>أضف للسلة</span>
                 </button>
@@ -2771,9 +2780,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         : payment;
                 // merchant_order_id ثابت لنفس محاولة الشراء (حتى لو حصل reload/مشكلة شبكة)
                 // بدل توليد رقم جديد كل submit، عشان الحماية من تكرار الطلب تبقى فعلية
+                const cartFingerprint = [phone, finalTotal, orderItems.map(i => (i.id ?? i.name) + 'x' + (i.qty ?? 1)).join(',')].join('|');
                 const merchantId = window.OrderStatus
-                    ? window.OrderStatus.getOrCreateMerchantOrderId()
-                    : ('elforat-' + Date.now());
+                    ? window.OrderStatus.getOrCreateMerchantOrderId(cartFingerprint)
+                    : ('elforat-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8));
                 const orderData = {
                     customerName: name,
                     phone: phone,
@@ -2802,6 +2812,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         .then(r => ({ data: r.data, error: r.error }));
 
                 const { data: insertedOrder, error: orderError } = await insertOnce(orderData);
+                let orderSaved = !!(insertedOrder && !orderError);
 
                 if (!orderError && insertedOrder) {
                     orderData.id = insertedOrder.id;
@@ -2818,7 +2829,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     submitBtn.disabled = false;
                     return;
                 } else if (orderError) {
-                    console.warn('فشل إدخال الطلب بالحقول الكاملة، جاري المحاولة بالحد الأدنى:', orderError.message);
+                    // console.error (مش warn): غالباً عمود ناقص (status_code..) أو صلاحيات RLS - الطلب هيتسجل ناقص بيانات
+                    console.error('فشل إدخال الطلب بالحقول الكاملة، جاري المحاولة بالحد الأدنى:', orderError.code, orderError.message);
                     const minimalData = {
                         customerName: name,
                         phone: phone,
@@ -2832,7 +2844,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         items: orderItems
                     };
                     const { data: minOrder, error: minError } = await insertOnce(minimalData);
-                    if (!minError && minOrder) orderData.id = minOrder.id;
+                    if (!minError && minOrder) { orderData.id = minOrder.id; orderSaved = true; }
+                    else console.error('فشل إدخال الطلب نهائياً:', minError);
+                }
+
+                // الدفع الإلكتروني: ممنوع نفتح popup الدفع لو الطلب مش متسجل (العميل كان هيدفع على رقم طلب مش موجود)
+                if (!orderSaved && (isInstapay || isVodafoneCash)) {
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    showCustomAlert('تعذر تسجيل طلبك الآن، ولم يتم خصم أي مبلغ. برجاء المحاولة مرة أخرى أو التواصل معنا على واتساب.', 'error');
+                    return;
                 }
 
                 // رقم الطلب المعروض للعميل في رسالة InstaPay / فودافون كاش

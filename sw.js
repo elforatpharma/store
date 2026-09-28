@@ -1,16 +1,16 @@
 // Service Worker - Elforat Pharma PWA
 // غيّري رقم النسخة (وكل ?v= في index.html) مع كل نشر عشان الزوار ياخدوا التحديث.
-const CACHE_NAME = 'elforat-cache-v14';
+const CACHE_NAME = 'elforat-cache-v15';
 const STATIC_ASSETS = [
   './',
   './index.html',
-  './style.min.css?v=14',
-  './tailwind-built.css?v=14',
-  './welcome-offer.js?v=14',
-  './order-status.js?v=14',
-  './analysis.js?v=14',
-  './instapay.js?v=14',
-  './vodafone-cash.js?v=14',
+  './style.min.css?v=15',
+  './tailwind-built.css?v=15',
+  './welcome-offer.js?v=15',
+  './order-status.js?v=15',
+  './analysis.js?v=15',
+  './instapay.js?v=15',
+  './vodafone-cash.js?v=15',
   './instapay-logo.webp',
   './vodafone-cash-logo.webp',
   './manifest.json',
@@ -28,7 +28,8 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME).then((cache) =>
       // addAll كانت بتفشل كلها لو ملف واحد مش موجود (فمفيش حاجة كانت بتتخزن).
       // دلوقتي كل ملف لوحده: اللي موجود بيتخزن واللي مش موجود بيتجاهل.
-      Promise.allSettled(STATIC_ASSETS.map((url) => cache.add(url)))
+      // cache:'reload' عشان GitHub Pages بيرجّع max-age=600 وممكن نخزّن نسخة قديمة من كاش المتصفح
+      Promise.allSettled(STATIC_ASSETS.map((url) => cache.add(new Request(url, { cache: 'reload' }))))
     )
   );
   self.skipWaiting();
