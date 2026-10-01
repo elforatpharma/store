@@ -1042,6 +1042,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 morphLine.style.left = `${activeLink.offsetLeft}px`;
             });
         }
+
+        // مزامنة شريط التنقل السفلي للموبايل (Mobile Bottom Nav)
+        document.querySelectorAll('.mobile-bottom-nav-item').forEach(item => {
+            const bottomTarget = item.getAttribute('data-bottom-target');
+            if (bottomTarget === activeId || (activeId === 'about' && bottomTarget === 'home')) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
     }
 
     window.addEventListener('resize', () => {
@@ -2087,12 +2097,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateBadge() {
+        const totalItems = cart.reduce((s, i) => s + i.qty, 0);
         const b = document.getElementById('cart-badge');
-        if (b) b.innerText = cart.reduce((s, i) => s + i.qty, 0);
+        if (b) b.innerText = totalItems;
+        const bBottom = document.getElementById('cart-badge-bottom');
+        if (bBottom) bBottom.innerText = totalItems;
 
         // تحديث شارة المفضلة
+        const favCount = FavoritesManager.getCount();
         const favBadge = document.getElementById('favorites-badge');
-        if (favBadge) favBadge.innerText = FavoritesManager.getCount();
+        if (favBadge) favBadge.innerText = favCount;
+        const favBadgeBottom = document.getElementById('favorites-badge-bottom');
+        if (favBadgeBottom) favBadgeBottom.innerText = favCount;
     }
 
     // ==========================================

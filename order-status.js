@@ -93,39 +93,26 @@ window.OrderStatus = (() => {
   }
 
   async function insertOrderIdempotent(supabaseClient, orderData) {
-    let { data, error } = await supabaseClient
-      .from('orders')
-      .insert([orderData])
-      .select('id')
-      .single();
+    // ⚠️ لازم الـ insert يتبعت من غير .select() ولا return=representation.
+    // PostgREST بيحوّل الشكل ده لـ INSERT ... RETURNING، و RLS بيطبّق
+    // سياسة SELECT على الـ RETURNING نفسه. وده معناه إن الطلب كله بيترفض
+    // بـ 42501 والصف ما يتكتبش أصلاً (متحقّق عليهagainst السيرفر الحقيقي:
+    //   POST /rest/v1/orders?select=id + Prefer: return=representation -> 401 42501
+    //   POST /rest/v1/orders                                          -> 201 ok)
+    // الـ anon عنده سياسة INSERT بس، وده الصح أمنياً (مش عايزين الـ anon
+    // يقرأ طلبات كل العملاء). فلازم نكتفي بـ 201 ونحدّد النجاح من الكود.
+    const { error } = await supabaseClient.from('orders').insert([orderData]);
 
-    if (error && await isDuplicateOrderError(error) && orderData.merchant_order_id) {
-      console.warn('الطلب ده اتسجل قبل كده بنفس merchant_order_id (محاولة متكررة) - جاري استرجاعه بدل التكرار.');
-      const existing = await supabaseClient
-        .from('orders')
-        .select('id')
-        .eq('merchant_order_id', orderData.merchant_order_id)
-        .maybeSingle();
-      if (existing.data) {
-        return { data: existing.data, error: null, wasDuplicate: true };
-      }
-      // التكرار اتأكد (23505) يعني الطلب متسجل فعلاً، بس القراءة ممنوعة بـ RLS للـ anon
-      // (وده الصح أمنياً). نعتبره نجاح من غير id بدل ما نفشل ونحاول نسجله تاني.
+    if (!error) return { data: { id: null }, error: null, wasDuplicate: false };
+
+    if (await isDuplicateOrderError(error) && orderData.merchant_order_id) {
+      // الطلب ده اتسجل قبل كده بنفس merchant_order_id (تكرار من العميل أو
+      // إعادة محاولة بعد انقطاع الشبكة) - الطلب موجود بالفعل، فده نجاح.
+      console.warn('الطلب ده اتسجل قبل كده بنفس merchant_order_id (محاولة متكررة) - مش هنضيف نسخة تانية.');
       return { data: { id: null }, error: null, wasDuplicate: true };
     }
-    // RLS: الـ anon مسموحله INSERT بس، و INSERT ... RETURNING محتاج صلاحية SELECT
-    // كمان (غير كده PostgREST بيرفض ويعمل rollback للطلب كله بـ 42501).
-    // نعيد الإدخال من غير ما نطلب الصف راجع - الطلب يتسجل والـ id بيبقى null.
-    if (error && (error.code === '42501' || /row-level security/i.test(error.message || ''))) {
-      console.warn('RLS منعت قراءة الصف بعد الإدخال - إعادة الإدخال من غير select.');
-      const retry = await supabaseClient.from('orders').insert([orderData]);
-      if (!retry.error) return { data: { id: null }, error: null, wasDuplicate: false };
-      if (await isDuplicateOrderError(retry.error) && orderData.merchant_order_id) {
-        return { data: { id: null }, error: null, wasDuplicate: true };
-      }
-      return { data: null, error: retry.error, wasDuplicate: false };
-    }
-    return { data, error, wasDuplicate: false };
+
+    return { data: null, error, wasDuplicate: false };
   }
 
   return {

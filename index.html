@@ -54,7 +54,7 @@
                     var hu = sc && sc.data && sc.data.hero_image_url;
                     hu = hu ? ('https://wsrv.nl/?url=' + encodeURIComponent(hu) + '&w=900&q=75&output=webp') : 'hero-products.webp';
                     var pl = document.createElement('link');
-                    pl.rel = 'preload'; pl.as = 'image'; pl.href = hu; pl.media = '(min-width:1024px)';
+                    pl.rel = 'preload'; pl.as = 'image'; pl.href = hu; pl.media = '(min-width:1024px)'; pl.setAttribute('fetchpriority', 'high');
                     document.head.appendChild(pl);
                 } catch (e2) { }
                 window.__productsPrefetch = fetch(base + '/rest/v1/products?select=id,name,category,price,oldPrice,img,badge,desc,ingredients,size,stock,images,gallery,is_active&order=priority.desc,id.asc&limit=1000', {
@@ -334,7 +334,7 @@
 <!-- Main Showcase Card -->
 <div class="relative rounded-3xl p-1.5 shadow-2xl bg-white/40 backdrop-blur-md border border-white/60">
 <div class="aspect-square max-h-[520px] rounded-2xl overflow-hidden relative group flex items-center justify-center shadow-inner bg-slate-100">
-<img alt="منتجات العناية بالبشرة والجمال الفرات فارما" decoding="async" width="520" height="520" class="hero-main-image w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" data-fallback-src="logo.png" onerror="if (this.src !== this.dataset.fallbackSrc) { this.src = this.dataset.fallbackSrc; this.classList.remove('object-cover'); this.classList.add('object-contain', 'p-8'); }">
+<img alt="منتجات العناية بالبشرة والجمال الفرات فارما" decoding="async" fetchpriority="high" loading="eager" width="520" height="520" class="hero-main-image w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" data-fallback-src="logo.png" onerror="if (this.src !== this.dataset.fallbackSrc) { this.src = this.dataset.fallbackSrc; this.classList.remove('object-cover'); this.classList.add('object-contain', 'p-8'); }">
 <script>
     // بنحدد src الصورة من هنا فقط (بدل ما تتحط في الـ HTML مباشرة) عشان
     // منحملش نسختين مع بعض: لو عندنا كاش من زيارة سابقة فيه صورة براندنج
@@ -1608,6 +1608,27 @@
         </div>
     </footer>
 
+    <!-- Mobile Bottom Navigation Bar (App-like experience) -->
+    <nav id="mobile-bottom-nav" class="mobile-bottom-nav lg:hidden" aria-label="شريط التنقل السفلي">
+        <button type="button" class="mobile-bottom-nav-item active" data-bottom-target="home" onclick="app.navigate('home')">
+            <i class="fa-solid fa-house" aria-hidden="true"></i>
+            <span>الرئيسية</span>
+        </button>
+        <button type="button" class="mobile-bottom-nav-item" data-bottom-target="catalog" onclick="app.navigate('catalog')">
+            <i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i>
+            <span>المنتجات</span>
+        </button>
+        <button type="button" class="mobile-bottom-nav-item" data-bottom-target="favorites" onclick="app.navigate('favorites')">
+            <i class="fa-regular fa-heart" aria-hidden="true"></i>
+            <span>المفضلة</span>
+            <span id="favorites-badge-bottom" class="mobile-bottom-nav-badge bg-rose-500 text-white">0</span>
+        </button>
+        <button type="button" class="mobile-bottom-nav-item" data-bottom-target="cart" onclick="app.navigate('cart')">
+            <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
+            <span>الحقيبة</span>
+            <span id="cart-badge-bottom" class="mobile-bottom-nav-badge bg-gradient-to-r from-primary to-secondary text-white">0</span>
+        </button>
+    </nav>
 
     <!-- instapay.js / vodafone-cash.js / order-status.js مش محمّلين هنا بعد دلوقتي:
          كلهم بيتستخدموا وقت تأكيد الطلب بس (45 KiB خام كان بيتحمّلوا مع الصفحة
