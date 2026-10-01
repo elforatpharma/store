@@ -9,7 +9,7 @@
  *  4) الأدمن بيراجع الإيصال ويحوّل حالة الطلب يدوياً من لوحة التحكم.
  *
  * الإعدادات بتتقرأ من جدول settings (الصف id = 1، عمود data) — نفس مكان إعدادات InstaPay:
- *   vodafone_cash_phone : رقم الهاتف اللي العميل يحوّل عليه (لو مش موجود بنستخدم DEFAULT_PHONE تحت)
+ *   vodafone_cash_phone : رقم الهاتف اللي العميل يحوّل عليه (لو مش موجود/صالح الدفع بيتوقف)
  *   store_whatsapp       : رقم واتساب المتجر (نفس الرقم المستخدم في InstaPay - اختياري)
  */
 window.VodafoneCashCheckout = (() => {
@@ -26,7 +26,7 @@ window.VodafoneCashCheckout = (() => {
   }
 
   const DEFAULT_WHATSAPP = "201146809133";
-  const DEFAULT_PHONE = "01065863803"; // رقم التحويل الافتراضي (لو مفيش vodafone_cash_phone صالح في الإعدادات)
+  // مفيش رقم تحويل افتراضي عن قصد: لو vodafone_cash_phone مش متظبط في settings الدفع بيتوقف.
   const ANDROID_PACKAGE = "com.emeint.android.myservices"; // تطبيق فودافون كاش الصحيح (مؤكد من صاحبة المتجر)
   const PLAY_URL = "https://play.google.com/store/apps/details?id=" + ANDROID_PACKAGE;
   const IOS_URL = "https://apps.apple.com/eg/search?term=vodafone%20cash"; // مفيش آيدي آيفون مؤكد عندي - بيفتح نتيجة بحث بدل تخمين غلط
@@ -71,7 +71,11 @@ window.VodafoneCashCheckout = (() => {
       console.warn("VodafoneCash: تعذر تحميل الإعدادات", e);
       throw new Error("تعذر تحميل بيانات الدفع الآن، حاولي مرة أخرى بعد قليل.");
     }
-    const phone = normalizePhone(row.vodafone_cash_phone) || DEFAULT_PHONE;
+    const phone = normalizePhone(row.vodafone_cash_phone);
+    if (!phone) {
+      console.error("VodafoneCash: vodafone_cash_phone مش متظبط أو مش صالح في settings");
+      throw new Error("طريقة الدفع غير متاحة مؤقتًا، اختاري طريقة دفع أخرى أو تواصلي معنا على واتساب.");
+    }
     return {
       phone,
       whatsapp: normalizeWhatsApp(row.store_whatsapp) || DEFAULT_WHATSAPP,

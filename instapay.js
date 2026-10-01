@@ -8,7 +8,7 @@
  *  4) الأدمن بيراجع الإيصال ويحوّل حالة الطلب يدوياً من لوحة التحكم.
  *
  * الإعدادات بتتقرأ من جدول settings (الصف id = 1، عمود data) — نفس مكان اللوجو وصورة الهيرو:
- *   instapay_phone : رقم الهاتف اللي العميل يحوّل عليه (لو مش موجود بنستخدم DEFAULT_PHONE تحت)
+ *   instapay_phone : رقم الهاتف اللي العميل يحوّل عليه (لو مش موجود/صالح الدفع بيتوقف)
  *   store_whatsapp : رقم واتساب المتجر (اختياري - لو مش موجود بنستخدم الرقم الافتراضي تحت)
  *   instapay_link  : رابط الدفع الخاص بحسابك من تطبيق InstaPay (https://ipn.eg/S/.../instapay/...)
  *                    اختياري، لكنه بيخلي زر "فتح تطبيق InstaPay" يفتح التطبيق فعلاً على الموبايل
@@ -29,8 +29,8 @@ window.InstaPayCheckout = (() => {
   const DEFAULT_WHATSAPP = "201146809133";
   // رابط الدفع الخاص بحساب المالك (m.salama.insta@instapay) - بيفتح تطبيق
   // InstaPay مباشرة مع تجهيز المستلم تلقائياً، والعميل بس يكتب المبلغ ويأكد
-  const DEFAULT_LINK = "https://ipn.eg/S/m.salama.insta/instapay/8Whbum";
-  const DEFAULT_PHONE = "01065863803"; // رقم التحويل الافتراضي (لو مفيش instapay_phone صالح في الإعدادات)
+  // مفيش رقم/رابط تحويل افتراضي هنا عن قصد: الفلوس بتتحول على الرقم ده، فلو مش متظبط
+  // في settings (instapay_phone) الدفع بيتوقف بدل ما يتحوّل لرقم قديم متخزّن في الكود.
   const ANDROID_PACKAGE = "com.egyptianbanks.instapay";
   const PLAY_URL = "https://play.google.com/store/apps/details?id=" + ANDROID_PACKAGE;
   const IOS_URL = "https://apps.apple.com/eg/app/instapay-egypt/id1592108795";
@@ -84,11 +84,15 @@ window.InstaPayCheckout = (() => {
       console.warn("InstaPay: تعذر تحميل الإعدادات", e);
       throw new Error("تعذر تحميل بيانات الدفع الآن، حاولي مرة أخرى بعد قليل.");
     }
-    const phone = normalizePhone(row.instapay_phone) || DEFAULT_PHONE;
+    const phone = normalizePhone(row.instapay_phone);
+    if (!phone) {
+      console.error("InstaPay: instapay_phone مش متظبط أو مش صالح في settings");
+      throw new Error("طريقة الدفع غير متاحة مؤقتًا، اختاري طريقة دفع أخرى أو تواصلي معنا على واتساب.");
+    }
     return {
       phone,
       whatsapp: normalizeWhatsApp(row.store_whatsapp) || DEFAULT_WHATSAPP,
-      link: normalizeLink(row.instapay_link) || normalizeLink(DEFAULT_LINK),
+      link: normalizeLink(row.instapay_link),
     };
   }
 
@@ -107,7 +111,7 @@ window.InstaPayCheckout = (() => {
    * متصفح أندرويد مبيفتحش من صفحة ويب غير الأنشطة المعلنة BROWSABLE، وتطبيق InstaPay
    * الوحيد اللي بيستقبله من المتصفح هو روابط الدفع بتاعته (https://ipn.eg/S/.../instapay/...).
    * وأي رابط ipn.eg مش صحيح بيفتح التطبيق ويكتب جواه "رابط غير صحيح" — عشان كده:
-   *  - لو فيه رابط دفع صحيح (instapay_link / DEFAULT_LINK): أندرويد بيفتحه في التطبيق مباشرة
+   *  - لو فيه رابط دفع صحيح (instapay_link): أندرويد بيفتحه في التطبيق مباشرة
    *    (ولو التطبيق مش منزّل بيفتح الرابط في المتصفح)، وآيفون/الكمبيوتر بيفتحوا الرابط.
    *  - لو مفيش رابط: مبنبعتش أي رابط للتطبيق (عشان مايظهرش "رابط غير صحيح")، وبنطلب من Google Play
    *    يشغّل التطبيق (market://launch). ده مش موثّق رسمياً لتشغيل التطبيقات المنزّلة،

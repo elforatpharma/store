@@ -49,8 +49,16 @@
 
             const submitBtn = checkoutForm.querySelector('button[type="submit"]');
             const originalBtnText = submitBtn.innerText;
-            submitBtn.innerText = 'جاري تحويلك للواتساب...';
+            submitBtn.innerText = 'جاري تسجيل طلبك...';
             submitBtn.disabled = true;
+
+            // مفيش نت = مفيش طلب: منبدأش أي حاجة ولا نمسح السلة
+            if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+                showCustomAlert('مفيش اتصال بالإنترنت، لم يتم تسجيل طلبك. سلتك محفوظة، حاولي مرة أخرى بعد رجوع الاتصال.', 'error');
+                return;
+            }
 
             // ملفات الدفع بتتحمّل مع أول فتح لصفحة السلة، بس لو العميلة فتحت
             // السلة ريفيتش أو ضغطت تأكيد بسرعة بنستناها هنا قبل ما نقرأ منها.
@@ -178,78 +186,107 @@
             let instapayOrderNo = null;
             let orderWasSaved = false;
 
-            // [تحديث أمان]: إعادة جلب الأسعار الحقيقية من قاعدة البيانات والتحقق من الكوبون
-            // لمنع أي تلاعب محتمل في localStorage أو أدوات المطور (DevTools)
+            // [أمان] localStorage مش مصدر ثقة: السعر والاسم بيتجابوا من قاعدة البيانات دايماً،
+            // ولو ماقدرناش نتحقق (خطأ شبكة) الطلب بيقف بدل ما نكمل بسعر السلة المحفوظ في المتصفح.
+            const isRealGift = (i) => !!(i && i.isGift && String(i.id == null ? '' : i.id).indexOf('gift_') === 0);
+            const abortCheckout = (msg) => {
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+                showCustomAlert(msg, 'error');
+            };
             const dbPriceMap = new Map();
-            if (Array.isArray(S.productsDB)) {
-                S.productsDB.forEach(p => {
-                    if (p && p.id != null) dbPriceMap.set(String(p.id), Number(p.price) || 0);
-                });
-            }
-
-            try {
-                const itemIds = S.cart.filter(i => !i.isGift && i.id).map(i => i.id);
-                if (itemIds.length) {
-                    const { data: verifiedProducts, error: pErr } = await _supabase
-                        .from('products')
-                        .select('id, price')
-                        .in('id', itemIds);
-                    if (!pErr && Array.isArray(verifiedProducts)) {
-                        verifiedProducts.forEach(p => {
-                            if (p && p.id != null) dbPriceMap.set(String(p.id), Number(p.price) || 0);
-                        });
-                    }
+            const dbNameMap = new Map();
+            const realIds = S.cart.filter(i => !isRealGift(i) && i.id != null).map(i => i.id);
+            if (realIds.length) {
+                let verifiedProducts = null, pErr = null;
+                try {
+                    const r = await _supabase.from('products').select('id, name, price').in('id', realIds);
+                    verifiedProducts = r.data; pErr = r.error;
+                } catch (e) { pErr = e; }
+                if (pErr || !Array.isArray(verifiedProducts)) {
+                    reportCheckoutError(new Error('price verification failed: ' + String(pErr && pErr.message || pErr)), 'checkout:verify_prices');
+                    abortCheckout('تعذر التحقق من الأسعار الآن، لم يتم تسجيل طلبك. سلتك محفوظة، حاولي مرة أخرى.');
+                    return;
                 }
-            } catch (pFetchErr) {
-                console.warn('تعذر جلب الأسعار الحية، الاعتماد على S.productsDB الموثوقة:', pFetchErr);
+                verifiedProducts.forEach(p => {
+                    if (p && p.id != null) {
+                        dbPriceMap.set(String(p.id), Number(p.price) || 0);
+                        dbNameMap.set(String(p.id), String(p.name || ''));
+                    }
+                });
+                const missing = S.cart.filter(i => !isRealGift(i) && !dbPriceMap.has(String(i.id)));
+                if (missing.length) {
+                    const names = missing.map(i => i.name).join('، ');
+                    S.cart = S.cart.filter(i => isRealGift(i) || dbPriceMap.has(String(i.id)));
+                    saveCart();
+                    renderCart();
+                    abortCheckout('منتجات مبقتش متاحة وتم حذفها من السلة: ' + names + '. راجعي السلة وأكدي الطلب تاني.');
+                    return;
+                }
             }
 
             let subtotal = 0;
+            let shownSubtotal = 0; // اللي كان ظاهر للعميلة (من السلة المحفوظة) - للمقارنة بس
             const orderItems = [];
 
             S.cart.forEach(item => {
-                let verifiedPrice = Number(item.price || 0);
-                if (!item.isGift && item.id != null && dbPriceMap.has(String(item.id))) {
-                    verifiedPrice = dbPriceMap.get(String(item.id));
-                }
-                const qty = Math.max(1, parseInt(item.qty) || 1);
-                const itemTotal = item.isGift ? 0 : (verifiedPrice * qty);
-                subtotal += itemTotal;
+                const gift = isRealGift(item);
+                const qty = Math.max(1, Math.min(parseInt(item.qty) || 1, 99));
+                const verifiedPrice = gift ? 0 : dbPriceMap.get(String(item.id));
+                subtotal += verifiedPrice * qty;
+                if (!gift) shownSubtotal += (Number(item.price) || 0) * qty;
                 orderItems.push({
                     id: item.id,
-                    name: item.name,
+                    name: gift ? String(item.name || '').slice(0, 120) : dbNameMap.get(String(item.id)),
                     qty: qty,
-                    price: item.isGift ? 0 : verifiedPrice,
-                    isGift: item.isGift || false
+                    price: verifiedPrice,
+                    isGift: gift
                 });
             });
 
+            // السعر الحقيقي اختلف عن اللي كانت شايفاه: منكملش الطلب بسعر مفاجئ
+            if (Math.abs(shownSubtotal - subtotal) > 0.001) {
+                S.cart.forEach(i => { if (!isRealGift(i)) i.price = dbPriceMap.get(String(i.id)); });
+                saveCart();
+                renderCart();
+                abortCheckout('أسعار بعض المنتجات اتحدّثت. راجعي الإجمالي الجديد وأكدي الطلب.');
+                return;
+            }
+
             // ===== التحقق من الكوبون مباشرة من قاعدة البيانات =====
+            // نسبة الخصم المحفوظة في localStorage للعرض بس. هنا بنقرا من السيرفر،
+            // ولو الكوبون مبقاش صالح أو ماقدرناش نتحقق، الطلب بيقف (مفيش خصم من نسخة محلية).
             let verifiedDiscountAmount = 0;
             let verifiedCouponCode = null;
             if (S.appliedCoupon && S.appliedCoupon.code) {
+                let dbCoupon = null, cErr = null;
                 try {
                     const today = new Date().toISOString().split('T')[0];
-                    const { data: dbCoupon } = await _supabase
+                    const r = await _supabase
                         .from('coupons')
                         .select('code, discount_percentage, min_amount, max_uses, used_count')
                         .eq('code', String(S.appliedCoupon.code).trim())
                         .eq('is_active', true)
                         .gte('expiry_date', today)
                         .maybeSingle();
-
-                    if (dbCoupon && Number(dbCoupon.discount_percentage) > 0) {
-                        const usesOk = (dbCoupon.max_uses == null) || (Number(dbCoupon.used_count) || 0) < Number(dbCoupon.max_uses);
-                        if (usesOk) {
-                            verifiedCouponCode = dbCoupon.code;
-                            const pct = Number(dbCoupon.discount_percentage);
-                            verifiedDiscountAmount = Math.round(((subtotal * pct) / 100) * 100) / 100;
-                        }
-                    }
-                } catch (cErr) {
-                    console.warn('تعذر التحقق من الكوبون من السيرفر:', cErr);
-                    verifiedDiscountAmount = getCartDiscount(subtotal);
-                    verifiedCouponCode = S.appliedCoupon.code;
+                    dbCoupon = r.data; cErr = r.error;
+                } catch (e) { cErr = e; }
+                if (cErr) {
+                    reportCheckoutError(new Error('coupon verification failed: ' + String(cErr && cErr.message || cErr)), 'checkout:verify_coupon');
+                    abortCheckout('تعذر التحقق من الكوبون الآن، لم يتم تسجيل طلبك. سلتك محفوظة، حاولي مرة أخرى.');
+                    return;
+                }
+                const pct = dbCoupon ? Number(dbCoupon.discount_percentage) : 0;
+                const usesOk = dbCoupon && ((dbCoupon.max_uses == null) || (Number(dbCoupon.used_count) || 0) < Number(dbCoupon.max_uses));
+                if (dbCoupon && pct > 0 && usesOk) {
+                    verifiedCouponCode = dbCoupon.code;
+                    verifiedDiscountAmount = Math.round(((subtotal * pct) / 100) * 100) / 100;
+                } else {
+                    S.appliedCoupon = null;
+                    saveCoupon();
+                    renderCart();
+                    abortCheckout('الكوبون لم يعد صالحاً وتم إلغاؤه. راجعي الإجمالي وأكدي الطلب تاني.');
+                    return;
                 }
             }
 
@@ -319,8 +356,8 @@
                 // محتاج unique constraint على عمود merchant_order_id (شوفي migration.sql)
                 const insertOnce = window.OrderStatus
                     ? (data) => window.OrderStatus.insertOrderIdempotent(_supabase, data)
-                    : (data) => _supabase.from('orders').insert([data]).select('id').single()
-                        .then(r => ({ data: r.data, error: r.error }));
+                    : (data) => _supabase.from('orders').insert([data])
+                        .then(r => ({ data: r.error ? null : { id: null }, error: r.error }));
 
                 const { data: insertedOrder, error: orderError } = await insertOnce(orderData);
                 let orderSaved = !!(insertedOrder && !orderError);
@@ -336,6 +373,52 @@
                     saveCoupon();
                     renderCart();
                     showCustomAlert('كوبون الترحيب WELCOME10 استُخدم قبل كده بنفس رقم الهاتف، تم إلغاؤه. راجعي الإجمالي وأكملي الطلب.', 'error');
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    return;
+                } else if (orderError && /ORDER_(RATE_LIMITED|BLOCKED|INVALID_DATA)/.test(orderError.message || '')) {
+                    // رفض من طبقة منع السبام على السيرفر (05_spam_protection.sql). مفيش محاولة تانية بحد أدنى
+                    // (هتترفض برضه)، والسلة بتفضل زي ما هي. الرسالة عامة عن قصد (مش بنقول أنهي حد اتجاوز).
+                    const spamReason = /RATE_LIMITED/.test(orderError.message) ? 'rate_limited'
+                        : /BLOCKED/.test(orderError.message) ? 'blocked' : 'invalid_data';
+                    trackStoreEvent('checkout_failed', {
+                        coupon_code: couponCode,
+                        cart_total: finalTotal,
+                        metadata: { payment, items_count: orderItems.length, reason: spamReason }
+                    });
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    showCustomAlert(
+                        spamReason === 'rate_limited'
+                            ? 'تم إرسال عدد كبير من الطلبات من نفس الرقم أو الجهاز في وقت قصير. برجاء المحاولة بعد ساعة أو التواصل معنا على واتساب.'
+                            : spamReason === 'blocked'
+                                ? 'تعذر إتمام الطلب حالياً. برجاء التواصل معنا على واتساب.'
+                                : 'راجعي بيانات الاسم والعنوان ورقم الهاتف وأعيدي المحاولة.',
+                        'error'
+                    );
+                    return;
+                } else if (orderError && /ORDER_OUT_OF_STOCK/.test(orderError.message || '')) {
+                    // السيرفر رفض الطلب لأن كمية منتج مبقتش متاحة (عميلة تانية اشترت آخر قطعة في نفس الوقت).
+                    // الـ trigger على السيرفر هو اللي بيقرر (atomic)، هنا بنحدّث المخزون والسلة بس.
+                    trackStoreEvent('checkout_failed', {
+                        coupon_code: couponCode,
+                        cart_total: finalTotal,
+                        metadata: { payment, items_count: orderItems.length, reason: 'out_of_stock' }
+                    });
+                    window.OrderStatus?.clearPendingMerchantOrderId?.();
+                    try { if (S.fetchProducts) await S.fetchProducts(); } catch (_) { }
+                    const lacking = [];
+                    S.cart = S.cart.filter(function (ci) {
+                        if (ci.isGift) return true;
+                        const live = (S.productsDB || []).find(function (p) { return String(p.id) === String(ci.id); });
+                        if (!live) return true;
+                        if (live.stock <= 0) { lacking.push(ci.name + ' (نفذ)'); return false; }
+                        if (ci.qty > live.stock) { lacking.push(ci.name + ' (المتاح ' + live.stock + ')'); ci.qty = live.stock; }
+                        return true;
+                    });
+                    saveCart();
+                    renderCart();
+                    showCustomAlert('للأسف الكمية دي مبقتش متاحة' + (lacking.length ? ': ' + lacking.join('، ') : '') + '. اتعدّلت السلة، راجعيها وأكدي الطلب تاني.', 'error');
                     submitBtn.innerText = originalBtnText;
                     submitBtn.disabled = false;
                     return;
@@ -401,16 +484,25 @@
                     });
                 }
 
-                // الدفع الإلكتروني: ممنوع نفتح popup الدفع لو الطلب مش متسجل (العميل كان هيدفع على رقم طلب مش موجود)
-                if (!orderSaved && (isInstapay || isVodafoneCash)) {
-                    trackStoreEvent('payment_failed', {
-                        coupon_code: couponCode,
-                        cart_total: finalTotal,
-                        metadata: { provider: isInstapay ? 'instapay' : 'vodafone_cash', reason: 'order_not_saved' }
-                    });
+                // مفيش نجاح قبل ما السيرفر يأكد الـ INSERT: لو الطلب مش متسجل (أي طريقة دفع)
+                // منوقف هنا - مفيش popup دفع، ولا واتساب، ولا رسالة نجاح، والسلة بتفضل زي ما هي.
+                // merchant_order_id بيفضل محفوظ فإعادة المحاولة idempotent (مفيش طلب مكرر).
+                if (!orderSaved) {
+                    if (isInstapay || isVodafoneCash) {
+                        trackStoreEvent('payment_failed', {
+                            coupon_code: couponCode,
+                            cart_total: finalTotal,
+                            metadata: { provider: isInstapay ? 'instapay' : 'vodafone_cash', reason: 'order_not_saved' }
+                        });
+                    }
                     submitBtn.innerText = originalBtnText;
                     submitBtn.disabled = false;
-                    showCustomAlert('تعذر تسجيل طلبك الآن، ولم يتم خصم أي مبلغ. برجاء المحاولة مرة أخرى أو التواصل معنا على واتساب.', 'error');
+                    showCustomAlert(
+                        (isInstapay || isVodafoneCash)
+                            ? 'تعذر تسجيل طلبك الآن، ولم يتم خصم أي مبلغ. برجاء المحاولة مرة أخرى أو التواصل معنا على واتساب.'
+                            : 'تعذر تسجيل طلبك الآن ولم يتم إرسال أي شيء. سلتك محفوظة، برجاء المحاولة مرة أخرى أو التواصل معنا على واتساب.',
+                        'error'
+                    );
                     return;
                 }
 
@@ -435,12 +527,14 @@
                 reportCheckoutError(err, 'checkout:insert_order');
                 if (isInstapay || isVodafoneCash) {
                     trackStoreEvent('payment_failed', { metadata: { provider: isInstapay ? 'instapay' : 'vodafone_cash', reason: 'exception', error: String(err && err.message || err).slice(0, 200) } });
-                    // قبل كده كان بيكمل ويفتح نافذة التحويل برقم طلب فاضي لطلب ممكن ميكونش اتسجل
-                    submitBtn.innerText = originalBtnText;
-                    submitBtn.disabled = false;
-                    showCustomAlert('تعذر تسجيل طلبك الآن، ولم يتم خصم أي مبلغ. برجاء المحاولة مرة أخرى أو التواصل معنا على واتساب.', 'error');
-                    return;
+                } else {
+                    trackStoreEvent('checkout_failed', { metadata: { payment, reason: 'exception', error: String(err && err.message || err).slice(0, 200) } });
                 }
+                // قبل كده COD كان بيكمل لواتساب ويمسح السلة حتى لو الطلب ما اتسجلش
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+                showCustomAlert('تعذر تسجيل طلبك الآن، لم يتم إرسال أي شيء وسلتك محفوظة. برجاء المحاولة مرة أخرى أو التواصل معنا على واتساب.', 'error');
+                return;
             }
 
             if (isInstapay) {
@@ -506,7 +600,7 @@
             message += `💳 *طريقة الدفع:* ${payment}\n\n`;
             message += `*المنتجات المطلوبة:*\n`;
 
-            S.cart.forEach(item => {
+            orderItems.forEach(item => {
                 const itemTotal = item.price * item.qty;
                 const priceText = item.isGift ? 'مجاناً 🎁' : `${itemTotal} ج.م`;
                 message += `▫️ ${item.name} (الكمية: ${item.qty}) = ${priceText}\n`;

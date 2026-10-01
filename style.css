@@ -1441,7 +1441,8 @@ body {
 }
 
 /* Fix native select arrow overlapping text in RTL checkout form */
-#cust-payment {
+#cust-payment,
+#cust-governorate {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;

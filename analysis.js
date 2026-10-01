@@ -557,8 +557,30 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const savedCart = localStorage.getItem('elforat_cart');
             const parsed = savedCart ? JSON.parse(savedCart) : [];
-            cart = Array.isArray(parsed) ? parsed : [];
+            // localStorage للعرض بس (مش مصدر ثقة): نفلتر أي عنصر شكله غلط، والأسعار بتتحدّث
+            // من الكتالوج بعد تحميله (syncCartWithCatalog)، وسعر الطلب الحقيقي بييجي من السيرفر وقت التأكيد.
+            cart = (Array.isArray(parsed) ? parsed : [])
+                .filter(i => i && typeof i === 'object' && i.id != null && typeof i.name === 'string')
+                .map(i => Object.assign({}, i, {
+                    qty: Math.min(Math.max(parseInt(i.qty) || 1, 1), 99),
+                    price: Math.max(Number(i.price) || 0, 0)
+                }))
+                .filter(i => !i.isGift || String(i.id).indexOf('gift_') === 0);
         } catch (e) { cart = []; }
+    }
+
+    // تحديث سعر وكمية عناصر السلة المحفوظة من الكتالوج (اللي جاي من السيرفر) - للعرض بس
+    function syncCartWithCatalog() {
+        if (!cart.length || !Array.isArray(productsDB) || !productsDB.length) return;
+        let changed = false;
+        cart.forEach(function (it) {
+            if (it.isGift) return;
+            const p = productsDB.find(function (x) { return String(x.id) === String(it.id); });
+            if (!p) return;
+            if (it.price !== p.price) { it.price = p.price; changed = true; }
+            if (p.stock > 0 && it.qty > p.stock) { it.qty = p.stock; changed = true; }
+        });
+        if (changed) saveCart();
     }
 
     function saveCart() {
@@ -824,7 +846,8 @@ document.addEventListener("DOMContentLoaded", () => {
             desc: p.desc || '',
             ingredients: p.ingredients || '',
             size: p.size || '',
-            stock: parseInt(p.stock) || 100,
+            // NaN/null (مفيش قيمة) = 100 احتياطي، لكن 0 لازم يفضل 0 (كان `|| 100` بيحوّل "نفذ" لـ 100)
+            stock: Number.isFinite(parseInt(p.stock)) ? Math.max(parseInt(p.stock), 0) : 100,
             rating: p.rating || computeRatingForId(p.id),
             images: p.images || []
         }));
@@ -2293,6 +2316,7 @@ document.addEventListener("DOMContentLoaded", () => {
         loadPaymentScripts: loadPaymentScripts,
         loadShippingRates: loadShippingRates,
         getShipping: getShipping,
+        fetchProducts: fetchProducts,
         get productsDB() { return productsDB; },
         get cart() { return cart; },
         set cart(v) { cart = v; },
@@ -2813,6 +2837,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateBadge(); // تحديث شارة المفضلة عند التحميل
     fetchProducts().then(() => {
         hideGlobalLoader();
+        syncCartWithCatalog();
         restoreViewFromHash();
         setTimeout(checkLowStock, 4000);
     }).catch(() => {
