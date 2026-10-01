@@ -24,6 +24,14 @@
     var getTrafficParams = S.getTrafficParams;
     var getVisitorSessionId = S.getVisitorSessionId;
     var loadPaymentScripts = S.loadPaymentScripts;
+    var loadShippingRates = S.loadShippingRates;
+    var getShipping = S.getShipping;
+
+    // رقم الطلب المعروض للعميلة: آخر 8 حروف من merchant_order_id بحروف كبيرة.
+    // نفس التعريف في عمود order_ref (generated) في SQL، فبيظهر في الداشبورد ويتدوّر بيه.
+    function shortOrderNo(merchantId) {
+        return String(merchantId || '').slice(-8).toUpperCase();
+    }
     var ErrorHandler = S.ErrorHandler;
     var app = window.app;
 
@@ -47,23 +55,26 @@
             // ملفات الدفع بتتحمّل مع أول فتح لصفحة السلة، بس لو العميلة فتحت
             // السلة ريفيتش أو ضغطت تأكيد بسرعة بنستناها هنا قبل ما نقرأ منها.
             await loadPaymentScripts();
+            await loadShippingRates();
 
             const nameEl = document.getElementById('cust-name');
             const phoneEl = document.getElementById('cust-phone');
             const addressEl = document.getElementById('cust-address');
             const paymentEl = document.getElementById('cust-payment');
+            const governorateEl = document.getElementById('cust-governorate');
 
-            if (!nameEl || !phoneEl || !addressEl || !paymentEl) {
+            if (!nameEl || !phoneEl || !addressEl || !paymentEl || !governorateEl) {
                 showCustomAlert('يوجد خطأ في النموذج. يرجى التأكد من الحقول.', 'error');
                 submitBtn.innerText = originalBtnText;
                 submitBtn.disabled = false;
                 return;
             }
 
-            const name = nameEl.value;
+            const name = nameEl.value.trim();
             const phone = normalizeEgyptPhone(phoneEl.value);
-            const address = addressEl.value;
+            const address = addressEl.value.trim();
             const payment = paymentEl.value;
+            const governorate = governorateEl.value;
 
             // [حماية من السبام]: فحص حقل المصيدة (Honeypot) - إذا تم ملؤه فهو روبوت سبام
             const honeypotEl = document.getElementById('cust-fax-verify');
@@ -85,6 +96,31 @@
             const phoneRegex = /^01[0-9]{9}$/;
             if (!phoneRegex.test(phone)) {
                 showCustomAlert('عفواً، برجاء إدخال رقم هاتف صحيح يتكون من 11 رقم ويبدأ بـ 01', 'error');
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+                return;
+            }
+
+            // بيانات التوصيل: حد أدنى بسيط يمنع طلبات مش بتتوصل (اسم وعنوان ناقصين)
+            const wordCount = (s) => s.split(/\s+/).filter(Boolean).length;
+            if (name.length < 5 || wordCount(name) < 2 || /^[\d\s+\-]+$/.test(name)) {
+                showCustomAlert('برجاء كتابة الاسم بالكامل (الاسم الأول واسم العائلة).', 'error');
+                nameEl.focus();
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+                return;
+            }
+
+            if (!governorate) {
+                showCustomAlert('اختاري المحافظة عشان نحسب الشحن.', 'error');
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+                return;
+            }
+
+            if (address.length < 15 || wordCount(address) < 3) {
+                showCustomAlert('برجاء كتابة العنوان بالتفصيل (المنطقة واسم الشارع ورقم المبنى أو أقرب علامة مميزة).', 'error');
+                addressEl.focus();
                 submitBtn.innerText = originalBtnText;
                 submitBtn.disabled = false;
                 return;
@@ -140,6 +176,7 @@
                     ? window.VodafoneCashCheckout.ORDER_STATUS
                     : (window.OrderStatus ? window.OrderStatus.label(orderStatusCode, 'cod') : 'قيد التنفيذ');
             let instapayOrderNo = null;
+            let orderWasSaved = false;
 
             // [تحديث أمان]: إعادة جلب الأسعار الحقيقية من قاعدة البيانات والتحقق من الكوبون
             // لمنع أي تلاعب محتمل في localStorage أو أدوات المطور (DevTools)
@@ -217,8 +254,26 @@
             }
 
             const discountAmount = verifiedDiscountAmount;
-            const finalTotal = Math.max(subtotal - discountAmount, 0);
             const couponCode = verifiedCouponCode;
+
+            // الشحن: السعر من جدول shipping_rates، ومجاني لو الإجمالي الفرعي وصل لحد الشحن المجاني
+            const shipping = getShipping(subtotal, governorate);
+            if (!shipping.ok) {
+                showCustomAlert(
+                    shipping.reason === 'unavailable'
+                        ? 'عفواً، الشحن لهذه المحافظة غير متاح حالياً. تواصلي معنا على واتساب.'
+                        : 'تعذر تحميل أسعار الشحن، برجاء إعادة المحاولة.',
+                    'error'
+                );
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+                return;
+            }
+            const shippingFee = shipping.fee;
+            const finalTotal = Math.round((Math.max(subtotal - discountAmount, 0) + shippingFee) * 100) / 100;
+            // المحافظة بتتكتب في أول العنوان كمان عشان تظهر في الداشبورد وإشعار تليجرام
+            // (اللي بيقروا عمود address بس) حتى قبل ما يتعدّلوا يعرضوا عمود governorate.
+            const fullAddress = governorate + ' - ' + address;
             const traffic = getTrafficParams();
 
             try {
@@ -241,7 +296,9 @@
                 const orderData = {
                     customerName: name,
                     phone: phone,
-                    address: address,
+                    address: fullAddress,
+                    governorate: governorate,
+                    shipping_fee: shippingFee,
                     total: finalTotal,
                     status: orderStatus,
                     status_code: orderStatusCode,
@@ -282,6 +339,24 @@
                     submitBtn.innerText = originalBtnText;
                     submitBtn.disabled = false;
                     return;
+                } else if (orderError && /ORDER_(TOTAL_MISMATCH|INVALID_COUPON|BAD_GOVERNORATE|UNKNOWN_PRODUCT|INVALID_ITEMS|INVALID_GIFT)/.test(orderError.message || '')) {
+                    // السيرفر رفض الطلب لأن الأسعار/الشحن/الكوبون اتغيروا عن اللي كان ظاهر للعميلة.
+                    // مفيش محاولة بحد أدنى هنا (هتترفض برضه) - بنحدّث السلة ونوقف.
+                    reportCheckoutError(new Error('order rejected by server: ' + orderError.message), 'checkout:order_rejected');
+                    trackStoreEvent('checkout_failed', {
+                        coupon_code: couponCode,
+                        cart_total: finalTotal,
+                        metadata: { payment, items_count: orderItems.length, reason: 'server_rejected' }
+                    });
+                    if (/ORDER_INVALID_COUPON/.test(orderError.message || '')) {
+                        S.appliedCoupon = null;
+                        saveCoupon();
+                    }
+                    renderCart();
+                    showCustomAlert('الأسعار أو الشحن أو الكوبون اتغيروا عن اللي كان ظاهر. راجعي الإجمالي وأكدي الطلب تاني.', 'error');
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    return;
                 } else if (orderError) {
                     // console.error (مش warn): غالباً عمود ناقص (status_code..) أو صلاحيات RLS - الطلب هيتسجل ناقص بيانات
                     console.error('فشل إدخال الطلب بالحقول الكاملة، جاري المحاولة بالحد الأدنى:', orderError.code, orderError.message);
@@ -294,7 +369,9 @@
                     const minimalData = {
                         customerName: name,
                         phone: phone,
-                        address: address,
+                        address: fullAddress,
+                        governorate: governorate,
+                        shipping_fee: shippingFee,
                         total: finalTotal,
                         status: orderStatus,
                         // بنحافظ على merchant_order_id حتى في أقل نسخة من الطلب عشان
@@ -338,7 +415,8 @@
                 }
 
                 // رقم الطلب المعروض للعميل في رسالة InstaPay / فودافون كاش
-                instapayOrderNo = (orderData.id != null && /^\d{1,10}$/.test(String(orderData.id))) ? orderData.id : merchantId;
+                instapayOrderNo = shortOrderNo(merchantId);
+                orderWasSaved = orderSaved;
 
                 // كوبون الترحيب: أول طلب ناجح بيه = يتلغي فوراً
                 if (couponCode && orderSaved && window.WelcomeOffer
@@ -346,12 +424,8 @@
                     window.WelcomeOffer.markUsed();
                 }
 
-                // زيادة عداد استخدام الكوبون بعد نجاح الطلب
-                if (couponCode) {
-                    _supabase.rpc('increment_coupon_use', { p_code: couponCode })
-                        .then(() => { })
-                        .catch((e) => console.warn('زيادة استخدام الكوبون فشلت:', e));
-                }
+                // عداد استخدام الكوبون بيزيد في السيرفر جوه trigger الطلب نفسه
+                // (orders_validate_totals)، فمفيش rpc من المتصفح هنا.
 
                 // ملحوظة: إشعار تيليجرام بقى بيتبعت تلقائيًا من Supabase نفسها
                 // (Database Webhook على INSERT في جدول orders) بدل ما يتبعت من هنا.
@@ -361,6 +435,11 @@
                 reportCheckoutError(err, 'checkout:insert_order');
                 if (isInstapay || isVodafoneCash) {
                     trackStoreEvent('payment_failed', { metadata: { provider: isInstapay ? 'instapay' : 'vodafone_cash', reason: 'exception', error: String(err && err.message || err).slice(0, 200) } });
+                    // قبل كده كان بيكمل ويفتح نافذة التحويل برقم طلب فاضي لطلب ممكن ميكونش اتسجل
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    showCustomAlert('تعذر تسجيل طلبك الآن، ولم يتم خصم أي مبلغ. برجاء المحاولة مرة أخرى أو التواصل معنا على واتساب.', 'error');
+                    return;
                 }
             }
 
@@ -419,9 +498,11 @@
             }
 
             let message = `*طلب جديد من موقع Elforat Pharma* 🛍️\n\n`;
+            if (orderWasSaved && instapayOrderNo) message += `🔖 *رقم الطلب:* #${instapayOrderNo}\n`;
             message += `👤 *اسم العميل:* ${name}\n`;
             message += `📞 *رقم الهاتف:* ${phone}\n`;
-            message += `📍 *العنوان:* ${address}\n`;
+            message += `📍 *المحافظة:* ${governorate}\n`;
+            message += `🏠 *العنوان:* ${address}\n`;
             message += `💳 *طريقة الدفع:* ${payment}\n\n`;
             message += `*المنتجات المطلوبة:*\n`;
 
@@ -435,6 +516,7 @@
             if (discountAmount > 0) {
                 message += `🏷️ *خصم كود (${couponCode}):* -${discountAmount} ج.م\n`;
             }
+            message += `🚚 *الشحن:* ${shippingFee > 0 ? shippingFee + ' ج.م' : 'مجاني'}\n`;
             message += `💰 *الإجمالي المطلوب:* ${finalTotal} ج.م\n`;
             message += `\nشكراً لاختيارك الفرات فارما! 🌺`;
 
@@ -450,6 +532,10 @@
             submitBtn.innerText = originalBtnText;
             submitBtn.disabled = false;
 
+            // رقم الطلب على الشاشة (مش بس في رسالة واتساب) عشان العميلة تلاقيه حتى لو واتساب ما اتفتحش
+            if (orderWasSaved && instapayOrderNo) {
+                showCustomAlert('تم تسجيل طلبك رقم #' + instapayOrderNo + ' ✅ برجاء الاحتفاظ بالرقم.', 'success');
+            }
             const encodedMessage = encodeURIComponent(message);
             const whatsappNumber = "201146809133";
 

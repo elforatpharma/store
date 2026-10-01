@@ -64,8 +64,8 @@
         })();
     </script>
     <link rel="dns-prefetch" href="https://api.ipify.org">
-    <link rel="stylesheet" href="style.min.css?v=16">
-    <link rel="stylesheet" href="tailwind-built.css?v=16">
+    <link rel="stylesheet" href="style.min.css?v=17">
+    <link rel="stylesheet" href="tailwind-built.css?v=17">
 
     <!-- منع "قفلة" الصفحة عند الريفريش: لو الرابط فيه #hash لصفحة غير الرئيسية
          (كتالوج/منتج/سلة/مفضلة)، الصفحة الافتراضية (الهيرو) كانت بتترسم وتظهر
@@ -143,13 +143,13 @@
          (متولّد من tools/build-fa-subset.js). الخطوط نفسها لسه من cdnjs.
          لازم تتولّد تاني بعد أي إضافة لأيقونة جديدة:
              node tools/build-fa-subset.js -->
-    <link rel="stylesheet" href="fa-subset.css?v=16">
+    <link rel="stylesheet" href="fa-subset.css?v=17">
     
     <!-- عميل Supabase مصغّر محلي (~1.5 KiB بدل 29 KiB من supabase-js v2 الكامل).
          نفس الـ API بالظبط (from/select/insert/upsert/rpc) فأي كود موجود مش متغيّر.
          السبب: supabase-js كان بيحمّل auth + realtime + storage + postgrest كامل،
          وأكتر من نصه مبيتستخدمش خالص (Lighthouse unused JS). -->
-    <script src="supabase-lite.js?v=16" defer></script>
+    <script src="supabase-lite.js?v=17" defer></script>
 
 </head>
 
@@ -199,7 +199,7 @@
 <a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group" onclick="app.navigate('about')" data-target="about">
           من الشركة
 </a>
-<a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group" href="https://wa.me/201146809133" target="_blank">
+<a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group" href="javascript:void(0)" onclick="app.openContactModal()">
           تواصل معنا
 </a>
 </nav>
@@ -268,7 +268,7 @@
             </a>
             <a href="javascript:void(0)" onclick="app.navigate('favorites'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">المفضلة</a>
             <a href="javascript:void(0)" onclick="app.navigate('about'); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">من الشركة</a>
-            <a href="https://wa.me/201146809133" target="_blank" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">تواصل معنا</a>
+            <a href="javascript:void(0)" onclick="app.openContactModal(); app.toggleMobileMenu();" class="block py-3 px-4 rounded-lg text-gray-700 hover:bg-primary/10 hover:text-primary transition-colors font-bold text-lg">تواصل معنا</a>
         </nav>
     </div>
 </div>
@@ -1485,6 +1485,9 @@
 
                         <input type="text" id="cust-name" placeholder="الاسم" required class="w-full p-3 border border-slate-200 rounded-2xl text-right focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
                         <input type="tel" id="cust-phone" placeholder="رقم الهاتف" required class="w-full p-3 border border-slate-200 rounded-2xl text-right focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all" dir="ltr">
+                        <select id="cust-governorate" required class="w-full p-3 border border-slate-200 rounded-2xl text-right bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
+                            <option value="" disabled selected>اختاري المحافظة</option>
+                        </select>
                         <textarea id="cust-address" placeholder="العنوان بالتفصيل" required class="w-full p-3 border border-slate-200 rounded-2xl text-right h-24 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"></textarea>
                         <select id="cust-payment" required class="w-full p-3 border border-slate-200 rounded-2xl text-right bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
                             <option value="" disabled selected>اختر طريقة الدفع</option>
@@ -1585,10 +1588,11 @@
               <span class="absolute -bottom-1 right-0 w-1/2 h-0.5 bg-gradient-to-l from-primary to-secondary rounded-full"></span>
             </h3>
             <ul class="space-y-2.5 text-sm text-[#c7c4d9]">
-              <li class="flex items-center gap-2"><i class="fa-solid fa-truck-fast text-[#c4c0ff] text-xs"></i> الشحن والتوصيل</li>
+              <li><a href="javascript:void(0)" onclick="openPrivacyModal('terms')" class="flex items-center gap-2 hover:text-[#c4c0ff] transition-colors"><i class="fa-solid fa-truck-fast text-[#c4c0ff] text-xs"></i> الشحن والتوصيل</a></li>
               <li class="flex items-center gap-2"><i class="fa-solid fa-credit-card text-[#c4c0ff] text-xs"></i> طرق الدفع (الدفع عند الاستلام / InstaPay / فودافون كاش)</li>
-              <li class="flex items-center gap-2"><i class="fa-solid fa-rotate-left text-[#c4c0ff] text-xs"></i> سياسة الاستبدال والاسترجاع</li>
+              <li><a href="javascript:void(0)" onclick="openPrivacyModal('terms')" class="flex items-center gap-2 hover:text-[#c4c0ff] transition-colors"><i class="fa-solid fa-rotate-left text-[#c4c0ff] text-xs"></i> سياسة الاستبدال والاسترجاع</a></li>
               <li class="flex items-center gap-2"><i class="fa-solid fa-circle-question text-[#c4c0ff] text-xs"></i> الأسئلة الشائعة</li>
+              <li><a href="javascript:void(0)" onclick="app.openContactModal()" class="flex items-center gap-2 hover:text-[#c4c0ff] transition-colors"><i class="fa-solid fa-headset text-[#c4c0ff] text-xs"></i> تواصل معنا</a></li>
               <li>
                 <a href="https://wa.me/201146809133" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 hover:text-[#c4c0ff] transition-colors">
                   <i class="fa-brands fa-whatsapp text-[#c4c0ff] text-xs"></i>
@@ -1634,8 +1638,8 @@
          كلهم بيتستخدموا وقت تأكيد الطلب بس (45 KiB خام كان بيتحمّلوا مع الصفحة
          من غير ما حد يستخدمهم). analysis.js بيحمّلهم بالتوازي لما العميل يفتح
          صفحة السلة/الدفع من خلال loadPaymentScripts(). -->
-    <script src="welcome-offer.js?v=16" defer></script>
-    <script src="analysis.js?v=16" defer></script>
+    <script src="welcome-offer.js?v=17" defer></script>
+    <script src="analysis.js?v=17" defer></script>
     <script>
         // Touch/Swipe gesture support for carousel
         (function() {

@@ -106,8 +106,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // الطريقة بسيطة: نفس الـ Promise بيرجّع لكل نداءات لنفس الملف، والـ prefetch
     // بيحط <link rel="prefetch"> عشان المتصفح يجيبه في الخلفية قبل الضغط.
     const STORE_CHUNKS = {
-        product: 'store-product.js?v=16',
-        checkout: 'store-checkout.js?v=16'
+        product: 'store-product.js?v=17',
+        checkout: 'store-checkout.js?v=17'
     };
     const __storeChunkPromises = Object.create(null);
 
@@ -612,6 +612,57 @@ document.addEventListener("DOMContentLoaded", () => {
     // كل ما اقترب إجمالي السلة من حد الشحن المجاني (FREE_SHIPPING_THRESHOLD)
     // ==========================================
     let FREE_SHIPPING_THRESHOLD = 1000;
+
+    // ==========================================
+    // الشحن حسب المحافظة: الأسعار من جدول shipping_rates في Supabase
+    // (نفس الجدول اللي الـ trigger بيتحقق منه في السيرفر، فمفيش أرقام مكررة).
+    // ==========================================
+    let shippingRates = null;        // Map: اسم المحافظة -> سعر الشحن
+    let shippingRatesPromise = null;
+
+    function fillGovernorateSelect(names) {
+        const sel = document.getElementById('cust-governorate');
+        if (!sel) return;
+        const current = sel.value;
+        sel.length = 1; // أول option = "اختاري المحافظة"
+        names.forEach(function (n) {
+            const o = document.createElement('option');
+            o.value = n;
+            o.textContent = n;
+            sel.appendChild(o);
+        });
+        if (current && names.indexOf(current) !== -1) sel.value = current;
+    }
+
+    function loadShippingRates() {
+        if (shippingRatesPromise) return shippingRatesPromise;
+        shippingRatesPromise = Promise.resolve(_supabase.from('shipping_rates').select('governorate,fee'))
+            .then(function (res) {
+                const rows = res && res.data;
+                if (!res || res.error || !Array.isArray(rows) || !rows.length) { shippingRatesPromise = null; return null; }
+                rows.sort(function (x, y) { return String(x.governorate).localeCompare(String(y.governorate), 'ar'); });
+                shippingRates = new Map(rows.map(function (r) { return [r.governorate, Number(r.fee) || 0]; }));
+                fillGovernorateSelect(rows.map(function (r) { return r.governorate; }));
+                if (cart.length) renderCart();
+                return shippingRates;
+            })
+            .catch(function () { shippingRatesPromise = null; return null; });
+        return shippingRatesPromise;
+    }
+
+    // ok=false يعني مينفعش نكمل الطلب (محافظة مش مختارة / مش متاحة / الأسعار لسه ما حمّلتش)
+    function getShipping(subtotal, governorate) {
+        const free = subtotal >= FREE_SHIPPING_THRESHOLD;
+        if (!governorate) return { ok: false, reason: 'pick', free: free, fee: 0 };
+        if (!shippingRates) return { ok: false, reason: 'loading', free: free, fee: 0 };
+        if (!shippingRates.has(governorate)) return { ok: false, reason: 'unavailable', free: free, fee: 0 };
+        return { ok: true, free: free, fee: free ? 0 : shippingRates.get(governorate) };
+    }
+
+    (function () {
+        const govSelect = document.getElementById('cust-governorate');
+        if (govSelect) govSelect.addEventListener('change', function () { renderCart(); });
+    })();
 
     function lerpHexColor(fromHex, toHex, t) {
         const clampedT = Math.min(Math.max(t, 0), 1);
@@ -1408,6 +1459,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         // بمجرد فتح السلة عشان يكونوا جاهزين لحظة الضغط على تأكيد.
                         loadStoreChunk(STORE_CHUNKS.checkout);
                         loadPaymentScripts();
+                        loadShippingRates();
                         renderCart();
                         revalidateCoupon();
                     }
@@ -1547,6 +1599,9 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         // زرار "اكتب تقييمك" في صفحة المنتج بيناديها من onclick جوه الـ HTML،
         // والـ openAddReviewModal جوه الـ IIFE مش شايف من برّه من غير السطر ده.
+        openContactModal: function () {
+            return openContactModal();
+        },
         openAddReviewModal: function (productId, productName) {
             return openAddReviewModal(productId, productName);
         },
@@ -2050,7 +2105,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).join('');
 
         const discount = getCartDiscount(subtotal);
-        const finalTotal = Math.max(subtotal - discount, 0);
+        const govEl = document.getElementById('cust-governorate');
+        const shipping = getShipping(subtotal, govEl ? govEl.value : '');
+        const finalTotal = Math.round((Math.max(subtotal - discount, 0) + (shipping.ok ? shipping.fee : 0)) * 100) / 100;
+        const shippingLabel = shipping.free ? 'مجاني 🎉' : (shipping.ok ? `${sanitize(shipping.fee)} ج.م` : 'اختاري المحافظة');
         const itemsCount = cart.reduce((s, i) => s + i.qty, 0);
         const freeShippingLeft = Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0);
         const freeShippingPct = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
@@ -2072,7 +2130,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>` : ''}
                 <div class="flex items-center justify-between text-sm text-slate-600">
                     <span class="flex items-center gap-2"><i class="fa-solid fa-truck-fast text-slate-300 w-4 text-center"></i> الشحن</span>
-                    <span class="font-bold text-emerald-600">${freeShippingLeft > 0 ? 'يُحسب لاحقاً' : 'مجاني 🎉'}</span>
+                    <span class="font-bold ${shipping.free ? 'text-emerald-600' : 'text-darkNavy'}">${shippingLabel}</span>
                 </div>
                 <div class="pt-1">
                     <div class="flex items-center justify-between text-[11px] font-bold mb-1.5">
@@ -2186,7 +2244,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // صفحة السلة/الدفع (أو لحظة التأكيد كشبكة أمان)، والتلاتة بالتوازي.
     // ترتيب التحميل مش مهم لأن instapay/vodafone-cash بقوا يقرأوا حالة الطلب
     // وقت الطلب (getters) مش وقت تحميل الملف.
-    const PAYMENT_SCRIPTS = ['order-status.js?v=16', 'instapay.js?v=16', 'vodafone-cash.js?v=16'];
+    const PAYMENT_SCRIPTS = ['order-status.js?v=17', 'instapay.js?v=17', 'vodafone-cash.js?v=17'];
     let __paymentScriptsPromise = null;
     function loadPaymentScripts() {
         if (__paymentScriptsPromise) return __paymentScriptsPromise;
@@ -2233,6 +2291,8 @@ document.addEventListener("DOMContentLoaded", () => {
         getTrafficParams: getTrafficParams,
         getVisitorSessionId: getVisitorSessionId,
         loadPaymentScripts: loadPaymentScripts,
+        loadShippingRates: loadShippingRates,
+        getShipping: getShipping,
         get productsDB() { return productsDB; },
         get cart() { return cart; },
         set cart(v) { cart = v; },
