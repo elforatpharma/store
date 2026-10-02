@@ -271,6 +271,13 @@ window.VodafoneCashCheckout = (() => {
 .vcx-meta b{font-family:'Plus Jakarta Sans','Cairo',sans-serif;font-weight:800;color:#003820;direction:ltr;unicode-bidi:isolate}
 .vcx-hero{text-align:center;padding:2px 0}
 .vcx-hero-ico{width:56px;height:56px;margin:0 auto;border-radius:16px;background:rgba(230,0,0,.1);color:#e60000;display:flex;align-items:center;justify-content:center;font-size:28px}
+.vcx-exch{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;margin:6px auto 0}
+.vcx-logo{display:flex;align-items:center;justify-content:center;height:72px;padding:8px 10px;border-radius:18px;background:#fff;border:1px solid #e3ebe6;box-shadow:0 6px 16px -8px rgba(0,0,0,.28);overflow:hidden}
+.vcx-logo.vcx-logo-store{width:72px}
+.vcx-logo.vcx-logo-partner{width:112px}
+.vcx-logo img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+.vcx-arrows{flex:none;width:34px;height:30px;color:#0f5132}
+.vcx-arrows path{fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 .vcx-hero h2{margin:10px 0 0;font-size:24px;font-weight:800;line-height:1.4;color:#1a2e26}
 .vcx-hero p{margin:6px auto 0;max-width:300px;font-size:14px;line-height:1.7;color:#5a6d64}
 .vcx-amount{background:linear-gradient(135deg,#003820,#0b3d26);border-radius:16px;box-shadow:0 10px 24px -12px rgba(0,56,32,.8)}
@@ -316,7 +323,11 @@ window.VodafoneCashCheckout = (() => {
           <div class="vcx-meta"><span>طلب رقم</span><b>#${esc(orderNo)}</b></div>
 
           <div class="vcx-hero">
-            <div class="vcx-hero-ico" aria-hidden="true"><i class="fa-solid fa-wallet"></i></div>
+            <div class="vcx-exch" role="img" aria-label="الفرات فارما وفودافون كاش">
+              <span class="vcx-logo vcx-logo-store" aria-hidden="true"><picture><source srcset="logo-96.webp" type="image/webp"><img src="logo-96.png" alt="" width="56" height="56" decoding="async"></picture></span>
+              <svg class="vcx-arrows" viewBox="0 0 34 30" aria-hidden="true" focusable="false"><path d="M3 8h26M23 2.5 29 8l-6 5.5"/><path d="M31 22H5M11 16.5 5 22l6 5.5"/></svg>
+              <span class="vcx-logo vcx-logo-partner" aria-hidden="true"><img src="${LOGO_SRC}" alt="" width="96" height="56" decoding="async"></span>
+            </div>
             <h2 id="vcx-title">الدفع عبر فودافون كاش</h2>
             <p>معاملة آمنة ومباشرة معتمدة لحساب شركة الفرات فارما الرسمي</p>
           </div>
