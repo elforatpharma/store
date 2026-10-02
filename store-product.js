@@ -93,69 +93,69 @@
         const productGalleries = {
             'كريم لعلاج جلد الوزة': [
                 p.img,
-                'product-gallery/keratosis-1.png',
-                'product-gallery/keratosis-2.png',
-                'product-gallery/keratosis-3.jpg'
+                'product-gallery/keratosis-1.webp',
+                'product-gallery/keratosis-2.webp',
+                'product-gallery/keratosis-3.webp'
             ],
             'keratosis': [
                 p.img,
-                'product-gallery/keratosis-1.png',
-                'product-gallery/keratosis-2.png',
-                'product-gallery/keratosis-3.jpg'
+                'product-gallery/keratosis-1.webp',
+                'product-gallery/keratosis-2.webp',
+                'product-gallery/keratosis-3.webp'
             ],
             'ليب بالم': [
                 p.img,
-                'product-gallery/lip-balm-1.png',
-                'product-gallery/lip-balm-2.png'
+                'product-gallery/lip-balm-1.webp',
+                'product-gallery/lip-balm-2.webp'
             ],
             'balm': [
                 p.img,
-                'product-gallery/lip-balm-1.png',
-                'product-gallery/lip-balm-2.png'
+                'product-gallery/lip-balm-1.webp',
+                'product-gallery/lip-balm-2.webp'
             ],
             'بالم': [
                 p.img,
-                'product-gallery/lip-balm-1.png',
-                'product-gallery/lip-balm-2.png'
+                'product-gallery/lip-balm-1.webp',
+                'product-gallery/lip-balm-2.webp'
             ],
             'تنت': [
                 p.img,
-                'product-gallery/lip-balm-1.png',
-                'product-gallery/lip-balm-2.png'
+                'product-gallery/lip-balm-1.webp',
+                'product-gallery/lip-balm-2.webp'
             ],
             'مرطب شفايف': [
                 p.img,
-                'product-gallery/lip-balm-1.png',
-                'product-gallery/lip-balm-2.png'
+                'product-gallery/lip-balm-1.webp',
+                'product-gallery/lip-balm-2.webp'
             ],
             'lip': [
                 p.img,
-                'product-gallery/lip-balm-1.png',
-                'product-gallery/lip-balm-2.png'
+                'product-gallery/lip-balm-1.webp',
+                'product-gallery/lip-balm-2.webp'
             ],
             'سيروم': [
                 p.img,
                 'product-gallery/guzel-gold-1.jpg',
-                'product-gallery/guzel-gold-2.jpg',
-                'product-gallery/guzel-gold-3.jpg',
-                'product-gallery/guzel-gold-4.jpg',
-                'product-gallery/guzel-gold-5.jpg'
+                'product-gallery/guzel-gold-2.webp',
+                'product-gallery/guzel-gold-3.webp',
+                'product-gallery/guzel-gold-4.webp',
+                'product-gallery/guzel-gold-5.webp'
             ],
             'guzel': [
                 p.img,
                 'product-gallery/guzel-gold-1.jpg',
-                'product-gallery/guzel-gold-2.jpg',
-                'product-gallery/guzel-gold-3.jpg',
-                'product-gallery/guzel-gold-4.jpg',
-                'product-gallery/guzel-gold-5.jpg'
+                'product-gallery/guzel-gold-2.webp',
+                'product-gallery/guzel-gold-3.webp',
+                'product-gallery/guzel-gold-4.webp',
+                'product-gallery/guzel-gold-5.webp'
             ],
             'serum': [
                 p.img,
                 'product-gallery/guzel-gold-1.jpg',
-                'product-gallery/guzel-gold-2.jpg',
-                'product-gallery/guzel-gold-3.jpg',
-                'product-gallery/guzel-gold-4.jpg',
-                'product-gallery/guzel-gold-5.jpg'
+                'product-gallery/guzel-gold-2.webp',
+                'product-gallery/guzel-gold-3.webp',
+                'product-gallery/guzel-gold-4.webp',
+                'product-gallery/guzel-gold-5.webp'
             ]
         };
 
