@@ -176,80 +176,111 @@ window.InstaPayCheckout = (() => {
     if (document.getElementById("ipx-styles")) return;
     const css = `
 .ipx-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:flex-end;justify-content:center;
-  background:rgba(20,27,43,.58);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
-  font-family:'Tajawal','Cairo',sans-serif;animation:ipx-fade .18s ease-out}
+  background:rgba(11,61,38,.55);font-family:'Tajawal','Cairo',sans-serif;animation:ipx-fade .18s ease-out}
 .ipx-overlay *,.ipx-overlay *::before,.ipx-overlay *::after{box-sizing:border-box}
-.ipx-sheet{position:relative;width:100%;max-width:440px;max-height:calc(100dvh - 8px);overflow-y:auto;
-  background:#f3f6f4;border-radius:28px 28px 0 0;color:#141b2b;box-shadow:0 -12px 48px rgba(20,27,43,.28);
+.ipx-sheet{position:relative;width:100%;max-width:440px;max-height:calc(100dvh - 8px);overflow-y:auto;overscroll-behavior:contain;
+  background:#f6faf7;border-radius:24px 24px 0 0;color:#1a2e26;box-shadow:0 -12px 48px rgba(11,61,38,.3);
   outline:none;animation:ipx-up .26s cubic-bezier(.2,.8,.2,1)}
 @media(min-width:640px){
   .ipx-overlay{align-items:center;padding:24px}
-  .ipx-sheet{border-radius:28px;max-height:calc(100dvh - 48px);box-shadow:0 30px 80px rgba(20,27,43,.35)}
+  .ipx-sheet{border-radius:24px;max-height:calc(100dvh - 48px);box-shadow:0 30px 80px rgba(11,61,38,.35)}
 }
-.ipx-close{position:absolute;top:14px;left:14px;width:40px;height:40px;border:0;border-radius:50%;
-  background:#fff;color:#404943;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 1px 0 #eadbb6,0 2px 8px rgba(20,27,43,.08);font-size:15px}
-.ipx-close:hover{background:#faf7ee}
-.ipx-head{padding:30px 24px 18px;text-align:center}
-.ipx-logo{display:inline-flex;align-items:center;justify-content:center;background:#fff;border:1px solid #eadbb6;
-  border-radius:20px;padding:12px 22px;box-shadow:0 6px 18px -8px rgba(90,45,130,.25)}
-.ipx-logo img{display:block;height:52px;width:auto}
-.ipx-title{margin:16px 0 8px;font-size:21px;font-weight:800;line-height:1.3}
-.ipx-status{display:inline-flex;align-items:center;gap:7px;margin:0;padding:6px 14px;border-radius:999px;
-  background:#fff6df;border:1px solid #eadbb6;color:#7a5a10;font-size:12.5px;font-weight:700;line-height:1.5}
-.ipx-status b{font-family:'Plus Jakarta Sans','Cairo',sans-serif;font-weight:800;direction:ltr;unicode-bidi:isolate}
-.ipx-body{padding:0 18px calc(20px + env(safe-area-inset-bottom,0px))}
+.ipx-close{position:absolute;top:12px;left:12px;z-index:3;width:40px;height:40px;border:0;border-radius:50%;
+  background:#fff;color:#404942;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 1px 6px rgba(11,61,38,.12);font-size:15px}
+.ipx-close:hover{background:#ebefec}
+.ipx-body{display:flex;flex-direction:column;gap:14px;padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+.ipx-card{background:#fff;border-radius:16px;box-shadow:0 1px 6px rgba(11,61,38,.08);padding:16px}
 
-.ipx-ticket{position:relative;background:#fff;border:1px solid #eadbb6;border-radius:20px;
-  box-shadow:0 14px 30px -18px rgba(154,115,28,.45)}
-.ipx-amount{padding:20px 20px 18px;text-align:center}
-.ipx-label{display:block;color:#5b6473;font-size:13px;font-weight:700;margin-bottom:4px}
-.ipx-amount-val{display:block;font-size:19px;font-weight:800;color:#141b2b}
-.ipx-amount-val span{font-family:'Plus Jakarta Sans','Cairo',sans-serif;font-size:44px;font-weight:800;
-  letter-spacing:-.02em;line-height:1.1;margin-inline-start:6px;direction:ltr;unicode-bidi:isolate}
-.ipx-perf{position:relative;height:0;border-top:2px dashed #eadbb6;margin:0 14px}
-.ipx-perf::before,.ipx-perf::after{content:"";position:absolute;top:-11px;width:20px;height:20px;border-radius:50%;
-  background:#f3f6f4;border:1px solid #eadbb6}
-.ipx-perf::before{right:-25px;clip-path:inset(0 50% 0 0)}
-.ipx-perf::after{left:-25px;clip-path:inset(0 0 0 50%)}
-.ipx-rows{margin:0;padding:6px 20px 8px}
-.ipx-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0}
-.ipx-row+.ipx-row{border-top:1px solid #f0ebdc}
-.ipx-row dt{display:flex;align-items:center;gap:8px;margin:0;color:#5b6473;font-size:13.5px;font-weight:700;white-space:nowrap}
-.ipx-row dt i{color:#c59b3f;width:16px;text-align:center}
-.ipx-row dd{margin:0;font-size:15px;font-weight:800;color:#141b2b}
-.ipx-phone{display:flex;align-items:center;gap:10px}
-.ipx-phone span{font-family:'Plus Jakarta Sans','Cairo',sans-serif;font-size:17px;letter-spacing:.02em;direction:ltr;unicode-bidi:isolate}
-.ipx-copy{flex:none;width:38px;height:38px;padding:0;border:1px solid #eadbb6;background:#faf7ee;color:#7a5a10;
-  border-radius:12px;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
-  transition:background .15s,color .15s,border-color .15s}
-.ipx-copy:hover{background:#f6efd9}
-.ipx-copy.is-done{background:#e6f4ec;border-color:#b9dfc9;color:#1e7b54}
-.ipx-copy.is-error{background:#fdecec;border-color:#f3c0c0;color:#b42318}
-.ipx-phone-num{display:inline-block;text-align:center}
+/* بطاقة الرأس */
+.ipx-top{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;margin-top:40px}
+.ipx-top::before{content:"";position:absolute;top:-40px;left:-40px;width:112px;height:112px;border-radius:50%;background:#ebf5f0;pointer-events:none}
+.ipx-pillrow{position:relative;display:flex;align-items:center;justify-content:center;width:100%;margin-bottom:10px}
+.ipx-pill{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;background:#ebefec;
+  color:#1a2e26;font-size:12px;font-weight:700;line-height:1.5}
+.ipx-pill b{font-family:'Plus Jakarta Sans','Cairo',sans-serif;font-weight:800;direction:ltr;unicode-bidi:isolate}
+.ipx-dot{width:8px;height:8px;border-radius:50%;background:#25d366;animation:ipx-pulse 1.6s ease-in-out infinite}
+.ipx-brand{position:relative;width:64px;height:64px;margin:6px auto 0;border-radius:16px;background:#592c82;color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:0 6px 16px -6px rgba(89,44,130,.6)}
+.ipx-brand i{font-size:24px;line-height:1}
+.ipx-brand span{font:900 10px/1 'Plus Jakarta Sans','Cairo',sans-serif;letter-spacing:-.01em}
+.ipx-title{position:relative;margin:12px 0 0;font-size:20px;font-weight:800;line-height:1.4;color:#1a2e26}
+.ipx-sub{position:relative;margin:2px 0 0;max-width:280px;font-size:12px;line-height:1.6;color:#5a6d64}
+
+/* بطاقة المبلغ */
+.ipx-amount{display:flex;flex-direction:column;gap:12px;color:#fff;border-radius:16px;padding:16px;
+  background:linear-gradient(135deg,#0f5132,#0b3d26);box-shadow:0 10px 24px -12px rgba(11,61,38,.7)}
+.ipx-amount-top{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:700;color:rgba(255,255,255,.92)}
+.ipx-amount-top > span:first-child{display:flex;align-items:center;gap:6px}
+.ipx-amount-top i{color:#66ff8e}
+.ipx-tag{background:rgba(255,255,255,.15);padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:500;white-space:nowrap}
+.ipx-amount-val{display:flex;align-items:baseline;justify-content:center;gap:8px;padding:4px 0}
+.ipx-amount-val strong{font-family:'Plus Jakarta Sans','Cairo',sans-serif;font-size:40px;font-weight:800;letter-spacing:-.02em;line-height:1.1;direction:ltr;unicode-bidi:isolate}
+.ipx-amount-val span{font-size:14px;font-weight:700;color:#ebf5f0}
+.ipx-btn-copyamt{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px 12px;border:0;border-radius:8px;
+  background:#fff;color:#0b3d26;font:700 14px 'Tajawal','Cairo',sans-serif;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.ipx-btn-copyamt:hover{background:#f0f5f2}
+.ipx-btn-copyamt:active{transform:scale(.98)}
+
+/* رؤوس البطاقات */
+.ipx-chead{display:flex;align-items:center;gap:8px;padding-bottom:4px}
+.ipx-chead-ico{flex:none;width:32px;height:32px;border-radius:8px;background:#ebf5f0;color:#0b3d26;display:flex;align-items:center;justify-content:center;font-size:15px}
+.ipx-chead h3{margin:0;font-size:14px;font-weight:700;color:#1a2e26;line-height:1.4}
+.ipx-chead p{margin:0;font-size:12px;color:#5a6d64;line-height:1.5}
+
+/* رقم الهاتف */
+.ipx-recipient{display:flex;flex-direction:column;gap:10px}
+.ipx-phonebox{background:#ebefec;border-radius:12px;padding:14px}
+.ipx-phonebox > span{display:block;font-size:11px;font-weight:700;color:#5a6d64}
+.ipx-phone{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
+.ipx-phone-num{display:inline-block;font-family:'Plus Jakarta Sans','Cairo',sans-serif;font-size:19px;font-weight:800;letter-spacing:.06em;
+  direction:ltr;unicode-bidi:isolate;color:#1a2e26}
 .ipx-phone-num.is-copied{color:#1e7b54;font-family:'Tajawal','Cairo',sans-serif;font-size:15px;font-weight:800;direction:rtl;letter-spacing:0}
+.ipx-copy{flex:none;width:36px;height:36px;padding:0;border:0;background:#fff;color:#1a2e26;border-radius:8px;font-size:15px;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.1);transition:background .15s,color .15s}
+.ipx-copy:active{transform:scale(.92)}
+.ipx-copy.is-done{background:#e6f4ec;color:#1e7b54}
+.ipx-copy.is-error{background:#fdecec;color:#b42318}
 .ipx-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-.ipx-steps{list-style:none;margin:18px 4px 0;padding:0;counter-reset:ipx}
-.ipx-steps li{position:relative;padding:0 38px 0 0;margin:0 0 12px;font-size:13.5px;line-height:1.75;color:#404943;counter-increment:ipx}
-.ipx-steps li::before{content:counter(ipx);position:absolute;right:0;top:1px;width:26px;height:26px;border-radius:50%;
-  background:#141b2b;color:#fff;font:800 13px 'Plus Jakarta Sans','Cairo',sans-serif;display:flex;align-items:center;justify-content:center}
+/* الخطوات */
+.ipx-steps{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.ipx-step{display:flex;align-items:flex-start;gap:8px;padding:12px;border-radius:12px;background:#f0f5f2}
+.ipx-step-n{flex:none;width:28px;height:28px;margin-top:2px;border-radius:50%;background:#003820;color:#fff;font:800 12px 'Plus Jakarta Sans','Cairo',sans-serif;
+  display:flex;align-items:center;justify-content:center}
+.ipx-step:nth-child(2) .ipx-step-n{background:#1da851}
+.ipx-step b{display:block;font-size:12px;font-weight:700;color:#1a2e26;line-height:1.5}
+.ipx-step p{margin:2px 0 0;font-size:12px;line-height:1.6;color:#5a6d64}
 
-.ipx-actions{display:grid;gap:10px;margin-top:18px}
-.ipx-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;padding:0 20px;
-  border:0;border-radius:999px;font:800 15.5px 'Tajawal','Cairo',sans-serif;color:#fff;text-decoration:none;cursor:pointer;
+/* الأزرار */
+.ipx-actions{display:grid;gap:8px}
+.ipx-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:0 16px;border:0;border-radius:12px;
+  font:800 16px 'Cairo','Tajawal',sans-serif;color:#fff;text-decoration:none;cursor:pointer;box-shadow:0 6px 14px -8px rgba(0,0,0,.5);
   transition:filter .15s,transform .15s}
-.ipx-btn i{font-size:18px}
-.ipx-btn:hover{filter:brightness(1.08)}
+.ipx-btn i{font-size:19px}
+.ipx-btn:hover{filter:brightness(1.07)}
 .ipx-btn:active{transform:scale(.98)}
-.ipx-btn-app{background:#5a2d82;box-shadow:0 10px 22px -10px rgba(90,45,130,.7)}
-.ipx-btn-wa{background:#128c4e;box-shadow:0 10px 22px -10px rgba(18,140,78,.7)}
-.ipx-note{margin:14px 6px 0;text-align:center;font-size:12px;line-height:1.7;color:#5b6473}
-.ipx-note i{color:#c59b3f;margin-inline-end:5px}
+.ipx-btn-app{background:#592c82}
+.ipx-btn-wa{background:#1da851}
+
+/* شارات الثقة */
+.ipx-trust{display:grid;gap:8px}
+.ipx-tcard{display:flex;align-items:center;gap:8px;padding:12px;border-radius:12px;background:rgba(235,245,240,.7);border:1px solid #e2ebe5}
+.ipx-tcard-ico{flex:none;width:36px;height:36px;border-radius:50%;background:#ebf5f0;color:#0b3d26;display:flex;align-items:center;justify-content:center;font-size:16px}
+.ipx-tcard h4{margin:0;font-size:12px;font-weight:700;color:#1a2e26;line-height:1.5}
+.ipx-tcard p{margin:0;font-size:12px;color:#5a6d64;line-height:1.5}
+
+/* Toast */
+.ipx-toast{position:absolute;left:50%;bottom:18px;z-index:4;transform:translate(-50%,16px);display:flex;align-items:center;gap:8px;
+  max-width:calc(100% - 32px);padding:10px 18px;border-radius:999px;background:#2d3130;color:#eef2ef;font-size:12px;font-weight:600;
+  box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.ipx-toast i{color:#66ff8e;font-size:15px}
+.ipx-toast.is-on{opacity:1;transform:translate(-50%,0)}
 .ipx-sheet :focus-visible{outline:3px solid #c59b3f;outline-offset:2px}
 @keyframes ipx-fade{from{opacity:0}to{opacity:1}}
 @keyframes ipx-up{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.ipx-overlay,.ipx-sheet{animation:none}.ipx-btn{transition:none}}
+@keyframes ipx-pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@media(prefers-reduced-motion:reduce){.ipx-overlay,.ipx-sheet,.ipx-dot{animation:none}.ipx-btn,.ipx-toast{transition:none}}
 `;
     const el = document.createElement("style");
     el.id = "ipx-styles";
@@ -264,6 +295,7 @@ window.InstaPayCheckout = (() => {
 
     const previouslyFocused = document.activeElement;
     const waUrl = buildWhatsAppUrl({ whatsapp: config.whatsapp, orderNo, total });
+    const amountText = formatAmount(total);
 
     const overlay = document.createElement("div");
     overlay.id = "ipx-overlay";
@@ -273,47 +305,85 @@ window.InstaPayCheckout = (() => {
       <div class="ipx-sheet" role="dialog" aria-modal="true" aria-labelledby="ipx-title" tabindex="-1">
         <button type="button" class="ipx-close" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
 
-        <header class="ipx-head">
-          <div class="ipx-logo"><img src="${LOGO_SRC}" alt="InstaPay" width="80" height="52"></div>
-          <h2 class="ipx-title" id="ipx-title">الدفع عبر InstaPay</h2>
-          <p class="ipx-status"><i class="fa-regular fa-clock"></i> الطلب رقم <b>#${esc(orderNo)}</b> بانتظار تأكيد الدفع</p>
-        </header>
-
         <div class="ipx-body">
-          <section class="ipx-ticket" aria-label="بيانات التحويل">
-            <div class="ipx-amount">
-              <span class="ipx-label">المبلغ المطلوب</span>
-              <strong class="ipx-amount-val"><span>${esc(formatAmount(total))}</span> جنيه</strong>
+          <section class="ipx-card ipx-top">
+            <div class="ipx-pillrow">
+              <span class="ipx-pill"><span class="ipx-dot"></span>طلب رقم <b>#${esc(orderNo)}</b></span>
             </div>
-            <div class="ipx-perf" aria-hidden="true"></div>
-            <dl class="ipx-rows">
-              <div class="ipx-row">
-                <dt><i class="fa-regular fa-credit-card"></i> طريقة الدفع</dt>
-                <dd>${PAYMENT_LABEL}</dd>
-              </div>
-              <div class="ipx-row">
-                <dt><i class="fa-solid fa-mobile-screen"></i> رقم الهاتف للتحويل</dt>
-                <dd class="ipx-phone">
-                  <span class="ipx-phone-num">${esc(config.phone)}</span>
-                  <button type="button" class="ipx-copy" aria-label="نسخ رقم الهاتف" title="نسخ الرقم"><i class="fa-regular fa-copy"></i></button>
-                  <span class="ipx-sr" role="status" aria-live="polite"></span>
-                </dd>
-              </div>
-            </dl>
+            <div class="ipx-brand" aria-hidden="true"><i class="fa-solid fa-bolt"></i><span>InstaPay</span></div>
+            <h2 class="ipx-title" id="ipx-title">الدفع اللحظي عبر إنستاباي</h2>
+            <p class="ipx-sub">معاملة آمنة ومباشرة معتمدة لحساب شركة الفرات فارما الرسمي</p>
           </section>
 
-          <ol class="ipx-steps">
-            <li>حوّل المبلغ المطلوب إلى رقم الهاتف الموضح بالأعلى باستخدام تطبيق InstaPay.</li>
-            <li>بعد إتمام التحويل، قم بتصوير إيصال الدفع وأرسله على واتساب المتجر لتأكيد الطلب.</li>
-          </ol>
+          <section class="ipx-amount" aria-label="المبلغ المطلوب">
+            <div class="ipx-amount-top">
+              <span><i class="fa-solid fa-circle-check"></i>المبلغ المطلوب تحويله بالكامل</span>
+              <span class="ipx-tag">شامل الخصم والشحن</span>
+            </div>
+            <div class="ipx-amount-val"><strong>${esc(amountText)}</strong><span>جنيه مصري</span></div>
+            <button type="button" class="ipx-btn-copyamt"><i class="fa-regular fa-copy"></i><span>نسخ المبلغ (${esc(amountText)} ج.م)</span></button>
+          </section>
+
+          <section class="ipx-card ipx-recipient" aria-label="بيانات التحويل">
+            <div class="ipx-chead">
+              <div class="ipx-chead-ico"><i class="fa-solid fa-wallet"></i></div>
+              <div>
+                <h3>بيانات الحساب المعتمد للاستلام</h3>
+                <p>حوّلي على الرقم التالي عبر تطبيق InstaPay</p>
+              </div>
+            </div>
+            <div class="ipx-phonebox">
+              <span>رقم الهاتف للتحويل:</span>
+              <div class="ipx-phone">
+                <span class="ipx-phone-num">${esc(config.phone)}</span>
+                <button type="button" class="ipx-copy" aria-label="نسخ رقم الهاتف" title="نسخ الرقم"><i class="fa-regular fa-copy"></i></button>
+                <span class="ipx-sr" role="status" aria-live="polite"></span>
+              </div>
+            </div>
+          </section>
+
+          <section class="ipx-card" aria-label="خطوات التحويل">
+            <div class="ipx-chead">
+              <div class="ipx-chead-ico"><i class="fa-solid fa-circle-info"></i></div>
+              <div>
+                <h3>خطوات وتعليمات التحويل</h3>
+                <p>يرجى اتباع الخطوات البسيطة التالية لإتمام الدفع</p>
+              </div>
+            </div>
+            <div class="ipx-steps">
+              <div class="ipx-step">
+                <span class="ipx-step-n">1</span>
+                <div><b>حوّل المبلغ المطلوب</b><p>حوّل المبلغ المطلوب إلى رقم الهاتف الموضح بالأعلى باستخدام تطبيق InstaPay</p></div>
+              </div>
+              <div class="ipx-step">
+                <span class="ipx-step-n">2</span>
+                <div><b>إرسال إيصال الدفع</b><p>بعد إتمام التحويل قم بحفظ إيصال الدفع وأرسله على واتساب المتجر لتأكيد الطلب</p></div>
+              </div>
+            </div>
+          </section>
 
           <div class="ipx-actions">
-            <button type="button" class="ipx-btn ipx-btn-app"><i class="fa-solid fa-mobile-screen-button"></i> فتح تطبيق InstaPay</button>
-            <a class="ipx-btn ipx-btn-wa" href="${waUrl}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> إرسال إيصال الدفع على WhatsApp</a>
+            <button type="button" class="ipx-btn ipx-btn-app"><i class="fa-solid fa-bolt"></i><span>فتح تطبيق InstaPay للتحويل</span></button>
+            <a class="ipx-btn ipx-btn-wa" href="${waUrl}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i><span>إرسال إيصال الدفع على واتساب</span></a>
           </div>
 
-          <p class="ipx-note"><i class="fa-solid fa-shield-halved"></i>لا يُعتبر الطلب مدفوعًا إلا بعد مراجعة إيصال التحويل وتأكيده من المتجر.</p>
+          <div class="ipx-trust">
+            <div class="ipx-tcard">
+              <div class="ipx-tcard-ico"><i class="fa-solid fa-lock"></i></div>
+              <div><h4>دفع آمن ومعاملات مشفرة</h4><p>معاملات خاضعة للرقابة والبنك المركزي المصري</p></div>
+            </div>
+            <div class="ipx-tcard">
+              <div class="ipx-tcard-ico"><i class="fa-solid fa-circle-check"></i></div>
+              <div><h4>تأكيد الطلب بعد مراجعة الإيصال</h4><p>لا يُعتبر الطلب مدفوعًا إلا بعد تأكيده من المتجر، ثم يبدأ التجهيز والشحن</p></div>
+            </div>
+            <div class="ipx-tcard">
+              <div class="ipx-tcard-ico"><i class="fa-solid fa-shield-heart"></i></div>
+              <div><h4>استبدال واسترجاع خلال 14 يوماً</h4><p>وفق سياسة الاسترجاع بالمتجر</p></div>
+            </div>
+          </div>
         </div>
+
+        <div class="ipx-toast" role="status" aria-live="polite"><i class="fa-solid fa-circle-check"></i><span class="ipx-toast-msg"></span></div>
       </div>`;
 
     const sheet = overlay.querySelector(".ipx-sheet");
@@ -345,6 +415,22 @@ window.InstaPayCheckout = (() => {
     overlay.querySelector(".ipx-close").onclick = close;
     overlay.querySelector(".ipx-btn-app").onclick = () => openInstaPayApp(config);
 
+    // Toast صغير داخل النافذة
+    const toast = overlay.querySelector(".ipx-toast");
+    const toastMsg = overlay.querySelector(".ipx-toast-msg");
+    let toastTimer = null;
+    function showToast(msg) {
+      toastMsg.textContent = msg;
+      toast.classList.add("is-on");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("is-on"), 2400);
+    }
+
+    overlay.querySelector(".ipx-btn-copyamt").onclick = async () => {
+      const ok = await copyText(amountText);
+      showToast(ok ? "تم نسخ المبلغ: " + amountText + " ج.م" : "تعذر النسخ، انسخي المبلغ يدوياً");
+    };
+
     const copyBtn = overlay.querySelector(".ipx-copy");
     const copyLive = overlay.querySelector(".ipx-phone .ipx-sr");
     const numEl = overlay.querySelector(".ipx-phone-num");
@@ -355,7 +441,7 @@ window.InstaPayCheckout = (() => {
       const msg = ok ? "تم نسخ الرقم" : "تعذر النسخ";
       copyBtn.classList.toggle("is-done", ok);
       copyBtn.classList.toggle("is-error", !ok);
-      // التأكيد بيظهر مكان الرقم نفسه (بنفس العرض) عشان مفيش حاجة تتحرك أو تتغطى
+      // التأكيد بيظهر مكان الرقم نفسه (بنفس العرض) عشان مفيش حاجة تتحرك
       if (!numEl.style.minWidth) numEl.style.minWidth = numEl.offsetWidth + "px";
       numEl.textContent = msg;
       numEl.classList.add("is-copied");

@@ -618,7 +618,7 @@
         var couponOn = !!(window.WelcomeOffer && window.WelcomeOffer.isEligible && window.WelcomeOffer.isEligible());
         var couponCode = (window.WelcomeOffer && window.WelcomeOffer.code) || 'WELCOME10';
         var reviews = getReviewsForProduct(p.id, 4);
-        var waText = encodeURIComponent('مرحباً صيدلية الفرات، أريد طلب ' + p.name);
+        var waText = encodeURIComponent('مرحباً شركة الفرات فارما، أريد طلب ' + p.name);
         var idArg = jsArg(p.id);
 
         // منتج مكمّل من نفس الفئة (بنفس سعره العادي، من غير خصم مخترع)
@@ -725,7 +725,7 @@
                 <div class="pdp-rating">
                     <span class="pdp-stars">★★★★★</span>
                     <b>${sanitize(p.rating || '4.9')}</b>
-                    <span class="pdp-rating__n">(${computeReviewCountForId(p.id)} تقييم من عميلات الصيدلية)</span>
+                    <span class="pdp-rating__n">(${computeReviewCountForId(p.id)} تقييم من عميلات الفرات فارما)</span>
                 </div>
                 <div class="pdp-price">
                     <div>
@@ -737,7 +737,7 @@
                     </div>
                     ${hasDisc ? `<span class="pdp-save">وفر ${sanitize(pdpMoney(saved))} ج.م (-${pct}%)</span>` : ''}
                 </div>
-                ${lowStock ? `<div class="pdp-alert"><span class="pdp-alert__dot"></span><span>متبقي ${p.stock} قطع فقط في المخزون الحالي للصيدلية!</span></div>` : ''}
+                ${lowStock ? `<div class="pdp-alert"><span class="pdp-alert__dot"></span><span>متبقي ${p.stock} قطع فقط في المخزون الحالي!</span></div>` : ''}
                 ${outOfStock ? `<div class="pdp-alert pdp-alert--out"><span>❌ نفذ من المخزون</span></div>` : ''}
                 ${couponOn ? `
                 <div class="pdp-coupon">
