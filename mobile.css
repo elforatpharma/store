@@ -141,9 +141,18 @@ div:has(> .relative > #mobile-search-input) {
 #home .absolute.-bottom-3 { display: none; }
 #home .aspect-square {
   aspect-ratio: auto;
-  height: 176px;
+  height: auto;
   max-height: none;
   border-radius: 12px;
+  background: transparent;
+}
+/* الصورة كاملة بنسبتها الأصلية من غير قص */
+#home .aspect-square .hero-main-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  transform: none;
 }
 #home .max-w-7xl > .grid > div:nth-child(2) .shadow-2xl {
   padding: 0; border: 0; background: none; border-radius: 12px;
@@ -483,3 +492,112 @@ div:has(> .relative > #mobile-search-input) {
 
 /* ---------- الفوتر ---------- */
 footer#about { border-radius: 20px 20px 0 0; }
+
+/* ---------- طرق الدفع (بطاقة بيضاء + 3 مربعات + كوبون) ---------- */
+#payment-banner { padding: 0 16px; margin-top: 8px; }
+#payment-banner > div {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--m-shadow);
+}
+#payment-banner > div > .absolute { display: none; }              /* بقع الـ blur */
+#payment-banner > div > .grid { display: flex; flex-direction: column; gap: 16px; }
+#payment-banner > div > .grid > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--m-emerald);
+}
+#payment-banner > div > .grid > div:first-child > span { display: none; }   /* الشارة الصغيرة */
+#payment-banner > div > .grid > div:first-child > p { display: none; }      /* الفقرة الطويلة */
+#payment-banner h2 {
+  order: 1;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  line-height: 26px;
+  color: var(--m-emerald);
+}
+#payment-banner h2::before {
+  content: "\f555";                 /* أيقونة المحفظة */
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: 20px;
+  flex: none;
+}
+/* المربعات الثلاثة */
+#payment-banner > div > .grid > div:first-child > div.flex-wrap {
+  order: 2;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+#payment-banner > div > .grid > div:first-child > div.flex-wrap > span {
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  padding: 10px 4px;
+  background: var(--m-bg);
+  border-radius: 12px;
+  text-align: center;
+  color: var(--m-emerald);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 700;
+}
+#payment-banner .pay-en,
+#payment-banner .pay-desk { display: none; }
+#payment-banner .pay-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  line-height: 14px;
+  font-weight: 400;
+  color: var(--m-muted);
+}
+#payment-banner > div > .grid > div:first-child > div.flex-wrap > span > i {
+  font-size: 22px;
+  margin-bottom: 4px;
+  color: var(--m-emerald);
+}
+#payment-banner > div > .grid > div:first-child > div.flex-wrap > span:nth-child(2) > i { color: var(--m-red); }
+#payment-banner > div > .grid > div:first-child > div.flex-wrap > span:nth-child(3) > i { color: var(--m-gold); }
+/* زر الواتساب */
+#payment-banner > div > .grid > div:first-child > a {
+  order: 3;
+  width: 100%;
+  height: 48px;
+  margin: 0;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 13px;
+  box-shadow: var(--m-shadow);
+}
+/* صندوق الكوبون + الشحن المجاني */
+#payment-banner > div > .grid > div:nth-child(2) > div {
+  background: rgba(254, 212, 136, 0.4);
+  border: 0;
+  border-radius: 12px;
+  padding: 12px;
+  color: var(--m-gold-text);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+#payment-banner > div > .grid > div:nth-child(2) > div > div:first-child { display: none; } /* مربع أيقونة الشاحنة */
+#payment-banner > div > .grid > div:nth-child(2) h3 { margin: 0 0 2px; font-size: 12px; line-height: 16px; color: var(--m-gold-text); }
+#payment-banner > div > .grid > div:nth-child(2) p { margin: 0 0 10px; font-size: 11px; line-height: 16px; color: #775a19; }
+#payment-banner #static-welcome-coupon-block p { margin-bottom: 6px; color: var(--m-gold-text); }
+#payment-banner #static-welcome-coupon-block > div {
+  background: #fff;
+  border: 1px dashed var(--m-gold);
+  border-radius: 8px;
+}
+#payment-banner #static-welcome-coupon-block > div > span { color: var(--m-emerald); }
+#payment-banner #static-welcome-coupon-block > div > button { background: var(--m-emerald); color: #fff; }
+
+/* ---------- الشريط السفلي: 4 عناصر بنفس المقاس ---------- */
+.mobile-bottom-nav-item { min-width: 0; }

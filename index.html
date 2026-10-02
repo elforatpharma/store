@@ -1311,7 +1311,7 @@
 </section>
 
             <!-- Payment & Shipping Promo Banner -->
-            <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <section id="payment-banner" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div class="relative overflow-hidden rounded-3xl bg-gradient-to-l from-primary to-secondary shadow-purple-glow p-8 sm:p-10">
                     <div class="absolute -top-12 -left-12 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
                     <div class="absolute -bottom-16 right-1/4 w-56 h-56 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -1322,9 +1322,9 @@
                             <h2 class="text-2xl sm:text-3xl font-black font-display mb-3 leading-snug">طرق دفع متعددة وشحن آمن وسريع لباب بيتك</h2>
                             <p class="text-sm text-white/85 max-w-xl mb-6 leading-relaxed">نوفر لكِ تجربة تسوق سهلة ومضمونة، ادفعي عند الاستلام أو عبر إنستاباي أو فودافون كاش، مع شحن سريع لجميع المحافظات وشحن مجاني بالكامل للطلبات فوق 1000 ج.م</p>
                             <div class="flex flex-wrap items-center gap-3">
-                                <span class="flex items-center gap-2 bg-white/15 px-3.5 py-2 rounded-full text-xs font-bold"><i class="fa-solid fa-mobile-screen text-amber-200"></i> إنستاباي InstaPay</span>
-                                <span class="flex items-center gap-2 bg-white/15 px-3.5 py-2 rounded-full text-xs font-bold"><i class="fa-solid fa-wallet text-amber-200"></i> فودافون كاش</span>
-                                <span class="flex items-center gap-2 bg-white/15 px-3.5 py-2 rounded-full text-xs font-bold"><i class="fa-solid fa-hand-holding-dollar text-amber-200"></i> الدفع عند الاستلام</span>
+                                <span class="flex items-center gap-2 bg-white/15 px-3.5 py-2 rounded-full text-xs font-bold"><i class="fa-solid fa-mobile-screen text-amber-200"></i> <span class="pay-name">إنستاباي</span><span class="pay-en"> InstaPay</span><span class="pay-sub hidden">InstaPay فوري</span></span>
+                                <span class="flex items-center gap-2 bg-white/15 px-3.5 py-2 rounded-full text-xs font-bold"><i class="fa-solid fa-wallet text-amber-200"></i> <span class="pay-name">فودافون كاش</span><span class="pay-sub hidden">محفظة إلكترونية</span></span>
+                                <span class="flex items-center gap-2 bg-white/15 px-3.5 py-2 rounded-full text-xs font-bold"><i class="fa-solid fa-hand-holding-dollar text-amber-200"></i> <span class="pay-desk">الدفع </span><span class="pay-name">عند الاستلام</span><span class="pay-sub hidden">معاينة قبل الدفع</span></span>
                             </div>
                             <a href="https://wa.me/201146809133" target="_blank" class="mt-4 inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 transition-colors px-5 py-2.5 rounded-full text-xs font-black shadow-lg w-fit">
                                 <i class="fa-brands fa-whatsapp text-base"></i> اطلبي الآن عبر واتساب: 01146809133
@@ -1619,21 +1619,39 @@
             <i class="fa-solid fa-house" aria-hidden="true"></i>
             <span>الرئيسية</span>
         </button>
-        <button type="button" class="mobile-bottom-nav-item" data-bottom-target="catalog" onclick="app.navigate('catalog')">
+        <button type="button" class="mobile-bottom-nav-item" data-bottom-target="categories" onclick="bottomNavGo(this, 'home', null, 'categories')">
             <i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i>
-            <span>المنتجات</span>
+            <span>الأقسام</span>
+        </button>
+        <button type="button" class="mobile-bottom-nav-item" data-bottom-target="offers" onclick="bottomNavGo(this, 'catalog', 'مجموعات متكاملة')">
+            <i class="fa-solid fa-tag" aria-hidden="true"></i>
+            <span>العروض</span>
         </button>
         <button type="button" class="mobile-bottom-nav-item" data-bottom-target="favorites" onclick="app.navigate('favorites')">
             <i class="fa-regular fa-heart" aria-hidden="true"></i>
             <span>المفضلة</span>
             <span id="favorites-badge-bottom" class="mobile-bottom-nav-badge bg-rose-500 text-white">0</span>
         </button>
-        <button type="button" class="mobile-bottom-nav-item" data-bottom-target="cart" onclick="app.navigate('cart')">
-            <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
-            <span>الحقيبة</span>
-            <span id="cart-badge-bottom" class="mobile-bottom-nav-badge bg-gradient-to-r from-primary to-secondary text-white">0</span>
-        </button>
     </nav>
+    <script>
+        // أزرار الشريط السفلي اللي مش صفحة مستقلة (الأقسام / العروض):
+        // analysis.js بيلوّن الزر النشط حسب الصفحة بس، فبنلوّنه هنا بعد ما التنقل يخلص.
+        function bottomNavGo(btn, viewId, param, sectionId) {
+            var done = function () {
+                document.querySelectorAll('.mobile-bottom-nav-item').forEach(function (i) { i.classList.toggle('active', i === btn); });
+            };
+            var scrollToSection = function () {
+                var t = sectionId && document.getElementById(sectionId);
+                if (t) window.scrollTo({ top: Math.max(t.getBoundingClientRect().top + window.scrollY - 70, 0), behavior: 'smooth' });
+            };
+            var main = document.getElementById('view-main');
+            if (sectionId && main && main.classList.contains('active')) { scrollToSection(); done(); return; }
+            Promise.resolve(app.navigate(viewId, param)).then(function () {
+                done();
+                if (sectionId) requestAnimationFrame(function () { requestAnimationFrame(scrollToSection); });
+            });
+        }
+    </script>
 
     <!-- instapay.js / vodafone-cash.js / order-status.js مش محمّلين هنا بعد دلوقتي:
          كلهم بيتستخدموا وقت تأكيد الطلب بس (45 KiB خام كان بيتحمّلوا مع الصفحة
