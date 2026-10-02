@@ -277,109 +277,42 @@
         <main id="main-content" tabindex="-1">
         <div id="view-main" class="view-section active">
             <!-- Hero Section with Ambient Glow, Floating Elements & Micro-Animations -->
-<section id="home" class="relative overflow-hidden pt-8 pb-14 lg:pt-14 lg:pb-20">
-<div class="absolute top-0 right-1/4 w-[450px] h-[450px] bg-primary/10 rounded-full blur-3xl pointer-events-none -z-10 animate-pulse-subtle"></div>
-<div class="absolute top-1/3 left-10 w-96 h-96 bg-secondary/15 rounded-full blur-3xl pointer-events-none -z-10"></div>
-<div class="absolute bottom-10 right-10 w-64 h-64 bg-amber-200/20 rounded-full blur-2xl pointer-events-none -z-10"></div>
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-10 items-center">
-<!-- Right Column: Hero Content -->
-<div class="lg:col-span-7 flex flex-col items-start text-right">
-<h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display leading-tight sm:leading-tight lg:leading-tight mb-5 tracking-tight">
-<span class="drop-shadow-sm text-shimmer-gold">اصنعي جمالكِ الخاص</span>
-</h1>
-<p class="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mb-8 font-normal">
-          نقدم لكِ أفضل المنتجات الطبيعية والعلاجية للعناية بالبشرة. حلول آمنة ومختبرة طبياً لتتألقي بإشراقة طبيعية تدوم طويلاً من خبراء التجميل في عالم الجمال.
-        </p>
-<!-- CTA Buttons with Shimmer & Glow -->
-<div class="flex flex-wrap items-center gap-4 w-full sm:w-auto mb-10">
-<a class="btn-gradient-shimmer rounded-full px-8 py-4 text-base font-black flex items-center justify-center gap-3 w-full sm:w-auto text-white shadow-purple-glow group cursor-pointer" onclick="app.navigate('catalog')">
-<span class="">تسوقي الآن</span>
+<section id="home" class="hx">
+<style>
+.hx{position:relative;overflow:hidden;background:#fff;padding:36px 0 0}
+.hx-blob{position:absolute;border-radius:50%;background:linear-gradient(91deg,#c59b3f -19%,#0c4a34 102%);filter:blur(110px);opacity:.35;pointer-events:none;z-index:0;display:none}
+@media(min-width:768px){.hx-blob{display:block}.hx-b1{width:200px;height:200px;top:-30px;right:-40px}.hx-b2{width:200px;height:200px;top:420px;left:6%}}
+.hx-content{position:relative;z-index:4;max-width:957px;margin:0 auto;padding:0 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px}
+.hx h1{font-family:Cairo,sans-serif;font-weight:900;color:#1a1a1a;font-size:clamp(2.1rem,6.2vw,5rem);line-height:1.25}
+.hx h1 span{background:linear-gradient(91deg,#c59b3f,#0c4a34);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hx-sub{color:#5b5b5b;font-size:clamp(1rem,2.2vw,1.25rem);line-height:1.8;max-width:709px}
+.hx-strip{position:relative;direction:ltr;display:flex;justify-content:center;gap:24px;margin-top:-10px;padding:60px 0 70px}
+.hx-strip::before,.hx-strip::after{content:"";position:absolute;left:-6%;width:112%;height:110px;background:#fff;border-radius:50%;z-index:3;pointer-events:none}
+.hx-strip::before{top:-55px}.hx-strip::after{bottom:-55px}
+.hx-card{position:relative;flex:0 0 auto;width:min(332px,64vw);height:min(492px,94vw);border-radius:24px;overflow:hidden;border:0;padding:0;background:#f1f5f9;cursor:pointer;direction:rtl;box-shadow:0 18px 40px -18px rgba(12,74,52,.35)}
+.hx-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hx-card::after{content:"";position:absolute;inset:auto 0 0 0;height:45%;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(20,27,43,.7));pointer-events:none}
+.hx-label{position:absolute;z-index:2;right:16px;left:16px;bottom:16px;color:#fff;font-family:Cairo,sans-serif;font-weight:800;font-size:1rem;text-align:right;line-height:1.4}
+.hx-label small{display:block;font-size:.75rem;font-weight:700;color:#f3d98b}
+.hx-card:nth-child(1),.hx-card:nth-child(5){transform:translateY(34px)}
+.hx-card:nth-child(2),.hx-card:nth-child(4){transform:translateY(14px)}
+.hx-main{width:min(380px,72vw);height:min(540px,102vw);z-index:2;box-shadow:0 26px 50px -16px rgba(197,155,63,.55)}
+</style>
+<div class="hx-blob hx-b1"></div><div class="hx-blob hx-b2"></div>
+<div class="hx-content">
+<h1>اصنعي <span>جمالكِ الخاص</span>،<br>وتألقي بإشراقة طبيعية</h1>
+<p class="hx-sub">نقدم لكِ أفضل المنتجات الطبيعية والعلاجية للعناية بالبشرة والشعر. حلول آمنة ومختبرة طبياً من خبراء التجميل.</p>
+<a class="btn-gradient-shimmer rounded-full px-8 py-4 text-base font-black inline-flex items-center justify-center gap-3 text-white shadow-purple-glow group cursor-pointer" onclick="app.navigate('catalog')">
+<span>تسوقي الآن</span>
 <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
 </a>
-<a class="btn-outline px-7 py-4 text-base font-bold flex items-center justify-center gap-2.5 w-full sm:w-auto hover:shadow-lg cursor-pointer" onclick="app.navigate('catalog', 'مجموعات متكاملة')">
-<i class="fa-solid fa-wand-magic-sparkles text-primary"></i>
-<span class="">اكتشفي المجموعات</span>
-</a>
 </div>
-<!-- Trust Stats Bar -->
-<div class="grid grid-cols-3 gap-2 sm:gap-4 pt-6 border-t border-purple-100 w-full max-w-lg trust-stats-bar">
-<div class="flex flex-col">
-<span class="font-black text-darkNavy font-display flex items-center gap-1 trust-stat-value">
-              100%
-              <i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i>
-</span>
-<span class="text-xs text-slate-500 font-bold mt-0.5">منتجات أصلية وطبيعية</span>
-</div>
-<div class="flex flex-col border-r border-slate-200 pr-4 trust-stat-col">
-<span class="font-black text-primary font-display flex items-center gap-1 trust-stat-value">
-              سريع
-              <i class="fa-solid fa-bolt text-amber-500 text-sm"></i>
-</span>
-<span class="text-xs text-slate-500 font-bold mt-0.5">شحن سريع للمحافظات</span>
-</div>
-<div class="flex flex-col border-r border-slate-200 pr-4 trust-stat-col">
-<span class="font-black text-darkNavy font-display flex items-center gap-1 trust-stat-value">
-              +2,000
-              <i class="fa-solid fa-heart text-rose-500 text-sm"></i>
-</span>
-<span class="text-xs text-slate-500 font-bold mt-0.5">عميلة تثق بمنتجاتنا</span>
-</div>
-</div>
-</div>
-<!-- Left Column: Hero Image Showcase with Floating Glass Badges -->
-<div class="lg:col-span-5 relative">
-<div class="relative mx-auto max-w-md lg:max-w-none">
-<div class="absolute -inset-3 bg-gradient-to-r from-primary via-secondary to-purple-400 rounded-3xl blur-2xl opacity-30 animate-pulse-subtle"></div>
-<!-- Main Showcase Card -->
-<div class="relative rounded-3xl p-1.5 shadow-2xl bg-white/40 backdrop-blur-md border border-white/60">
-<div class="aspect-square max-h-[520px] rounded-2xl overflow-hidden relative group flex items-center justify-center shadow-inner bg-slate-100">
-<img alt="منتجات العناية بالبشرة والجمال الفرات فارما" decoding="async" fetchpriority="high" loading="eager" width="520" height="520" class="hero-main-image w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" data-fallback-src="logo.png" onerror="if (this.src !== this.dataset.fallbackSrc) { this.src = this.dataset.fallbackSrc; this.classList.remove('object-cover'); this.classList.add('object-contain', 'p-8'); }">
-<script>
-    // بنحدد src الصورة من هنا فقط (بدل ما تتحط في الـ HTML مباشرة) عشان
-    // منحملش نسختين مع بعض: لو عندنا كاش من زيارة سابقة فيه صورة براندنج
-    // مخصصة، بيتحط هو بس ويتحمّل مرة واحدة. لو مفيش كاش (أول زيارة)،
-    // بترجع لصورة hero-products.webp المحلية الافتراضية.
-    (function () {
-        try {
-            var img = document.currentScript.previousElementSibling;
-            if (!img) return;
-            var cached = JSON.parse(localStorage.getItem('elforat_store_settings_cache_v1') || 'null');
-            var url = cached && cached.data && cached.data.hero_image_url;
-            if (url) {
-                // نمرر صورة البراندنج على wsrv.nl زي باقي صور المنتجات
-                // بدل ما تتحمّل بحجمها الخام (كانت بتوصل لـ 1200x1200 وهي
-                // معروضة في مساحة أصغر بكتير)
-                url = 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&w=900&q=75&output=webp';
-            }
-            img.src = url || 'hero-products.webp';
-        } catch (e) {
-            var img2 = document.currentScript.previousElementSibling;
-            if (img2) img2.src = 'hero-products.webp';
-        }
-    })();
-</script>
-<div class="absolute inset-0 bg-gradient-to-t from-darkNavy/25 via-transparent to-transparent pointer-events-none"></div>
-</div>
-<div class="absolute -bottom-3 -right-3 text-white z-10">
-<span class="bg-darkNavy/80 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 border border-white/20 shadow-lg">
-<span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                  منتجات Elforat Pharma الأصلية المعتمدة
-                </span>
-</div>
-<!-- Floating Glass Badge 1 (Top Left) -->
-<div class="absolute -top-4 -left-4 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl flex items-center gap-3 animate-float-slow border border-white/80 z-10">
-<div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-lg shadow-inner">
-<i class="fa-solid fa-leaf"></i>
-</div>
-<div>
-<div class="text-xs font-black text-darkNavy">تركيبات طبيعية 100%</div>
-<div class="text-[10px] font-semibold text-slate-500">خالية من الكيماويات الضارة</div>
-</div>
-</div>
-</div>
-</div>
-</div>
+<div class="hx-strip" aria-label="منتجات مميزة">
+<button type="button" class="hx-card " onclick="app.navigate('catalog')"><img src="product-gallery/lip-balm-1.png" alt="مرطب الشفايف" width="332" height="492" decoding="async" loading="lazy" onerror="this.style.display='none'"><span class="hx-label">مرطب الشفايف</span></button>
+<button type="button" class="hx-card " onclick="app.navigate('catalog','العناية بالشعر')"><img src="product-gallery/guzel-gold-2.jpg" alt="Guzel Gold Serum" width="332" height="492" decoding="async" loading="lazy" onerror="this.style.display='none'"><span class="hx-label">Guzel Gold Serum</span></button>
+<button type="button" class="hx-card hx-main" onclick="app.navigate('catalog','العناية بالشعر')"><img src="product-gallery/guzel-gold-1.jpg" alt="سيروم Guzel Gold من الفرات فارما" width="332" height="492" decoding="async" loading="eager" fetchpriority="high" onerror="this.style.display='none'"><span class="hx-label">Guzel Gold Serum <small>الأكثر طلباً ⭐</small></span></button>
+<button type="button" class="hx-card " onclick="app.navigate('catalog')"><img src="product-gallery/keratosis-1.png" alt="علاج جلد الوزة" width="332" height="492" decoding="async" loading="lazy" onerror="this.style.display='none'"><span class="hx-label">علاج جلد الوزة</span></button>
+<button type="button" class="hx-card " onclick="app.navigate('catalog','العناية بالشعر')"><img src="product-gallery/guzel-gold-3.jpg" alt="Guzel Gold Serum" width="332" height="492" decoding="async" loading="lazy" onerror="this.style.display='none'"><span class="hx-label">Guzel Gold Serum</span></button>
 </div>
 </section>
 <!-- Shop By Category Section with Frosted Glass & 3D Glowing Icons -->
