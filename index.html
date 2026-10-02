@@ -278,124 +278,141 @@
         <main id="main-content" tabindex="-1">
         <div id="view-main" class="view-section active">
             <!-- Hero Section with Ambient Glow, Floating Elements & Micro-Animations -->
-<section id="home" class="relative overflow-hidden" style="padding: 56px 0 72px;">
+<section id="home" class="relative overflow-hidden" style="padding: 48px 0 0; width: 100%;">
   <!-- Ambient glow blobs -->
-  <div class="absolute top-0 right-1/4 w-[450px] h-[450px] bg-primary/10 rounded-full blur-3xl pointer-events-none -z-10 animate-pulse-subtle"></div>
-  <div class="absolute top-1/3 left-10 w-96 h-96 bg-secondary/15 rounded-full blur-3xl pointer-events-none -z-10"></div>
-  <div class="absolute bottom-10 right-10 w-64 h-64 bg-amber-200/20 rounded-full blur-2xl pointer-events-none -z-10"></div>
+  <div class="absolute top-0 right-1/4 w-[550px] h-[550px] bg-primary/10 rounded-full blur-3xl pointer-events-none -z-10 animate-pulse-subtle"></div>
+  <div class="absolute top-1/3 left-10 w-[500px] h-[500px] bg-secondary/15 rounded-full blur-3xl pointer-events-none -z-10"></div>
+  <div class="absolute bottom-10 right-10 w-80 h-80 bg-amber-200/20 rounded-full blur-2xl pointer-events-none -z-10"></div>
 
-  <!-- Centered column layout -->
-  <div class="relative mx-auto flex flex-col items-center text-center px-6" style="max-width:900px; gap:32px; z-index:10;">
+  <!-- Centered column layout — Wide Screen Fill -->
+  <div class="relative mx-auto flex flex-col items-center text-center" style="width: 100%; max-width: 1400px; padding: 0 16px; gap: 32px; z-index: 10;">
 
-    <!-- Title + Description -->
-    <div class="hero10-reveal flex flex-col items-center" style="gap:16px; max-width:640px; width:100%;">
-      <h1 class="font-black font-display leading-tight tracking-tight text-darkNavy" style="font-size:clamp(1.75rem, 5vw, 3rem); margin:0;">
+    <!-- Title + Description (Larger text across screen) -->
+    <div class="hero10-reveal flex flex-col items-center" style="gap: 16px; max-width: 900px; width: 100%;">
+      <h1 class="font-black font-display leading-tight tracking-tight text-darkNavy" style="font-size: clamp(2.1rem, 5.5vw, 4.2rem); margin: 0;">
         <span class="text-shimmer-gold">اصنعي جمالكِ الخاص</span>
         <br>
-        <span style="font-size:clamp(0.9rem, 2.5vw, 1.125rem); font-weight:400; color:#64748b;">بمنتجات طبيعية </span><span class="text-primary" style="font-size:clamp(0.9rem, 2.5vw, 1.125rem);">مختبرة طبياً</span>
+        <span style="font-size: clamp(1.1rem, 2.8vw, 1.8rem); font-weight: 500; color: #475569;">بمنتجات طبيعية </span><span class="text-primary" style="font-size: clamp(1.1rem, 2.8vw, 1.8rem); font-weight: 800;">مختبرة طبياً ومعتمدة</span>
       </h1>
-      <p class="text-slate-600 leading-relaxed" style="max-width:480px; font-size:0.875rem; margin:0;">
-        نقدم لكِ أفضل المنتجات الطبيعية والعلاجية للعناية بالبشرة والشعر — حلول آمنة لتتألقي بإشراقة طبيعية تدوم طويلاً.
+      <p class="text-slate-600 leading-relaxed" style="max-width: 680px; font-size: clamp(0.95rem, 1.6vw, 1.15rem); margin: 0;">
+        نقدم لكِ أفضل المستحضرات الطبيعية والعلاجية للعناية الفائقة بالبشرة والشعر — إشراقة ونضارة طبيعية تدوم طويلاً بخبرة أطباء التجميل.
       </p>
     </div>
 
     <!-- CTAs + Social Proof -->
-    <div class="hero10-reveal flex flex-col items-center" style="gap:14px;">
-      <div class="flex flex-wrap items-center justify-center" style="gap:12px 16px;">
-        <a class="btn-gradient-shimmer rounded-full font-black flex items-center justify-center gap-3 text-white shadow-purple-glow cursor-pointer" style="padding:12px 28px; font-size:0.9375rem;" onclick="app.navigate('catalog')">
+    <div class="hero10-reveal flex flex-col items-center" style="gap: 14px;">
+      <div class="flex flex-wrap items-center justify-center" style="gap: 12px 18px;">
+        <a class="btn-gradient-shimmer rounded-full font-black flex items-center justify-center gap-3 text-white shadow-purple-glow cursor-pointer" style="padding: 14px 34px; font-size: 1.05rem;" onclick="app.navigate('catalog')">
           <span>تسوقي الآن</span>
           <i class="fa-solid fa-arrow-left"></i>
         </a>
-        <a class="btn-outline font-bold flex items-center justify-center gap-3 cursor-pointer" style="padding:12px 24px; font-size:0.9375rem;" onclick="app.navigate('catalog', 'مجموعات متكاملة')">
+        <a class="btn-outline font-bold flex items-center justify-center gap-3 cursor-pointer" style="padding: 14px 28px; font-size: 1.05rem;" onclick="app.navigate('catalog', 'مجموعات متكاملة')">
           <i class="fa-solid fa-wand-magic-sparkles text-primary"></i>
           <span>اكتشفي المجموعات</span>
         </a>
       </div>
       <!-- Social Proof -->
-      <p class="flex items-center" style="gap:8px; font-size:0.75rem; color:#94a3b8; margin:0;">
-        <span class="flex items-center" style="gap:3px; color:#f59e0b;">
-          <i class="fa-solid fa-star" style="font-size:9px;"></i>
-          <i class="fa-solid fa-star" style="font-size:9px;"></i>
-          <i class="fa-solid fa-star" style="font-size:9px;"></i>
-          <i class="fa-solid fa-star" style="font-size:9px;"></i>
-          <i class="fa-solid fa-star" style="font-size:9px;"></i>
+      <p class="flex items-center" style="gap: 8px; font-size: 0.85rem; color: #64748b; font-weight: 600; margin: 0;">
+        <span class="flex items-center" style="gap: 3px; color: #f59e0b;">
+          <i class="fa-solid fa-star" style="font-size: 11px;"></i>
+          <i class="fa-solid fa-star" style="font-size: 11px;"></i>
+          <i class="fa-solid fa-star" style="font-size: 11px;"></i>
+          <i class="fa-solid fa-star" style="font-size: 11px;"></i>
+          <i class="fa-solid fa-star" style="font-size: 11px;"></i>
         </span>
-        +2,000 عميلة سعيدة &middot; شحن سريع &middot; منتجات أصلية 100%
+        +2,000 عميلة تثق بمنتجاتنا &middot; شحن سريع لجميع المحافظات &middot; جودة أصلية 100%
       </p>
     </div>
 
-    <!-- Fan Image Gallery -->
-    <div style="width:100%; max-width:680px; margin:0 auto;">
-      <div class="relative flex items-center justify-center" style="width:100%;">
+    <!-- Fan Image Gallery — Edge to Edge Fan (سيروم بالمقدمة، يمين لوشن مرطب للجسم، شمال لوشن نهاري) -->
+    <div class="w-full" style="max-width: 100%; margin: 10px 0 0; overflow: visible;">
+      <div class="relative flex items-end justify-center" style="width: 100%; min-height: 380px; padding: 0 4px;">
 
-        <!-- Card Left (rotated +6deg) -->
-        <div class="relative overflow-hidden rounded-xl shadow-xl hero-fan-side"
-             style="flex-shrink:0; width:36%; aspect-ratio:4/5; transform:rotate(6deg) translateY(20px); margin-left:-28px; z-index:10; outline:1px solid rgba(0,0,0,0.08);">
-          <img style="width:100%; height:100%; object-fit:cover; display:block;" alt="منتج عناية الفرات فارما" decoding="async" loading="eager">
-          <script>
-            (function(){
-              var img = document.currentScript.previousElementSibling;
-              var cached = JSON.parse(localStorage.getItem('elforat_store_settings_cache_v1')||'null');
-              var url = cached&&cached.data&&cached.data.hero_image_url;
-              img.src = url ? ('https://wsrv.nl/?url='+encodeURIComponent(url)+'&w=400&q=70&output=webp') : 'hero-products.webp';
-            })();
-          </script>
+        <!-- اليمين (في اتجاه RTL يمين الصفحة): لوشن مرطب للجسم خلف السيروم -->
+        <div class="relative overflow-hidden hero-fan-side shadow-2xl"
+             style="flex-shrink: 0; width: 34%; max-width: 440px; aspect-ratio: 4/5;
+                    transform: rotate(6deg) translateY(24px);
+                    margin-left: -6%;
+                    z-index: 12;
+                    border-radius: 24px 24px 0 0;
+                    outline: 1.5px solid rgba(255,255,255,0.7);
+                    background: #ffffff;">
+          <img style="width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block;"
+               alt="لوشن مرطب للجسم" decoding="async" loading="eager"
+               src="https://wsrv.nl/?url=https%3A%2F%2Fsidtdxchiqiogfkwbdui.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproducts%2Fuploads%2F1789572243477-prod.png&w=700&q=80&output=webp">
+          <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.4) 40%, transparent 100%); padding: 22px 14px 12px; text-align: center;">
+            <span style="font-size: clamp(0.75rem, 1.2vw, 0.95rem); font-weight: 800; color: #ffffff; letter-spacing: 0.03em; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">لوشن مرطب للجسم</span>
+          </div>
         </div>
 
-        <!-- Card Center (front, no rotation) -->
-        <div class="relative overflow-hidden rounded-xl shadow-2xl"
-             style="flex-shrink:0; width:40%; aspect-ratio:4/5; transform:translateY(-10px); z-index:20; outline:1px solid rgba(0,0,0,0.08);">
-          <img class="hero-main-image" style="width:100%; height:100%; object-fit:cover; object-position:center; display:block;"
-               alt="منتجات العناية بالبشرة والجمال الفرات فارما" decoding="async" fetchpriority="high" loading="eager"
-               width="520" height="650" data-fallback-src="logo.png"
-               onerror="if(this.src!==this.dataset.fallbackSrc){this.src=this.dataset.fallbackSrc;this.style.objectFit='contain';this.style.padding='24px';}">
+        <!-- المنتصف (المقدمة): سيروم الشعر Guzel Gold -->
+        <div class="relative overflow-hidden shadow-2xl"
+             style="flex-shrink: 0; width: 40%; max-width: 520px; aspect-ratio: 4/5;
+                    transform: translateY(-24px);
+                    z-index: 30;
+                    border-radius: 28px 28px 0 0;
+                    box-shadow: 0 35px 85px rgba(0,0,0,0.28), 0 0 0 2px rgba(197,155,63,0.45);
+                    background: #ffffff;">
+          <img class="hero-main-image"
+               style="width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block;"
+               alt="سيروم الشعر Guzel Gold" decoding="async" fetchpriority="high" loading="eager"
+               width="520" height="650"
+               src="https://wsrv.nl/?url=https%3A%2F%2Fsidtdxchiqiogfkwbdui.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproducts%2Fuploads%2F1789572065186-guzel-gold.png&w=900&q=80&output=webp"
+               data-fallback-src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1789572065186-guzel-gold.png"
+               onerror="if(this.src!==this.dataset.fallbackSrc){this.src=this.dataset.fallbackSrc;}">
           <script>
             (function () {
-                try {
-                    var img = document.currentScript.previousElementSibling;
-                    if (!img) return;
-                    var cached = JSON.parse(localStorage.getItem('elforat_store_settings_cache_v1') || 'null');
-                    var url = cached && cached.data && cached.data.hero_image_url;
-                    if (url) url = 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&w=900&q=75&output=webp';
-                    img.src = url || 'hero-products.webp';
-                } catch (e) {
-                    var img2 = document.currentScript.previousElementSibling;
-                    if (img2) img2.src = 'hero-products.webp';
+              try {
+                var img = document.currentScript.previousElementSibling;
+                if (!img) return;
+                var cached = JSON.parse(localStorage.getItem('elforat_store_settings_cache_v1') || 'null');
+                var url = cached && cached.data && cached.data.hero_image_url;
+                if (url) {
+                  img.src = 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&w=900&q=80&output=webp';
                 }
+              } catch (e) {}
             })();
           </script>
           <!-- Gradient overlay -->
-          <div class="absolute inset-0 pointer-events-none" style="background:linear-gradient(to top, rgba(20,27,43,0.22) 0%, transparent 50%);"></div>
-          <!-- Live badge -->
-          <div class="absolute" style="bottom:10px; left:0; right:0; display:flex; justify-content:center; z-index:10;">
-            <span class="backdrop-blur-md font-bold text-white flex items-center border border-white/20 shadow-lg"
-                  style="background:rgba(20,27,43,0.78); padding:5px 12px; border-radius:9999px; font-size:0.68rem; gap:7px;">
-              <span style="width:7px; height:7px; border-radius:50%; background:#34d399; display:inline-block; animation:ping 1s cubic-bezier(0,0,0.2,1) infinite;"></span>
-              منتجات Elforat Pharma الأصلية المعتمدة
+          <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,23,42,0.7) 0%, rgba(15,23,42,0.1) 40%, transparent 65%); pointer-events: none;"></div>
+          <!-- Top gold line -->
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, transparent, #c59b3f, transparent);"></div>
+          
+          <!-- Live badge in Center -->
+          <div style="position: absolute; bottom: 18px; left: 0; right: 0; display: flex; justify-content: center; z-index: 10;">
+            <span style="background: rgba(15,23,42,0.85); backdrop-filter: blur(10px); padding: 7px 18px; border-radius: 9999px; font-size: clamp(0.75rem, 1.2vw, 0.88rem); font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.22); box-shadow: 0 8px 20px rgba(0,0,0,0.3);">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #34d399; display: inline-block; animation: ping 1s cubic-bezier(0,0,0.2,1) infinite;"></span>
+              سيروم الشعر Guzel Gold الأصلي
             </span>
           </div>
+          
           <!-- Float badge -->
-          <div class="absolute animate-float-slow" style="top:-10px; right:-10px; background:rgba(255,255,255,0.97); padding:9px 11px; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,0.12); display:flex; align-items:center; gap:8px; border:1px solid rgba(255,255,255,0.8); z-index:10;">
-            <div style="width:30px; height:30px; border-radius:10px; background:rgba(16,185,129,0.1); color:#059669; display:flex; align-items:center; justify-content:center; font-size:13px;">
-              <i class="fa-solid fa-leaf"></i>
+          <div class="absolute animate-float-slow" style="top: -10px; right: -8px; background: rgba(255,255,255,0.98); padding: 10px 14px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 9px; border: 1px solid rgba(197,155,63,0.3); z-index: 10;">
+            <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(197,155,63,0.15); color: #c59b3f; display: flex; align-items: center; justify-content: center; font-size: 15px;">
+              <i class="fa-solid fa-crown"></i>
             </div>
             <div>
-              <div class="font-black text-darkNavy" style="font-size:10.5px; line-height:1.3;">طبيعية 100%</div>
-              <div style="font-size:9px; color:#94a3b8;">بدون كيماويات ضارة</div>
+              <div class="font-black text-darkNavy" style="font-size: 11px; line-height: 1.2;">الأكثر طلباً ومبيعاً</div>
+              <div style="font-size: 9px; color: #64748b; font-weight: 600;">سيروم طبيعي 100%</div>
             </div>
           </div>
         </div>
 
-        <!-- Card Right (rotated -6deg) -->
-        <div class="relative overflow-hidden rounded-xl shadow-xl hero-fan-side"
-             style="flex-shrink:0; width:36%; aspect-ratio:4/5; transform:rotate(-6deg) translateY(20px); margin-right:-28px; z-index:10; outline:1px solid rgba(0,0,0,0.08);">
-          <img style="width:100%; height:100%; object-fit:cover; display:block;" alt="منتج عناية الفرات فارما" decoding="async" loading="lazy">
-          <script>
-            (function(){
-              var img = document.currentScript.previousElementSibling;
-              img.src = 'hero-products.webp';
-            })();
-          </script>
+        <!-- الشمال (في اتجاه RTL شمال الصفحة): لوشن نهاري خلف السيروم -->
+        <div class="relative overflow-hidden hero-fan-side shadow-2xl"
+             style="flex-shrink: 0; width: 34%; max-width: 440px; aspect-ratio: 4/5;
+                    transform: rotate(-6deg) translateY(24px);
+                    margin-right: -6%;
+                    z-index: 12;
+                    border-radius: 24px 24px 0 0;
+                    outline: 1.5px solid rgba(255,255,255,0.7);
+                    background: #ffffff;">
+          <img style="width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block;"
+               alt="لوشن نهاري للمناطق الحساسة" decoding="async" loading="eager"
+               src="https://wsrv.nl/?url=https%3A%2F%2Fsidtdxchiqiogfkwbdui.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproducts%2Fuploads%2F1789572271895-prod.png&w=700&q=80&output=webp">
+          <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.4) 40%, transparent 100%); padding: 22px 14px 12px; text-align: center;">
+            <span style="font-size: clamp(0.75rem, 1.2vw, 0.95rem); font-weight: 800; color: #ffffff; letter-spacing: 0.03em; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">لوشن نهاري</span>
+          </div>
         </div>
 
       </div>
