@@ -171,7 +171,9 @@ window.InstaPayCheckout = (() => {
     } catch (e) { return false; }
   }
 
-  /* ---------- التنسيق (مستقل تماماً: مفيش اعتماد على Tailwind build) ---------- */
+  /* ---------- التنسيق (مستقل تماماً: مفيش اعتماد على Tailwind build) ----------
+   * ملحوظة: ماستخدمناش <section> جوه النافذة لأن style.css بيفرض section{background:transparent !important}
+   * وده كان بيشيل الخلفية الخضرا/البيضا من الكروت. */
   function injectStyles() {
     if (document.getElementById("ipx-styles")) return;
     const css = `
@@ -306,25 +308,25 @@ window.InstaPayCheckout = (() => {
         <button type="button" class="ipx-close" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
 
         <div class="ipx-body">
-          <section class="ipx-card ipx-top">
+          <div role="region" class="ipx-card ipx-top">
             <div class="ipx-pillrow">
               <span class="ipx-pill"><span class="ipx-dot"></span>طلب رقم <b>#${esc(orderNo)}</b></span>
             </div>
             <div class="ipx-brand" aria-hidden="true"><i class="fa-solid fa-bolt"></i><span>InstaPay</span></div>
             <h2 class="ipx-title" id="ipx-title">الدفع اللحظي عبر إنستاباي</h2>
             <p class="ipx-sub">معاملة آمنة ومباشرة معتمدة لحساب شركة الفرات فارما الرسمي</p>
-          </section>
+          </div>
 
-          <section class="ipx-amount" aria-label="المبلغ المطلوب">
+          <div role="region" class="ipx-amount" aria-label="المبلغ المطلوب">
             <div class="ipx-amount-top">
               <span><i class="fa-solid fa-circle-check"></i>المبلغ المطلوب تحويله بالكامل</span>
               <span class="ipx-tag">شامل الخصم والشحن</span>
             </div>
             <div class="ipx-amount-val"><strong>${esc(amountText)}</strong><span>جنيه مصري</span></div>
             <button type="button" class="ipx-btn-copyamt"><i class="fa-regular fa-copy"></i><span>نسخ المبلغ (${esc(amountText)} ج.م)</span></button>
-          </section>
+          </div>
 
-          <section class="ipx-card ipx-recipient" aria-label="بيانات التحويل">
+          <div role="region" class="ipx-card ipx-recipient" aria-label="بيانات التحويل">
             <div class="ipx-chead">
               <div class="ipx-chead-ico"><i class="fa-solid fa-wallet"></i></div>
               <div>
@@ -340,9 +342,9 @@ window.InstaPayCheckout = (() => {
                 <span class="ipx-sr" role="status" aria-live="polite"></span>
               </div>
             </div>
-          </section>
+          </div>
 
-          <section class="ipx-card" aria-label="خطوات التحويل">
+          <div role="region" class="ipx-card" aria-label="خطوات التحويل">
             <div class="ipx-chead">
               <div class="ipx-chead-ico"><i class="fa-solid fa-circle-info"></i></div>
               <div>
@@ -360,7 +362,7 @@ window.InstaPayCheckout = (() => {
                 <div><b>إرسال إيصال الدفع</b><p>بعد إتمام التحويل قم بحفظ إيصال الدفع وأرسله على واتساب المتجر لتأكيد الطلب</p></div>
               </div>
             </div>
-          </section>
+          </div>
 
           <div class="ipx-actions">
             <button type="button" class="ipx-btn ipx-btn-app"><i class="fa-solid fa-bolt"></i><span>فتح تطبيق InstaPay للتحويل</span></button>
