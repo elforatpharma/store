@@ -1,0 +1,134 @@
+/* mobile.css - تصميم الموبايل فقط (الديسكتوب مش بيتأثر)
+ * بيتحمّل بـ media="(max-width: 767.98px)" فالمتصفح مش بيطبقه ولا بيحمله فوق كده.
+ * لازم يتحط بعد style.min.css و tailwind-built.css في index.html.
+ * الألوان مأخوذة من التصميم الجديد (زمردي + ذهبي، أسطح بيضاء من غير حدود).
+ */
+:root {
+  --m-bg: #f6faf7;
+  --m-card: #ffffff;
+  --m-emerald: #003820;
+  --m-emerald-dark: #0b3d26;
+  --m-emerald-surface: #ebf5f0;
+  --m-gold: #9e7a36;
+  --m-gold-light: #e8d5a3;
+  --m-muted: #5a6d64;
+  --m-text: #1a2e26;
+  --m-radius: 16px;
+  --m-shadow: 0 1px 6px rgba(11, 61, 38, 0.07);
+}
+
+body {
+  background: var(--m-bg);
+  color: var(--m-text);
+}
+
+/* ---------- الهيدر ---------- */
+.glass-nav {
+  background: rgba(246, 250, 247, 0.96);
+  border-bottom: 0;
+  box-shadow: 0 1px 12px rgba(11, 61, 38, 0.06);
+}
+.glass-nav .h-16 { height: 56px; }
+.glass-nav .text-darkNavy { color: var(--m-emerald); }
+
+/* ---------- الهيرو ---------- */
+#home {
+  padding-top: 12px;
+  padding-bottom: 20px;
+}
+#home > .absolute { display: none; } /* بقع الـ blur */
+#home .max-w-7xl > .grid {
+  background: linear-gradient(180deg, var(--m-emerald-surface), #f0f5f2);
+  border-radius: 20px;
+  padding: 20px 16px;
+  box-shadow: var(--m-shadow);
+  gap: 16px;
+}
+#home h1 {
+  font-size: 26px;
+  line-height: 36px;
+  color: var(--m-emerald-dark);
+  text-align: center;
+  margin-bottom: 8px;
+}
+#home h1 .text-shimmer-gold {
+  background: none;
+  -webkit-text-fill-color: var(--m-emerald-dark);
+  color: var(--m-emerald-dark);
+  animation: none;
+}
+#home p {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--m-muted);
+  text-align: center;
+  margin-bottom: 16px;
+}
+/* أزرار الهيرو: عرض كامل بزوايا 12px بدل الكبسولة */
+#home a.btn-gradient-shimmer,
+#home .max-w-7xl a[onclick*="navigate"] {
+  height: 48px;
+  border-radius: 12px;
+  padding: 0 16px;
+  width: 100%;
+  font-size: 14px;
+}
+#home a.btn-gradient-shimmer {
+  background: var(--m-emerald);
+  box-shadow: var(--m-shadow);
+  animation: none;
+}
+
+/* ---------- كروت المنتجات (شبكة عمودين) ---------- */
+#catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.product-card {
+  background: var(--m-card);
+  border: 0;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: var(--m-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.product-card::before,
+.product-card::after { display: none; }
+.product-card:hover { transform: none; }
+.product-card .product-visual-glass,
+.product-card .product-image-bg {
+  border-radius: 8px;
+  background: rgba(235, 245, 240, 0.5);
+  margin-bottom: 8px;
+}
+.product-card h3,
+.product-card h4 {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--m-text);
+}
+/* أزرار الكارت أصغر وبزوايا 8px */
+.product-card button,
+.product-card a[class*="rounded-full"] {
+  min-height: 36px;
+  border-radius: 8px;
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+/* ---------- الشريط السفلي ---------- */
+.mobile-bottom-nav {
+  background: rgba(255, 255, 255, 0.97);
+  border-top: 0;
+  box-shadow: 0 -2px 16px rgba(11, 61, 38, 0.07);
+}
+.mobile-bottom-nav-item { color: #404942; }
+.mobile-bottom-nav-item.active {
+  color: var(--m-emerald);
+  font-weight: 700;
+}
+
+/* ---------- الفوتر ---------- */
+footer#about { border-radius: 20px 20px 0 0; }
