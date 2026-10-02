@@ -64,9 +64,9 @@
         })();
     </script>
     <link rel="dns-prefetch" href="https://api.ipify.org">
-    <link rel="stylesheet" href="style.min.css?v=25">
-    <link rel="stylesheet" href="tailwind-built.css?v=25">
-<link rel="stylesheet" href="mobile.css?v=25" media="(max-width: 767.98px)">
+    <link rel="stylesheet" href="style.min.css?v=26">
+    <link rel="stylesheet" href="tailwind-built.css?v=26">
+<link rel="stylesheet" href="mobile.css?v=26" media="(max-width: 767.98px)">
 
     <!-- منع "قفلة" الصفحة عند الريفريش: لو الرابط فيه #hash لصفحة غير الرئيسية
          (كتالوج/منتج/سلة/مفضلة)، الصفحة الافتراضية (الهيرو) كانت بتترسم وتظهر
@@ -144,13 +144,13 @@
          (متولّد من tools/build-fa-subset.js). الخطوط نفسها لسه من cdnjs.
          لازم تتولّد تاني بعد أي إضافة لأيقونة جديدة:
              node tools/build-fa-subset.js -->
-    <link rel="stylesheet" href="fa-subset.css?v=25">
+    <link rel="stylesheet" href="fa-subset.css?v=26">
     
     <!-- عميل Supabase مصغّر محلي (~1.5 KiB بدل 29 KiB من supabase-js v2 الكامل).
          نفس الـ API بالظبط (from/select/insert/upsert/rpc) فأي كود موجود مش متغيّر.
          السبب: supabase-js كان بيحمّل auth + realtime + storage + postgrest كامل،
          وأكتر من نصه مبيتستخدمش خالص (Lighthouse unused JS). -->
-    <script src="supabase-lite.js?v=25" defer></script>
+    <script src="supabase-lite.js?v=26" defer></script>
 
 </head>
 
@@ -1902,8 +1902,8 @@
          كلهم بيتستخدموا وقت تأكيد الطلب بس (45 KiB خام كان بيتحمّلوا مع الصفحة
          من غير ما حد يستخدمهم). analysis.js بيحمّلهم بالتوازي لما العميل يفتح
          صفحة السلة/الدفع من خلال loadPaymentScripts(). -->
-    <script src="welcome-offer.js?v=25" defer></script>
-    <script src="analysis.js?v=25" defer></script>
+    <script src="welcome-offer.js?v=26" defer></script>
+    <script src="analysis.js?v=26" defer></script>
     <script>
         // Touch/Swipe gesture support for carousel
         (function() {
@@ -2366,6 +2366,8 @@
     let rafId = null;
     let selected = 0;
     let drag = null;
+    let vel = 0;
+    const OMEGA = 19; // أعلى = أسرع (القديم كان أبطأ تقريباً 10)
 
     function indexAt(p) {
       return ((Math.round(p) % count) + count) % count;
@@ -2436,15 +2438,26 @@
         updateCaption(selected);
       }
 
-      function step() {
-        const remaining = target - pos;
-        if (Math.abs(remaining) < 0.0004) {
+      let last = performance.now();
+      function step(now) {
+        // حركة زنبركية متخامدة (critically damped): بتبدأ بنعومة وتهدّى بنعومة،
+        // ومحسوبة بالزمن الحقيقي فمش بتتأثر بمعدل إطارات الشاشة (60/90/120Hz)
+        let dt = Math.min(Math.max((now - last) / 1000, 0), 0.05);
+        last = now;
+        const sub = 1 / 240;
+        while (dt > 0) {
+          const h = Math.min(sub, dt);
+          vel += (OMEGA * OMEGA * (target - pos) - 2 * OMEGA * vel) * h;
+          pos += vel * h;
+          dt -= h;
+        }
+        if (Math.abs(target - pos) < 0.0004 && Math.abs(vel) < 0.01) {
           pos = target;
+          vel = 0;
           paint();
           rafId = null;
           return;
         }
-        pos += remaining * 0.16;
         paint();
         rafId = requestAnimationFrame(step);
       }
@@ -2472,6 +2485,7 @@
       frame.classList.remove('cursor-grab');
       frame.classList.add('cursor-grabbing');
       target = pos;
+      vel = 0;
       drag = {
         id: e.pointerId,
         x: e.clientX,

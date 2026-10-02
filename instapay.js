@@ -206,13 +206,11 @@ window.InstaPayCheckout = (() => {
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:0 6px 16px -6px rgba(89,44,130,.6)}
 .ipx-brand i{font-size:24px;line-height:1}
 .ipx-brand span{font:900 10px/1 'Plus Jakarta Sans','Cairo',sans-serif;letter-spacing:-.01em}
-.ipx-exch{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;margin:6px auto 0}
-.ipx-logo{display:flex;align-items:center;justify-content:center;height:72px;padding:8px 10px;border-radius:18px;background:#fff;border:1px solid #e3ebe6;box-shadow:0 6px 16px -8px rgba(0,0,0,.28);overflow:hidden}
-.ipx-logo.ipx-logo-store{width:72px}
-.ipx-logo.ipx-logo-partner{width:112px}
+.ipx-exch{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;width:max-content;max-width:100%;margin:6px auto 0}
+.ipx-logo{flex:none;display:flex;align-items:center;justify-content:center;width:72px;height:72px;padding:8px;border-radius:18px;background:#fff;border:1px solid #e3ebe6;box-shadow:0 6px 16px -8px rgba(0,0,0,.28);overflow:hidden}
 .ipx-logo img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
-.ipx-arrows{flex:none;width:34px;height:30px;color:#0f5132}
-.ipx-arrows path{fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.ipx-arrows{flex:none;display:block;align-self:center;width:22px;height:19px;color:#0f5132}
+.ipx-arrows path{fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
 .ipx-title{position:relative;margin:12px 0 0;font-size:20px;font-weight:800;line-height:1.4;color:#1a2e26}
 .ipx-sub{position:relative;margin:2px 0 0;max-width:280px;font-size:12px;line-height:1.6;color:#5a6d64}
 
@@ -322,7 +320,7 @@ window.InstaPayCheckout = (() => {
             <div class="ipx-exch" role="img" aria-label="الفرات فارما وإنستاباي">
               <span class="ipx-logo ipx-logo-store" aria-hidden="true"><picture><source srcset="logo-96.webp" type="image/webp"><img src="logo-96.png" alt="" width="56" height="56" decoding="async"></picture></span>
               <svg class="ipx-arrows" viewBox="0 0 34 30" aria-hidden="true" focusable="false"><path d="M3 8h26M23 2.5 29 8l-6 5.5"/><path d="M31 22H5M11 16.5 5 22l6 5.5"/></svg>
-              <span class="ipx-logo ipx-logo-partner" aria-hidden="true"><img src="${LOGO_SRC}" alt="" width="96" height="56" decoding="async"></span>
+              <span class="ipx-logo ipx-logo-partner" aria-hidden="true"><img src="${LOGO_SRC}" alt="" width="56" height="56" decoding="async"></span>
             </div>
             <h2 class="ipx-title" id="ipx-title">الدفع اللحظي عبر إنستاباي</h2>
             <p class="ipx-sub">معاملة آمنة ومباشرة معتمدة لحساب شركة الفرات فارما الرسمي</p>
