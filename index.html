@@ -63,10 +63,11 @@
             } catch (e) { window.__productsPrefetch = null; }
         })();
     </script>
+    <link rel="preload" as="image" href="carousel-images/guzel-serum.webp" type="image/webp" fetchpriority="high">
     <link rel="dns-prefetch" href="https://api.ipify.org">
-    <link rel="stylesheet" href="style.min.css?v=26">
-    <link rel="stylesheet" href="tailwind-built.css?v=26">
-<link rel="stylesheet" href="mobile.css?v=26" media="(max-width: 767.98px)">
+    <link rel="stylesheet" href="style.min.css?v=25">
+    <link rel="stylesheet" href="tailwind-built.css?v=25">
+<link rel="stylesheet" href="mobile.css?v=25" media="(max-width: 767.98px)">
 
     <!-- منع "قفلة" الصفحة عند الريفريش: لو الرابط فيه #hash لصفحة غير الرئيسية
          (كتالوج/منتج/سلة/مفضلة)، الصفحة الافتراضية (الهيرو) كانت بتترسم وتظهر
@@ -135,7 +136,6 @@
     
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
     <!-- FontAwesome Icons: بنستخدم fa-subset.css بدل ملفات cdnjs.
          Sheets الأصلية (fontawesome + solid + regular + brands) = ~100 KB
          Almost كله تعريفات لأيقونات (~2500 rule) إحنا بنستخدم 44 بس،
@@ -144,13 +144,13 @@
          (متولّد من tools/build-fa-subset.js). الخطوط نفسها لسه من cdnjs.
          لازم تتولّد تاني بعد أي إضافة لأيقونة جديدة:
              node tools/build-fa-subset.js -->
-    <link rel="stylesheet" href="fa-subset.css?v=26">
+    <link rel="stylesheet" href="fa-subset.css?v=25">
     
     <!-- عميل Supabase مصغّر محلي (~1.5 KiB بدل 29 KiB من supabase-js v2 الكامل).
          نفس الـ API بالظبط (from/select/insert/upsert/rpc) فأي كود موجود مش متغيّر.
          السبب: supabase-js كان بيحمّل auth + realtime + storage + postgrest كامل،
          وأكتر من نصه مبيتستخدمش خالص (Lighthouse unused JS). -->
-    <script src="supabase-lite.js?v=26" defer></script>
+    <script src="supabase-lite.js?v=25" defer></script>
 
 </head>
 
@@ -345,7 +345,7 @@
                    data-badge="الأكثر مبيعاً ⭐"
                    style="width: var(--cf-card); height: calc(var(--cf-card) * 1.35); border-radius: 24px; background: #ffffff; outline: 1px solid rgba(197,155,63,0.25); box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
                 <div class="relative w-full h-full overflow-hidden">
-                  <img src="carousel-images/guzel-serum.jpg" alt="سيروم الشعر Guzel Gold" draggable="false"
+                  <img width="576" height="778" fetchpriority="high" src="carousel-images/guzel-serum.webp" alt="سيروم الشعر Guzel Gold" draggable="false"
                        class="w-full h-full object-cover select-none pointer-events-none"
                        loading="eager" decoding="async" />
                   
@@ -375,7 +375,7 @@
                    data-badge="علاج طبي فعال 🌸"
                    style="width: var(--cf-card); height: calc(var(--cf-card) * 1.35); border-radius: 24px; background: #ffffff; outline: 1px solid rgba(197,155,63,0.25); box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
                 <div class="relative w-full h-full overflow-hidden">
-                  <img src="carousel-images/keratosis-cream.jpg" alt="كريم لعلاج جلد الوزة" draggable="false"
+                  <img width="576" height="778" src="carousel-images/keratosis-cream.webp" alt="كريم لعلاج جلد الوزة" draggable="false"
                        class="w-full h-full object-cover select-none pointer-events-none"
                        loading="eager" decoding="async" />
                   
@@ -405,7 +405,7 @@
                    data-badge="تقشير بالفحم النشط 🖤"
                    style="width: var(--cf-card); height: calc(var(--cf-card) * 1.35); border-radius: 24px; background: #ffffff; outline: 1px solid rgba(197,155,63,0.25); box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
                 <div class="relative w-full h-full overflow-hidden">
-                  <img src="carousel-images/charcoal-peeling.jpg" alt="چل تقشير بالفحم" draggable="false"
+                  <img width="576" height="778" src="carousel-images/charcoal-peeling.webp" alt="چل تقشير بالفحم" draggable="false"
                        class="w-full h-full object-cover select-none pointer-events-none"
                        loading="eager" decoding="async" />
                   
@@ -435,9 +435,9 @@
                    data-badge="حماية وترطيب نهاري 💖"
                    style="width: var(--cf-card); height: calc(var(--cf-card) * 1.35); border-radius: 24px; background: #ffffff; outline: 1px solid rgba(197,155,63,0.25); box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
                 <div class="relative w-full h-full overflow-hidden">
-                  <img src="carousel-images/sensitive-day-lotion.jpg" alt="لوشن نهاري للمناطق الحساسة" draggable="false"
+                  <img width="576" height="778" src="carousel-images/sensitive-day-lotion.webp" alt="لوشن نهاري للمناطق الحساسة" draggable="false"
                        class="w-full h-full object-cover select-none pointer-events-none"
-                       loading="lazy" decoding="async" />
+                       loading="eager" decoding="async" />
                   
                   <!-- Top Badge -->
                   <div class="absolute top-3.5 right-3.5 pointer-events-none">
@@ -465,9 +465,9 @@
                    data-badge="عناية ليلية مهدئة 🌙"
                    style="width: var(--cf-card); height: calc(var(--cf-card) * 1.35); border-radius: 24px; background: #ffffff; outline: 1px solid rgba(197,155,63,0.25); box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
                 <div class="relative w-full h-full overflow-hidden">
-                  <img src="carousel-images/sensitive-night-cream.png" alt="كريم ليلي للمناطق الحساسة" draggable="false"
+                  <img width="576" height="778" src="carousel-images/sensitive-night-cream.webp" alt="كريم ليلي للمناطق الحساسة" draggable="false"
                        class="w-full h-full object-cover select-none pointer-events-none"
-                       loading="lazy" decoding="async" />
+                       loading="eager" decoding="async" />
                   
                   <!-- Top Badge -->
                   <div class="absolute top-3.5 right-3.5 pointer-events-none">
@@ -495,9 +495,9 @@
                    data-badge="جوز الهند واليوريا 🥥"
                    style="width: var(--cf-card); height: calc(var(--cf-card) * 1.35); border-radius: 24px; background: #ffffff; outline: 1px solid rgba(197,155,63,0.25); box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
                 <div class="relative w-full h-full overflow-hidden">
-                  <img src="carousel-images/hand-cream.png" alt="كريم مرطب ومغذي لليدين (جوز الهند واليوريا)" draggable="false"
+                  <img width="576" height="778" src="carousel-images/hand-cream.webp" alt="كريم مرطب ومغذي لليدين (جوز الهند واليوريا)" draggable="false"
                        class="w-full h-full object-cover select-none pointer-events-none"
-                       loading="lazy" decoding="async" />
+                       loading="eager" decoding="async" />
                   
                   <!-- Top Badge -->
                   <div class="absolute top-3.5 right-3.5 pointer-events-none">
@@ -525,9 +525,9 @@
                    data-badge="انتعاش ونقاء 🍃"
                    style="width: var(--cf-card); height: calc(var(--cf-card) * 1.35); border-radius: 24px; background: #ffffff; outline: 1px solid rgba(197,155,63,0.25); box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
                 <div class="relative w-full h-full overflow-hidden">
-                  <img src="carousel-images/oily-cleanser.jpg" alt="غسول الوجه للبشرة الدهنية" draggable="false"
+                  <img width="576" height="778" src="carousel-images/oily-cleanser.webp" alt="غسول الوجه للبشرة الدهنية" draggable="false"
                        class="w-full h-full object-cover select-none pointer-events-none"
-                       loading="lazy" decoding="async" />
+                       loading="eager" decoding="async" />
                   
                   <!-- Top Badge -->
                   <div class="absolute top-3.5 right-3.5 pointer-events-none">
@@ -555,9 +555,9 @@
                    data-badge="لطيف يومي ☀️"
                    style="width: var(--cf-card); height: calc(var(--cf-card) * 1.35); border-radius: 24px; background: #ffffff; outline: 1px solid rgba(197,155,63,0.25); box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
                 <div class="relative w-full h-full overflow-hidden">
-                  <img src="carousel-images/normal-cleanser.jpg" alt="غسول الوجه للبشرة العادية" draggable="false"
+                  <img width="576" height="778" src="carousel-images/normal-cleanser.webp" alt="غسول الوجه للبشرة العادية" draggable="false"
                        class="w-full h-full object-cover select-none pointer-events-none"
-                       loading="lazy" decoding="async" />
+                       loading="eager" decoding="async" />
                   
                   <!-- Top Badge -->
                   <div class="absolute top-3.5 right-3.5 pointer-events-none">
@@ -1902,8 +1902,8 @@
          كلهم بيتستخدموا وقت تأكيد الطلب بس (45 KiB خام كان بيتحمّلوا مع الصفحة
          من غير ما حد يستخدمهم). analysis.js بيحمّلهم بالتوازي لما العميل يفتح
          صفحة السلة/الدفع من خلال loadPaymentScripts(). -->
-    <script src="welcome-offer.js?v=26" defer></script>
-    <script src="analysis.js?v=26" defer></script>
+    <script src="welcome-offer.js?v=25" defer></script>
+    <script src="analysis.js?v=25" defer></script>
     <script>
         // Touch/Swipe gesture support for carousel
         (function() {

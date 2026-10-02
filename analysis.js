@@ -106,8 +106,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // الطريقة بسيطة: نفس الـ Promise بيرجّع لكل نداءات لنفس الملف، والـ prefetch
     // بيحط <link rel="prefetch"> عشان المتصفح يجيبه في الخلفية قبل الضغط.
     const STORE_CHUNKS = {
-        product: 'store-product.js?v=26',
-        checkout: 'store-checkout.js?v=26'
+        product: 'store-product.js?v=25',
+        checkout: 'store-checkout.js?v=25'
     };
     const __storeChunkPromises = Object.create(null);
 
@@ -1926,7 +1926,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </button>
     </div>
     <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
-        <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" decoding="async" width="320" height="320" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${jsArg(p.img)}')">
+        <img src="${sanitize(p.imgThumb || p.img)}" loading="${index < 4 ? 'eager' : 'lazy'}" decoding="async" width="320" height="320" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${jsArg(p.img)}')">
         <span class="hidden sm:flex absolute bottom-2 left-2 items-center bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
@@ -2317,7 +2317,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // صفحة السلة/الدفع (أو لحظة التأكيد كشبكة أمان)، والتلاتة بالتوازي.
     // ترتيب التحميل مش مهم لأن instapay/vodafone-cash بقوا يقرأوا حالة الطلب
     // وقت الطلب (getters) مش وقت تحميل الملف.
-    const PAYMENT_SCRIPTS = ['order-status.js?v=26', 'instapay.js?v=26', 'vodafone-cash.js?v=26'];
+    const PAYMENT_SCRIPTS = ['order-status.js?v=25', 'instapay.js?v=25', 'vodafone-cash.js?v=25'];
     let __paymentScriptsPromise = null;
     function loadPaymentScripts() {
         if (__paymentScriptsPromise) return __paymentScriptsPromise;
