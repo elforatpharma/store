@@ -106,8 +106,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // الطريقة بسيطة: نفس الـ Promise بيرجّع لكل نداءات لنفس الملف، والـ prefetch
     // بيحط <link rel="prefetch"> عشان المتصفح يجيبه في الخلفية قبل الضغط.
     const STORE_CHUNKS = {
-        product: 'store-product.js?v=19',
-        checkout: 'store-checkout.js?v=19'
+        product: 'store-product.js?v=25',
+        checkout: 'store-checkout.js?v=25'
     };
     const __storeChunkPromises = Object.create(null);
 
@@ -548,6 +548,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let productsDB = [];
     let cart = [];
+    // مواصفات شاشة الموبايل (كارت المجموعات) + آخر فلتر اتعرض، عشان إعادة الرسم لو الشاشة اتغيّرت
+    const bundleMQ = window.matchMedia ? window.matchMedia('(max-width: 767.98px)') : { matches: false };
+    let lastCatalogArgs = null;
     let appliedCoupon = null; // { code, discount_percentage }
 
     // ==========================================
@@ -1948,12 +1951,52 @@ document.addEventListener("DOMContentLoaded", () => {
                 <button onclick="event.stopPropagation(); app.buyNow('${jsArg(p.id)}')" class="btn-dark py-2.5 text-xs font-bold shadow-sm">اشتري الآن</button>
                 <button onclick="event.stopPropagation(); app.addToCart('${jsArg(p.id)}')" class="btn-add-cart py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
                     <i class="fa-solid fa-cart-plus text-xs"></i>
-                    <span>أضف للسلة</span>
+                    <span>أضف<span class="add-suffix"> للسلة</span></span>
                 </button>
             </div>
         </div>
     </div>
 </article>`;
+    }
+
+    // كارت المجموعة (شكل الموبايل: صف أفقي بصورة 80px + شارة التوفير + زر "طلب المجموعة").
+    // بيتستخدم على الموبايل بس؛ الديسكتوب لسه بيستخدم buildProductCard.
+    function buildBundleCard(p) {
+        const price = Number(p.price) || 0;
+        const old = Number(p.oldPrice) || 0;
+        const saved = old > price ? Math.round(old - price) : 0;
+        const badge = saved
+            ? `<span class="bundle-card__badge">وفرتي ${saved} ج.م</span>`
+            : (p.badge ? `<span class="bundle-card__badge bundle-card__badge--tag">${sanitize(p.badge)}</span>` : `<span></span>`);
+        return `
+<article class="bundle-card col-span-full" onclick="app.navigate('product', '${jsArg(p.id)}')">
+    <div class="bundle-card__top">
+        ${badge}
+        <div class="bundle-card__rating"><i class="fa-solid fa-star"></i><span>${p.rating || '4.9'}</span></div>
+    </div>
+    <div class="bundle-card__body">
+        <div class="bundle-card__img">
+            <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" decoding="async" width="80" height="80" alt="${sanitize(p.name)}" onerror="handleImgError(this, '${jsArg(p.img)}')">
+        </div>
+        <div class="bundle-card__text">
+            <h3 class="bundle-card__title">${sanitize(p.name)}</h3>
+            ${p.desc ? `<p class="bundle-card__desc">${sanitize(p.desc)}</p>` : ''}
+        </div>
+    </div>
+    <div class="bundle-card__footer">
+        <div class="bundle-card__prices">
+            <span class="bundle-card__price">${sanitize(p.price)} ج.م</span>
+            ${old > price ? `<span class="bundle-card__old">${sanitize(p.oldPrice)} ج.م</span>` : ''}
+        </div>
+        <button type="button" class="bundle-card__btn" onclick="event.stopPropagation(); app.buyNow('${jsArg(p.id)}')">
+            <i class="fa-solid fa-cart-plus"></i>
+            <span>طلب المجموعة</span>
+        </button>
+    </div>
+</article>`;
+    }
+    function buildBundleOrProductCard(p, index) {
+        return bundleMQ.matches ? buildBundleCard(p) : buildProductCard(p, index);
     }
 
     // [تحسين أداء]: عرض المنتجات على دفعات بدل تحميل الكتالوج كله وصوره
@@ -1982,6 +2025,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderCatalog(filter = null, searchTerm = '', options = {}) {
+        lastCatalogArgs = [filter, searchTerm];
         const grid = document.getElementById('catalog-grid');
         const bundlesSection = document.getElementById('bundles-section');
         const bundlesGrid = document.getElementById('bundles-grid');
@@ -2048,7 +2092,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (filter === 'مجموعات متكاملة') {
             const visibleBundles = products.slice(0, catalogVisibleCount);
             if (grid) {
-                setHtmlIfChanged(grid, visibleBundles.map((p, index) => buildProductCard(p, index)).join('')
+                setHtmlIfChanged(grid, visibleBundles.map((p, index) => buildBundleOrProductCard(p, index)).join('')
                     + buildLoadMoreControl(products.length, catalogVisibleCount));
             }
             if (bundlesSection) bundlesSection.style.display = 'none';
@@ -2065,7 +2109,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (bundleProducts.length > 0 && bundlesGrid && bundlesSection) {
-                setHtmlIfChanged(bundlesGrid, bundleProducts.map((p, index) => buildProductCard(p, index)).join(''));
+                setHtmlIfChanged(bundlesGrid, bundleProducts.map((p, index) => buildBundleOrProductCard(p, index)).join(''));
                 bundlesSection.style.display = '';
             } else {
                 if (bundlesGrid) bundlesGrid.innerHTML = '';
@@ -2073,6 +2117,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
+    }
+
+    if (bundleMQ.addEventListener) {
+        bundleMQ.addEventListener('change', () => {
+            if (lastCatalogArgs) renderCatalog(lastCatalogArgs[0], lastCatalogArgs[1], { keepPage: true });
+        });
     }
 
     // ==========================================
@@ -2246,7 +2296,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <button onclick="event.stopPropagation(); app.buyNow('${jsArg(p.id)}')" class="btn-dark py-2.5 text-xs font-bold shadow-sm">اشتري الآن</button>
                 <button onclick="event.stopPropagation(); app.addToCart('${jsArg(p.id)}', 1)" class="btn-add-cart py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
                     <i class="fa-solid fa-cart-plus text-xs"></i>
-                    <span>أضف للسلة</span>
+                    <span>أضف<span class="add-suffix"> للسلة</span></span>
                 </button>
             </div>
         </div>
@@ -2267,7 +2317,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // صفحة السلة/الدفع (أو لحظة التأكيد كشبكة أمان)، والتلاتة بالتوازي.
     // ترتيب التحميل مش مهم لأن instapay/vodafone-cash بقوا يقرأوا حالة الطلب
     // وقت الطلب (getters) مش وقت تحميل الملف.
-    const PAYMENT_SCRIPTS = ['order-status.js?v=19', 'instapay.js?v=19', 'vodafone-cash.js?v=19'];
+    const PAYMENT_SCRIPTS = ['order-status.js?v=25', 'instapay.js?v=25', 'vodafone-cash.js?v=25'];
     let __paymentScriptsPromise = null;
     function loadPaymentScripts() {
         if (__paymentScriptsPromise) return __paymentScriptsPromise;

@@ -328,33 +328,145 @@ div:has(> .relative > #mobile-search-input) {
 .pro-product-card .border-t .mb-3 { margin-bottom: 8px; }
 .pro-product-card .border-t .font-display { font-size: 16px; color: var(--m-emerald); }
 
-/* الأزرار: "أضف" عريض + "اشتري الآن" ذهبي صغير */
+/* الأزرار (زي التصميم): "أضف" عريض أخضر + "اشتري الآن" ذهبي صغير، بزوايا 4px */
 :is(#catalog-grid, #bundles-grid, #related-products-grid, #favorites-grid) .pro-product-card .grid-cols-2 {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 6px;
 }
-:is(#catalog-grid, #bundles-grid, #related-products-grid, #favorites-grid) .pro-product-card .btn-add-cart {
+:is(#catalog-grid, #bundles-grid, #related-products-grid, #favorites-grid) .pro-product-card .grid-cols-2 > .btn-add-cart {
   order: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   background: var(--m-emerald);
   color: #fff;
   border: 0;
-  border-radius: 8px;
-  min-height: 36px;
+  border-radius: 4px;
+  min-height: 0;
   padding: 6px 8px;
   font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
   box-shadow: var(--m-shadow);
+  transform: none;
 }
-:is(#catalog-grid, #bundles-grid, #related-products-grid, #favorites-grid) .pro-product-card .btn-dark {
+:is(#catalog-grid, #bundles-grid, #related-products-grid, #favorites-grid) .pro-product-card .grid-cols-2 > .btn-dark {
   order: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--m-gold-bg);
+  animation: none;
   color: var(--m-gold-text);
   border: 0;
-  border-radius: 8px;
-  min-height: 36px;
-  padding: 6px 10px;
-  font-size: 11px;
+  border-radius: 4px;
+  min-height: 0;
+  padding: 6px 8px;
+  font-size: 10px;
+  line-height: 14px;
+  font-weight: 700;
   box-shadow: none;
+  transform: none;
 }
+.pro-product-card .btn-add-cart:active { transform: scale(0.95); }
+.pro-product-card .btn-add-cart i { font-size: 15px; }
+.pro-product-card .btn-add-cart i::before { content: "\f290"; } /* أيقونة الشنطة بدل العربة */
+.pro-product-card .btn-add-cart .add-suffix { display: none; }   /* "أضف" بس على الموبايل */
+
+/* ---------- المجموعات المتكاملة (كروت أفقية) ---------- */
+#bundles-grid { display: flex; flex-direction: column; gap: 12px; }
+.bundle-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: var(--m-shadow);
+  text-align: right;
+  cursor: pointer;
+}
+.bundle-card__top { display: flex; align-items: center; justify-content: space-between; }
+.bundle-card__badge {
+  background: var(--m-red);
+  color: #fff;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 9999px;
+}
+.bundle-card__badge--tag { background: #b0f1c7; color: #002111; }
+.bundle-card__rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--m-gold);
+  font-size: 15px;
+}
+.bundle-card__rating span { color: var(--m-muted); font-size: 10px; font-weight: 700; line-height: 14px; }
+.bundle-card__body { display: flex; align-items: center; gap: 12px; }
+.bundle-card__img {
+  flex: none;
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  background: var(--m-emerald-surface);
+  overflow: hidden;
+}
+.bundle-card__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.bundle-card__text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.bundle-card__title {
+  margin: 0;
+  font-family: 'Cairo', 'Tajawal', sans-serif;
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 700;
+  color: var(--m-emerald);
+}
+.bundle-card__desc {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--m-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.bundle-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid #ebefec;
+}
+.bundle-card__prices { display: flex; align-items: baseline; gap: 8px; }
+.bundle-card__price {
+  font-family: 'Cairo', 'Tajawal', sans-serif;
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 700;
+  color: var(--m-emerald);
+}
+.bundle-card__old { font-size: 12px; line-height: 18px; color: var(--m-muted); text-decoration: line-through; }
+.bundle-card__btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--m-emerald);
+  color: #fff;
+  border: 0;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  box-shadow: var(--m-shadow);
+}
+.bundle-card__btn i { font-size: 16px; }
+.bundle-card__btn:active { transform: scale(0.95); }
 
 /* ---------- الشريط السفلي ---------- */
 .mobile-bottom-nav {
