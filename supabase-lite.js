@@ -9,8 +9,8 @@
  * الملف ده بيغطي نفس الـ API المتستخدم في المشروع بالظبط (نفس أسماء الدوال،
  * نفس شكل الـ Promise { data, error }) فمفيش أي تغيير مطلوب في الكود المستخدم.
  *
- * ملحوظة مهمة: المفتاح هنا anon ومقصود إنه يكون في كود الواجهة (الم.access
- * map + RLS هما اللي بيحموا البيانات). العميل ده مش بيوفّر حماية إضافية.
+ * ملحوظة مهمة: المفتاح هنا anon ومقصود إنه يكون في كود الواجهة (الـ RLS هو
+ * اللي بيحمي البيانات). العميل ده مش بيوفّر حماية إضافية.
  */
 (function (global) {
     'use strict';
@@ -54,6 +54,7 @@
         this._body = undefined;
         this._prefer = [];
         this._single = null; // null | 'single' | 'maybeSingle'
+        this._promise = null; // نتيجة التنفيذ - الطلب بيتبعت مرة واحدة بس
     }
 
     Query.prototype._setParam = function (key, value) {
@@ -181,7 +182,8 @@
         return this._client._url + path + (search ? '?' + search : '');
     };
 
-    Query.prototype._exec = function () {
+    // بيبعت الطلب فعلياً. ماتنادّيش عليه مباشرة - استخدمي _run() عشان الطلب يتبعت مرة واحدة بس.
+    Query.prototype._send = function () {
         const self = this;
         const headers = {
             apikey: this._client._key,
@@ -190,9 +192,9 @@
         };
         Object.keys(this._headers).forEach(function (h) { headers[h] = self._headers[h]; });
         if (this._body !== undefined) headers['Content-Type'] = 'application/json';
-        // من غير Prefer for-return بيرجّع السيرفر body فاضي على الإضافات/التعديلات،
+        // من غير Prefer return بيرجّع السيرفر body فاضي على الإضافات/التعديلات،
         // وده اللي عايزينه في معظم الـ inserts (مفيش select بعدها أصلاً).
-        // GET و rpc مش بنلمسهم:GET بيرجّع الصفحات عادي، و rpc بيرجّع قيمة الدالة
+        // GET و rpc مش بنلمسهم: GET بيرجّع الصفوف عادي، و rpc بيرجّع قيمة الدالة
         // نفسها — و return=minimal كانت ممكن تضيّعها.
         const prefer = this._prefer.slice();
         if (!this._rpc && this._method !== 'GET' && this._method !== 'DELETE'
@@ -244,7 +246,7 @@
             });
         }).catch(function (e) {
             // زي supabase-js: خطأ الشبكة يرجع كـ { data: null, error } مش rejection،
-            // عشان الكود اللي بيعمل await/crash على error_placeholder ميتكسرش.
+            // عشان الكود اللي بيعمل destructuring على { data, error } ميتكسرش.
             return {
                 data: null,
                 error: { message: (e && e.message) || String(e), code: '', details: '', hint: '', status: 0 },
@@ -253,16 +255,24 @@
         });
     };
 
-    // مهم:_builder نفسه لازم يكون thenable عشان `await _supabase.from(..)`
+    // الطلب بيتبعت أول مرة بس، وأي .then/.catch/.finally/await تاني على نفس الكائن
+    // بياخد نفس الـ Promise بدل ما يبعت الطلب (وبالتالي الـ insert) مرة تانية.
+    // ملحوظة: بعد أول تنفيذ، أي فلتر يتضاف على نفس الكائن مش هيأثر (زي supabase-js).
+    Query.prototype._run = function () {
+        if (!this._promise) this._promise = this._send();
+        return this._promise;
+    };
+
+    // مهم: الـ builder نفسه لازم يكون thenable عشان `await _supabase.from(..)`
     // و `.then(() => {})` يشتغلوا من غير await صريح.
     Query.prototype.then = function (onFulfilled, onRejected) {
-        return this._exec().then(onFulfilled, onRejected);
+        return this._run().then(onFulfilled, onRejected);
     };
     Query.prototype.catch = function (onRejected) {
-        return this._exec().catch(onRejected);
+        return this._run().catch(onRejected);
     };
     Query.prototype.finally = function (onFinally) {
-        return this._exec().finally(onFinally);
+        return this._run().finally(onFinally);
     };
 
     // ==========================================

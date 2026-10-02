@@ -106,8 +106,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // الطريقة بسيطة: نفس الـ Promise بيرجّع لكل نداءات لنفس الملف، والـ prefetch
     // بيحط <link rel="prefetch"> عشان المتصفح يجيبه في الخلفية قبل الضغط.
     const STORE_CHUNKS = {
-        product: 'store-product.js?v=17',
-        checkout: 'store-checkout.js?v=17'
+        product: 'store-product.js?v=18',
+        checkout: 'store-checkout.js?v=18'
     };
     const __storeChunkPromises = Object.create(null);
 
@@ -2267,7 +2267,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // صفحة السلة/الدفع (أو لحظة التأكيد كشبكة أمان)، والتلاتة بالتوازي.
     // ترتيب التحميل مش مهم لأن instapay/vodafone-cash بقوا يقرأوا حالة الطلب
     // وقت الطلب (getters) مش وقت تحميل الملف.
-    const PAYMENT_SCRIPTS = ['order-status.js?v=17', 'instapay.js?v=17', 'vodafone-cash.js?v=17'];
+    const PAYMENT_SCRIPTS = ['order-status.js?v=18', 'instapay.js?v=18', 'vodafone-cash.js?v=18'];
     let __paymentScriptsPromise = null;
     function loadPaymentScripts() {
         if (__paymentScriptsPromise) return __paymentScriptsPromise;

@@ -64,8 +64,8 @@
         })();
     </script>
     <link rel="dns-prefetch" href="https://api.ipify.org">
-    <link rel="stylesheet" href="style.min.css?v=17">
-    <link rel="stylesheet" href="tailwind-built.css?v=17">
+    <link rel="stylesheet" href="style.min.css?v=18">
+    <link rel="stylesheet" href="tailwind-built.css?v=18">
 
     <!-- منع "قفلة" الصفحة عند الريفريش: لو الرابط فيه #hash لصفحة غير الرئيسية
          (كتالوج/منتج/سلة/مفضلة)، الصفحة الافتراضية (الهيرو) كانت بتترسم وتظهر
@@ -143,13 +143,13 @@
          (متولّد من tools/build-fa-subset.js). الخطوط نفسها لسه من cdnjs.
          لازم تتولّد تاني بعد أي إضافة لأيقونة جديدة:
              node tools/build-fa-subset.js -->
-    <link rel="stylesheet" href="fa-subset.css?v=17">
+    <link rel="stylesheet" href="fa-subset.css?v=18">
     
     <!-- عميل Supabase مصغّر محلي (~1.5 KiB بدل 29 KiB من supabase-js v2 الكامل).
          نفس الـ API بالظبط (from/select/insert/upsert/rpc) فأي كود موجود مش متغيّر.
          السبب: supabase-js كان بيحمّل auth + realtime + storage + postgrest كامل،
          وأكتر من نصه مبيتستخدمش خالص (Lighthouse unused JS). -->
-    <script src="supabase-lite.js?v=17" defer></script>
+    <script src="supabase-lite.js?v=18" defer></script>
 
 </head>
 
@@ -1638,8 +1638,8 @@
          كلهم بيتستخدموا وقت تأكيد الطلب بس (45 KiB خام كان بيتحمّلوا مع الصفحة
          من غير ما حد يستخدمهم). analysis.js بيحمّلهم بالتوازي لما العميل يفتح
          صفحة السلة/الدفع من خلال loadPaymentScripts(). -->
-    <script src="welcome-offer.js?v=17" defer></script>
-    <script src="analysis.js?v=17" defer></script>
+    <script src="welcome-offer.js?v=18" defer></script>
+    <script src="analysis.js?v=18" defer></script>
     <script>
         // Touch/Swipe gesture support for carousel
         (function() {

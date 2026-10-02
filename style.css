@@ -1517,10 +1517,58 @@ body.show-mobile-bar .toast-container {
   bottom: 92px;
 }
 
-/* رفع بانر كوبون الترحيب (WelcomeOffer) فوق الشريط الثابت كمان،
-   عشان ميتراكبش مع زرار "اشتري الآن / أضف للسلة" على الموبايل */
+/* بانر كوبون الترحيب (WelcomeOffer) - welcome-offer.js بيحط الكلاسات بس.
+   --wo-bottom: JS بيرفعها فوق بانر الكوكيز لو ظاهر. على الموبايل بنرفعه فوق
+   الشريط الثابت (اشتري الآن / أضف للسلة) كمان عشان ميتراكبوش. */
+.welcome-offer-banner {
+  --wo-bottom: 16px;
+  position: fixed;
+  bottom: var(--wo-bottom);
+  right: 16px;
+  left: 16px;
+  max-width: 420px;
+  margin-inline: auto;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  color: #fff;
+  background: linear-gradient(90deg, var(--primary-container), var(--primary));
+  box-shadow: 0 10px 30px rgba(154, 115, 28, 0.35);
+  font-family: Tajawal, sans-serif;
+}
+
+.welcome-offer-text {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.welcome-offer-action {
+  background: #fff;
+  color: var(--primary-container);
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 800;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.welcome-offer-close {
+  background: transparent;
+  color: #fff;
+  border: 0;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
 body.show-mobile-bar .welcome-offer-banner {
-  bottom: 92px;
+  bottom: max(var(--wo-bottom), 92px);
 }
 
 @media (max-width: 480px) {
@@ -1529,7 +1577,7 @@ body.show-mobile-bar .welcome-offer-banner {
   }
 
   body.show-mobile-bar .welcome-offer-banner {
-    bottom: 88px;
+    bottom: max(var(--wo-bottom), 88px);
   }
 }
 

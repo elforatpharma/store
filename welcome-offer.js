@@ -81,13 +81,19 @@
     expiryTimer = setTimeout(function () { expire('time_up'); }, Math.min(ms, 2147000000));
   }
 
+  // قراءة بس: مبتغيّرش أي حالة. لو الوقت خلص بترجّع false، والإلغاء الفعلي
+  // بيحصل في syncExpiry() (عند التحميل/المزامنة) أو من التايمر في scheduleExpiry().
   function isEligible() {
     if (state.status !== 'active') return false;
-    if (typeof state.endTime === 'number' && Date.now() >= state.endTime) {
-      expire('time_up');
-      return false;
-    }
+    if (typeof state.endTime === 'number' && Date.now() >= state.endTime) return false;
     return true;
+  }
+
+  // بيثبّت الإلغاء لو نافذة الـ 24 ساعة خلصت والحالة لسه active (مثلاً زائر رجع بعد يومين)
+  function syncExpiry() {
+    if (state.status === 'active' && typeof state.endTime === 'number' && Date.now() >= state.endTime) {
+      expire('time_up');
+    }
   }
 
   // بتزامن النافذة المحلية مع نافذة الـ IP الحقيقية الجاية من السيرفر (analysis.js).
@@ -109,6 +115,7 @@
       emit();
     }
     // السيرفر أكّد إن العرض لسه سارٍ → دلوقتي بس نظهر البانر (من غير ما يظهر ويختفي)
+    syncExpiry();
     if (isEligible()) showBanner();
   }
 
@@ -190,38 +197,41 @@
     }
   }
 
+  // ارتفاع بانر الكوكيز لو ظاهر دلوقتي (بنسأل المتصفح عن حالته الفعلية
+  // بدل الاعتماد على اسم كلاس Tailwind)، وإلا 0.
+  function cookieBannerOffset() {
+    try {
+      var cb = document.getElementById('cookie-consent-banner');
+      if (cb && !localStorage.getItem('elforat_cookie_consent') &&
+          getComputedStyle(cb).pointerEvents !== 'none') {
+        return cb.offsetHeight + 28;
+      }
+    } catch (e) {}
+    return 0;
+  }
+
   function showBanner() {
     if (bannerEl || !isEligible()) return;
     var el = document.createElement('div');
     el.setAttribute('dir', 'rtl');
     el.className = 'welcome-offer-banner';
-    var bottomOffset = 16;
-    try {
-      var cb = document.getElementById('cookie-consent-banner');
-      if (cb && !localStorage.getItem('elforat_cookie_consent') && !cb.classList.contains('translate-y-24')) {
-        bottomOffset = cb.offsetHeight + 28;
-      }
-    } catch (e) {}
-    el.style.cssText =
-      'position:fixed;bottom:' + bottomOffset + 'px;right:16px;left:16px;max-width:420px;margin-inline:auto;z-index:99999;' +
-      'background:linear-gradient(90deg,#4d3ceb 0%,#8536ff 100%);color:#fff;border-radius:16px;' +
-      'padding:14px 16px;box-shadow:0 10px 30px rgba(77,60,235,.35);font-family:Tajawal,sans-serif;' +
-      'display:flex;align-items:center;gap:12px;';
+    // الشكل كله في style.css؛ هنا بس بنبلّغ الـ CSS لو لازم يترفع فوق بانر الكوكيز
+    var offset = cookieBannerOffset();
+    if (offset) el.style.setProperty('--wo-bottom', offset + 'px');
 
     textEl = document.createElement('div');
-    textEl.style.cssText = 'flex:1;font-size:14px;line-height:1.6;';
+    textEl.className = 'welcome-offer-text';
 
     actionBtn = document.createElement('button');
     actionBtn.type = 'button';
-    actionBtn.style.cssText =
-      'background:#fff;color:#4d3ceb;border:0;border-radius:999px;padding:8px 14px;font-weight:800;cursor:pointer;font-size:13px;white-space:nowrap;';
+    actionBtn.className = 'welcome-offer-action';
     actionBtn.onclick = onAction;
 
     var close = document.createElement('button');
     close.type = 'button';
+    close.className = 'welcome-offer-close';
     close.setAttribute('aria-label', 'إغلاق');
     close.textContent = '×';
-    close.style.cssText = 'background:transparent;color:#fff;border:0;font-size:22px;cursor:pointer;line-height:1;';
     close.onclick = hideBanner;
 
     el.appendChild(textEl);
@@ -234,6 +244,7 @@
   }
 
   function init() {
+    syncExpiry();
     if (!isEligible()) return;
     scheduleExpiry();
     // لا نعرض البانر من التخمين المحلي (ممكن السيرفر يقول إن العرض خلص فيختفي بعد ثواني).
