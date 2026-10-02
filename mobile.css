@@ -326,6 +326,10 @@ div:has(> .relative > #mobile-search-input) {
 .pro-product-card > div:first-child {
   position: absolute;
   top: 16px; left: 16px; right: 16px;
+  /* الصف فيه كلاس w-full (width:100%)؛ مع left+right على عنصر absolute في RTL
+     الـ width كان بيكسب فالصف يزيح 16px لبرّه الكارت ويطلع قلب المفضلة خارج الحدود.
+     width:auto يخلّيه يتمدد بين الـ left والـ right جوه الكارت بالظبط. */
+  width: auto;
   margin: 0;
   z-index: 10;
   pointer-events: none;
@@ -348,7 +352,9 @@ div:has(> .relative > #mobile-search-input) {
 .pro-product-card > div:nth-child(2) {
   border-radius: 8px;
   background: rgba(235, 245, 240, 0.5);
-  padding: 8px;
+  /* padding-top أكبر: صف الشارة + المفضلة فوق الصورة، فنسيب له مساحة
+     عشان الشارة ماتغطّيش أعلى الزجاجة */
+  padding: 32px 8px 8px;
   margin-bottom: 8px;
 }
 .pro-product-card .text-primary { color: var(--m-muted); }
@@ -766,6 +772,10 @@ body.show-mobile-bar .welcome-offer-banner { bottom: max(var(--wo-bottom), calc(
 
 /* --- شريط الشراء الثابت (بدون backdrop-filter عشان الأداء) --- */
 .pdp-bar {
+  /* المتغيرات دي معرّفة على .pdp-m بس، والشريط برّاه (مش جواه)، فكان var(--pdp-em)
+     فاضي وزر "أضيفي للسلة" يطلع شفاف بنص أبيض على خلفية بيضاء. */
+  --pdp-em: #0f5132; --pdp-em-d: #0b3d26; --pdp-gold: #9e7a36;
+  --pdp-line: #d1fae5; --pdp-ink: #1e293b; --pdp-mute: #64748b;
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; max-width: 448px; margin: 0 auto;
   background: rgba(255, 255, 255, .98); border-top: 1px solid #e2e8f0; box-shadow: 0 -10px 30px rgba(15, 23, 42, .12);
   padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));

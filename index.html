@@ -216,10 +216,6 @@
 </div>
 <!-- Action Items: Admin Dashboard, Wishlist, Cart with Counter Glow -->
 <div class="flex items-center gap-2 sm:gap-2.5">
-<!-- Mobile Menu Button -->
-<button id="mobile-menu-btn" aria-label="فتح قائمة التصفح" aria-expanded="false" aria-controls="mobile-menu-panel" class="xl:hidden w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:text-primary hover:bg-primary/5 transition-colors" onclick="app.toggleMobileMenu()">
-    <i class="fa-solid fa-bars text-base" aria-hidden="true"></i>
-</button>
 <!-- Wishlist with Hover scale -->
 <button aria-label="المفضلة" class="btn-fav w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center text-darkNavy hover:text-rose-500 hover:border-rose-300 transition-all relative shadow-sm" onclick="app.navigate('favorites')">
 <i class="fa-regular fa-heart text-sm" aria-hidden="true"></i>
@@ -1620,6 +1616,16 @@
                         finish();
                     }
                 }
+                            // كارت الكود الثابت يتبع نفس قاعدة "مرة واحدة بس" بتاعة نافذة الترحيب:
+                // بيختفي لو النافذة اتعرضت قبل كده، أو العرض خلص، أو التخزين مش شغال.
+                (function () {
+                    var wrap = document.getElementById('static-welcome-coupon-block');
+                    if (!wrap) return;
+                    try {
+                        var st = JSON.parse(localStorage.getItem('elforat_welcome_offer_v1') || 'null');
+                        if (st && (st.shown !== false || st.status === 'expired')) wrap.style.display = 'none';
+                    } catch (e) { wrap.style.display = 'none'; }
+                })();
             </script>
 
             <!-- Trust Strip -->

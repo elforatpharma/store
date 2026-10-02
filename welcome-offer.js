@@ -3,7 +3,10 @@
  * الفرات فارما (يوضع في المتجر، مش في لوحة التحكم)
  *
  * المنطق:
- *  - أول مرة يفتح الزائر المتجر → نافذة 24 ساعة بتبدأ وبيظهر بانر الكوبون.
+ *  - أول مرة يفتح الزائر المتجر → نافذة 24 ساعة بتبدأ وبيظهر بانر الكوبون
+ *    **مرة واحدة بس**: بعد ما يتعرض (state.shown=true) مابيظهرش تاني أبداً
+ *    على نفس المتصفح، حتى لو اتقفل أو الصفحة اتعملها ريفريش. الكوبون نفسه
+ *    يفضل صالح في السلة لحد ما نافذة الـ 24 ساعة تخلص أو يتم أول طلب.
  *  - نافذة الـ 24 ساعة دي هي نفسها نافذة عداد العرض في أعلى الصفحة (جدول
  *    offer_countdowns في Supabase، مربوطة بـ IP الزائر)، عشان الاتنين يخلصوا
  *    مع بعض بالظبط، ومتفضلش تتصفّر لو الزائر مسح الكاش (السيرفر هو المرجع).
@@ -60,7 +63,12 @@
     // أول زيارة على الإطلاق (أو نسخة قديمة من التخزين قبل التحديث ده):
     // تخمين محلي مؤقت لحد ما analysis.js يجيب نافذة الـ IP الحقيقية من السيرفر
     // عبر reconcile() ويظبطها لو مختلفة.
-    state = { status: 'active', endTime: Date.now() + DURATION };
+    // shown:false = لسه ما شافتش النافذة ولا مرة (هتظهر لها مرة واحدة بس)
+    state = { status: 'active', endTime: Date.now() + DURATION, shown: false };
+    write(state);
+  } else if (typeof state.shown !== 'boolean') {
+    // زائر قديم (من نسخة الكود السابقة) شاف النافذة قبل كده → ما نعرضهاش تاني أبداً
+    state.shown = true;
     write(state);
   }
 
@@ -211,7 +219,9 @@
   }
 
   function showBanner() {
-    if (bannerEl || !isEligible()) return;
+    // النافذة بتظهر مرة واحدة بس في عمر المتصفح: أول ما تتعرض بنسجّل shown=true
+    // فلو الزائرة قفلتها أو عملت ريفريش أو رجعت بعد كده ما بتظهرش تاني خالص.
+    if (bannerEl || !isEligible() || state.shown) return;
     var el = document.createElement('div');
     el.setAttribute('dir', 'rtl');
     el.className = 'welcome-offer-banner';
@@ -239,6 +249,8 @@
     el.appendChild(close);
     document.body.appendChild(el);
     bannerEl = el;
+    state.shown = true;
+    if (canStore) write(state);
     fillText(null);
     refreshAction();
   }
