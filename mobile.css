@@ -124,7 +124,7 @@ div:has(> .relative > #mobile-search-input) {
   color: var(--m-emerald-dark);
   animation: none;
 }
-#home p {
+#home p:not(.hero-social-proof) {
   order: 2;
   margin: 0 auto;
   max-width: 20rem;
@@ -133,6 +133,26 @@ div:has(> .relative > #mobile-search-input) {
   color: var(--m-muted);
   text-align: center;
 }
+
+#home .hero-social-proof {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  text-align: center !important;
+}
+
+#home .hero-social-proof-text {
+  order: 1 !important;
+}
+
+#home .hero-social-proof-stars {
+  order: 2 !important;
+  margin-top: 2px !important;
+}
+
 /* صورة الهيرو */
 #home .max-w-7xl > .grid > div:nth-child(2) { order: 3; width: 100%; }
 #home .max-w-7xl > .grid > div:nth-child(2) > div { max-width: none; }
