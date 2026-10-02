@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
 <head>
@@ -278,110 +278,125 @@
         <main id="main-content" tabindex="-1">
         <div id="view-main" class="view-section active">
             <!-- Hero Section with Ambient Glow, Floating Elements & Micro-Animations -->
-<section id="home" class="relative overflow-hidden pt-8 pb-14 lg:pt-14 lg:pb-20">
-<div class="absolute top-0 right-1/4 w-[450px] h-[450px] bg-primary/10 rounded-full blur-3xl pointer-events-none -z-10 animate-pulse-subtle"></div>
-<div class="absolute top-1/3 left-10 w-96 h-96 bg-secondary/15 rounded-full blur-3xl pointer-events-none -z-10"></div>
-<div class="absolute bottom-10 right-10 w-64 h-64 bg-amber-200/20 rounded-full blur-2xl pointer-events-none -z-10"></div>
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-10 items-center">
-<!-- Right Column: Hero Content -->
-<div class="lg:col-span-7 flex flex-col items-start text-right">
-<h1 class="text-3xl sm:text-5xl lg:text-6xl font-black font-display leading-tight sm:leading-tight lg:leading-tight mb-5 tracking-tight">
-<span class="drop-shadow-sm text-shimmer-gold">اصنعي جمالكِ الخاص</span>
-</h1>
-<p class="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mb-8 font-normal">
-          نقدم لكِ أفضل المنتجات الطبيعية والعلاجية للعناية بالبشرة. حلول آمنة ومختبرة طبياً لتتألقي بإشراقة طبيعية تدوم طويلاً من خبراء التجميل في عالم الجمال.
-        </p>
-<!-- CTA Buttons with Shimmer & Glow -->
-<div class="flex flex-wrap items-center gap-4 w-full sm:w-auto mb-10">
-<a class="btn-gradient-shimmer rounded-full px-8 py-4 text-base font-black flex items-center justify-center gap-3 w-full sm:w-auto text-white shadow-purple-glow group cursor-pointer" onclick="app.navigate('catalog')">
-<span class="">تسوقي الآن</span>
-<i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
-</a>
-<a class="btn-outline px-7 py-4 text-base font-bold flex items-center justify-center gap-2.5 w-full sm:w-auto hover:shadow-lg cursor-pointer" onclick="app.navigate('catalog', 'مجموعات متكاملة')">
-<i class="fa-solid fa-wand-magic-sparkles text-primary"></i>
-<span class="">اكتشفي المجموعات</span>
-</a>
-</div>
-<!-- Trust Stats Bar -->
-<div class="grid grid-cols-3 gap-2 sm:gap-4 pt-6 border-t border-purple-100 w-full max-w-lg trust-stats-bar">
-<div class="flex flex-col">
-<span class="font-black text-darkNavy font-display flex items-center gap-1 trust-stat-value">
-              100%
-              <i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i>
-</span>
-<span class="text-xs text-slate-500 font-bold mt-0.5">منتجات أصلية وطبيعية</span>
-</div>
-<div class="flex flex-col border-r border-slate-200 pr-4 trust-stat-col">
-<span class="font-black text-primary font-display flex items-center gap-1 trust-stat-value">
-              سريع
-              <i class="fa-solid fa-bolt text-amber-500 text-sm"></i>
-</span>
-<span class="text-xs text-slate-500 font-bold mt-0.5">شحن سريع للمحافظات</span>
-</div>
-<div class="flex flex-col border-r border-slate-200 pr-4 trust-stat-col">
-<span class="font-black text-darkNavy font-display flex items-center gap-1 trust-stat-value">
-              +2,000
-              <i class="fa-solid fa-heart text-rose-500 text-sm"></i>
-</span>
-<span class="text-xs text-slate-500 font-bold mt-0.5">عميلة تثق بمنتجاتنا</span>
-</div>
-</div>
-</div>
-<!-- Left Column: Hero Image Showcase with Floating Glass Badges -->
-<div class="lg:col-span-5 relative">
-<div class="relative mx-auto max-w-md lg:max-w-none">
-<div class="absolute -inset-3 bg-gradient-to-r from-primary via-secondary to-purple-400 rounded-3xl blur-2xl opacity-30 animate-pulse-subtle"></div>
-<!-- Main Showcase Card -->
-<div class="relative rounded-3xl p-1.5 shadow-2xl bg-white/40 backdrop-blur-md border border-white/60">
-<div class="aspect-square max-h-[520px] rounded-2xl overflow-hidden relative group flex items-center justify-center shadow-inner bg-slate-100">
-<img alt="منتجات العناية بالبشرة والجمال الفرات فارما" decoding="async" fetchpriority="high" loading="eager" width="520" height="520" class="hero-main-image w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700 ease-out" data-fallback-src="logo.png" onerror="if (this.src !== this.dataset.fallbackSrc) { this.src = this.dataset.fallbackSrc; this.classList.remove('object-cover'); this.classList.add('object-contain', 'p-8'); }">
-<script>
-    // بنحدد src الصورة من هنا فقط (بدل ما تتحط في الـ HTML مباشرة) عشان
-    // منحملش نسختين مع بعض: لو عندنا كاش من زيارة سابقة فيه صورة براندنج
-    // مخصصة، بيتحط هو بس ويتحمّل مرة واحدة. لو مفيش كاش (أول زيارة)،
-    // بترجع لصورة hero-products.webp المحلية الافتراضية.
-    (function () {
-        try {
-            var img = document.currentScript.previousElementSibling;
-            if (!img) return;
-            var cached = JSON.parse(localStorage.getItem('elforat_store_settings_cache_v1') || 'null');
-            var url = cached && cached.data && cached.data.hero_image_url;
-            if (url) {
-                // نمرر صورة البراندنج على wsrv.nl زي باقي صور المنتجات
-                // بدل ما تتحمّل بحجمها الخام (كانت بتوصل لـ 1200x1200 وهي
-                // معروضة في مساحة أصغر بكتير)
-                url = 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&w=900&q=75&output=webp';
-            }
-            img.src = url || 'hero-products.webp';
-        } catch (e) {
-            var img2 = document.currentScript.previousElementSibling;
-            if (img2) img2.src = 'hero-products.webp';
-        }
-    })();
-</script>
-<div class="absolute inset-0 bg-gradient-to-t from-darkNavy/25 via-transparent to-transparent pointer-events-none"></div>
-</div>
-<div class="absolute -bottom-3 -right-3 text-white z-10">
-<span class="bg-darkNavy/80 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 border border-white/20 shadow-lg">
-<span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                  منتجات Elforat Pharma الأصلية المعتمدة
-                </span>
-</div>
-<!-- Floating Glass Badge 1 (Top Left) -->
-<div class="absolute -top-4 -left-4 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl flex items-center gap-3 animate-float-slow border border-white/80 z-10">
-<div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-lg shadow-inner">
-<i class="fa-solid fa-leaf"></i>
-</div>
-<div>
-<div class="text-xs font-black text-darkNavy">تركيبات طبيعية 100%</div>
-<div class="text-[10px] font-semibold text-slate-500">خالية من الكيماويات الضارة</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
+<section id="home" class="relative overflow-hidden bg-background">
+  <!-- Ambient glow blobs -->
+  <div class="absolute top-0 right-1/4 w-[450px] h-[450px] bg-primary/10 rounded-full blur-3xl pointer-events-none -z-10 animate-pulse-subtle"></div>
+  <div class="absolute top-1/3 left-10 w-96 h-96 bg-secondary/15 rounded-full blur-3xl pointer-events-none -z-10"></div>
+  <div class="absolute bottom-10 right-10 w-64 h-64 bg-amber-200/20 rounded-full blur-2xl pointer-events-none -z-10"></div>
+
+  <!-- Hero10-style: centered column layout -->
+  <div class="relative z-10 mx-auto flex max-w-5xl flex-col items-center gap-8 sm:gap-10 px-6 py-20 sm:py-28 text-center">
+
+    <!-- Header: Title + Description -->
+    <div class="hero10-reveal flex w-full max-w-2xl flex-col items-center gap-5">
+      <h1 class="text-3xl sm:text-4xl md:text-5xl font-black font-display leading-tight tracking-tight text-darkNavy text-balance">
+        <span class="text-shimmer-gold">اصنعي جمالكِ الخاص</span>
+        <br>
+        <span class="text-base sm:text-lg font-normal text-slate-500 tracking-normal">بمنتجات طبيعية </span><span class="text-primary font-bold">مختبرة طبياً</span>
+      </h1>
+      <p class="text-slate-600 leading-relaxed max-w-lg text-sm sm:text-base">
+        نقدم لكِ أفضل المنتجات الطبيعية والعلاجية للعناية بالبشرة والشعر — حلول آمنة لتتألقي بإشراقة طبيعية تدوم طويلاً.
+      </p>
+    </div>
+
+    <!-- CTAs + Social Proof -->
+    <div class="hero10-reveal flex flex-col items-center gap-4">
+      <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-3">
+        <a class="btn-gradient-shimmer rounded-full px-8 py-3.5 text-base font-black flex items-center justify-center gap-3 text-white shadow-purple-glow cursor-pointer" onclick="app.navigate('catalog')">
+          <span>تسوقي الآن</span>
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <a class="btn-outline px-7 py-3.5 text-base font-bold flex items-center justify-center gap-2.5 hover:shadow-lg cursor-pointer" onclick="app.navigate('catalog', 'مجموعات متكاملة')">
+          <i class="fa-solid fa-wand-magic-sparkles text-primary"></i>
+          <span>اكتشفي المجموعات</span>
+        </a>
+      </div>
+      <!-- Social Proof -->
+      <p class="text-slate-400 text-xs font-medium flex items-center gap-2">
+        <span class="flex items-center gap-1 text-amber-400">
+          <i class="fa-solid fa-star text-[10px]"></i>
+          <i class="fa-solid fa-star text-[10px]"></i>
+          <i class="fa-solid fa-star text-[10px]"></i>
+          <i class="fa-solid fa-star text-[10px]"></i>
+          <i class="fa-solid fa-star text-[10px]"></i>
+        </span>
+        +2,000 عميلة سعيدة &middot; شحن سريع &middot; منتجات أصلية 100%
+      </p>
+    </div>
+
+    <!-- Fan Image Gallery -->
+    <div class="mx-auto w-full max-w-3xl">
+      <div class="relative flex w-full items-center justify-center">
+
+        <!-- Card Left (rotated +6deg) -->
+        <div class="relative shrink-0 overflow-hidden rounded-xl shadow-xl outline outline-1 outline-black/10 w-[38%] -ml-8 z-10 hero-fan-side" style="aspect-ratio:4/5; transform: rotate(6deg) translateY(24px);">
+          <img class="w-full h-full object-cover" alt="منتج عناية الفرات فارما" decoding="async" loading="eager">
+          <script>
+            (function(){
+              var img = document.currentScript.previousElementSibling;
+              var cached = JSON.parse(localStorage.getItem('elforat_store_settings_cache_v1')||'null');
+              var url = cached&&cached.data&&cached.data.hero_image_url;
+              img.src = url ? ('https://wsrv.nl/?url='+encodeURIComponent(url)+'&w=500&q=70&output=webp') : 'hero-products.webp';
+            })();
+          </script>
+        </div>
+
+        <!-- Card Center (no rotation, front) -->
+        <div class="relative shrink-0 overflow-hidden rounded-xl shadow-2xl outline outline-1 outline-black/10 w-[42%] z-20" style="aspect-ratio:4/5; transform: translateY(-8px);">
+          <img class="hero-main-image w-full h-full object-cover object-center" alt="منتجات العناية بالبشرة والجمال الفرات فارما" decoding="async" fetchpriority="high" loading="eager" width="520" height="650" data-fallback-src="logo.png" onerror="if(this.src!==this.dataset.fallbackSrc){this.src=this.dataset.fallbackSrc;this.classList.add('object-contain','p-8');}">
+          <script>
+            (function () {
+                try {
+                    var img = document.currentScript.previousElementSibling;
+                    if (!img) return;
+                    var cached = JSON.parse(localStorage.getItem('elforat_store_settings_cache_v1') || 'null');
+                    var url = cached && cached.data && cached.data.hero_image_url;
+                    if (url) {
+                        url = 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&w=900&q=75&output=webp';
+                    }
+                    img.src = url || 'hero-products.webp';
+                } catch (e) {
+                    var img2 = document.currentScript.previousElementSibling;
+                    if (img2) img2.src = 'hero-products.webp';
+                }
+            })();
+          </script>
+          <!-- Gradient overlay -->
+          <div class="absolute inset-0 bg-gradient-to-t from-darkNavy/20 via-transparent to-transparent pointer-events-none"></div>
+          <!-- Live badge -->
+          <div class="absolute bottom-3 left-0 right-0 flex justify-center z-10">
+            <span class="bg-darkNavy/80 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-white flex items-center gap-2 border border-white/20 shadow-lg">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block"></span>
+              منتجات Elforat Pharma الأصلية المعتمدة
+            </span>
+          </div>
+          <!-- Float badge -->
+          <div class="absolute -top-3 -right-3 bg-white/95 backdrop-blur-md p-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-float-slow border border-white/80 z-10">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-sm shadow-inner">
+              <i class="fa-solid fa-leaf"></i>
+            </div>
+            <div>
+              <div class="text-[11px] font-black text-darkNavy leading-tight">طبيعية 100%</div>
+              <div class="text-[9px] text-slate-400">بدون كيماويات ضارة</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Right (rotated -6deg) -->
+        <div class="relative shrink-0 overflow-hidden rounded-xl shadow-xl outline outline-1 outline-black/10 w-[38%] -mr-8 z-10 hero-fan-side" style="aspect-ratio:4/5; transform: rotate(-6deg) translateY(24px);">
+          <img class="w-full h-full object-cover" alt="منتج عناية الفرات فارما" decoding="async" loading="lazy">
+          <script>
+            (function(){
+              var img = document.currentScript.previousElementSibling;
+              img.src = 'hero-products.webp';
+            })();
+          </script>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
 </section>
 <!-- Shop By Category Section with Frosted Glass & 3D Glowing Icons -->
 <section class="py-14 bg-white/70 backdrop-blur-md border-y border-purple-100/70" id="categories">

@@ -1642,6 +1642,29 @@ body.show-mobile-bar .welcome-offer-banner {
   55%, 100% { background-position: -30% 0; }
 }
 
+/* =====================================================
+   Hero10 Fan Layout — entrance animation & responsive
+   ===================================================== */
+
+@keyframes hero10-reveal {
+    from { opacity: 0; transform: translateY(12px); filter: blur(6px); }
+    to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+
+.hero10-reveal {
+    animation: hero10-reveal 0.55s cubic-bezier(0.22,1,0.36,1) both;
+}
+.hero10-reveal:nth-child(1) { animation-delay: 0.05s; }
+.hero10-reveal:nth-child(2) { animation-delay: 0.15s; }
+.hero10-reveal:nth-child(3) { animation-delay: 0.25s; }
+
+/* Hide side fan cards on very small screens */
+.hero-fan-side {
+    transition: opacity 0.3s;
+}
+@media (max-width: 420px) {
+    .hero-fan-side { display: none !important; }
+}
 
 /* ========== Anti-flicker / performance layer ========== */
 html { scroll-behavior: auto; scrollbar-gutter: stable; -webkit-text-size-adjust: 100%; }
