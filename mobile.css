@@ -621,3 +621,164 @@ footer#about { border-radius: 20px 20px 0 0; }
 
 /* ---------- الشريط السفلي: 4 عناصر بنفس المقاس ---------- */
 .mobile-bottom-nav-item { min-width: 0; }
+
+/* ==========================================================================
+   صفحة المنتج الواحد (موبايل فقط) - القالب في store-product.js (buildMobileProductHtml)
+   كل الكلاسات تحت .pdp-* ، والملف ده بيتحمّل أقل من 768px بس فالديسكتوب مش بيتأثر.
+   ملحوظة: ماستخدمتش <section> لأن style.css بيجبر section على background: transparent !important.
+   ========================================================================== */
+#view-product { padding-top: 12px; padding-bottom: 16px; }
+#view-product > nav { margin-bottom: 10px; font-size: 12px; }
+#view-product > nav ol { gap: 6px; }
+#view-product > nav svg { width: 12px; height: 12px; }
+body.show-mobile-bar #view-product { padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px)); }
+body.show-mobile-bar .toast-container { bottom: calc(132px + env(safe-area-inset-bottom, 0px)); }
+body.show-mobile-bar .welcome-offer-banner { bottom: max(var(--wo-bottom), calc(132px + env(safe-area-inset-bottom, 0px))); }
+#related-products { margin-top: 28px; padding-top: 24px; }
+#related-products h2 { font-size: 20px; }
+#related-products > p { margin-bottom: 16px; font-size: 13px; }
+
+.pdp-m {
+  --pdp-em: #0f5132; --pdp-em-d: #0b3d26; --pdp-gold: #9e7a36;
+  --pdp-line: #d1fae5; --pdp-ink: #1e293b; --pdp-mute: #64748b;
+  max-width: 448px; margin: 0 auto; text-align: right; color: var(--pdp-ink);
+  font-family: 'Cairo', 'Tajawal', sans-serif;
+}
+.pdp-m *, .pdp-bar * { box-sizing: border-box; }
+.pdp-m > * + * { margin-top: 16px; }
+.pdp-m h1, .pdp-m h2, .pdp-m h3, .pdp-m h4, .pdp-m p { margin: 0; }
+.pdp-card { background: #fff; border: 1px solid var(--pdp-line); border-radius: 24px; box-shadow: 0 1px 2px rgba(15, 23, 42, .05); }
+.pdp-pad { padding: 16px; }
+
+/* --- الصورة (من غير blur: gradients بدل بقع الـ blur عشان السكرول) --- */
+.pdp-hero {
+  padding: 12px; position: relative; overflow: hidden;
+  background: radial-gradient(circle at 100% 0, rgba(209, 250, 229, .6), transparent 45%),
+              radial-gradient(circle at 0 100%, rgba(254, 243, 199, .7), transparent 45%), #fff;
+}
+.pdp-stage {
+  position: relative; aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden;
+  background: linear-gradient(to bottom, #fafaf9, rgba(236, 253, 245, .45)); border: 1px solid #f1f5f9;
+  display: flex; align-items: center; justify-content: center; touch-action: pan-y;
+}
+.pdp-main-img { width: 100%; height: 100%; object-fit: contain; padding: 6px; transition: opacity .2s ease, transform .2s ease; }
+.pdp-badges { position: absolute; top: 12px; right: 12px; z-index: 10; display: flex; flex-direction: column; gap: 6px; }
+.pdp-badge { background: #f59e0b; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; box-shadow: 0 2px 6px rgba(0, 0, 0, .15); }
+.pdp-fav, .pdp-share {
+  position: absolute; left: 12px; z-index: 10; width: 36px; height: 36px; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center; padding: 0;
+  background: rgba(255, 255, 255, .94); color: #94a3b8; border: 1px solid rgba(226, 232, 240, .9);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .1);
+}
+.pdp-fav { top: 12px; }
+.pdp-share { top: 56px; color: #64748b; }
+.pdp-fav.bg-primary { background: #ef4444; color: #fff; border-color: #ef4444; }
+.pdp-count { position: absolute; bottom: 12px; right: 12px; z-index: 10; background: rgba(0, 0, 0, .6); color: #fff; font-size: 11px; font-family: 'Tajawal', sans-serif; padding: 2px 10px; border-radius: 999px; }
+.pdp-thumbs { display: flex; gap: 8px; margin-top: 12px; overflow-x: auto; scrollbar-width: none; }
+.pdp-thumbs::-webkit-scrollbar { display: none; }
+.pdp-thumb { flex: 0 0 calc(25% - 6px); aspect-ratio: 1 / 1; padding: 2px; border-radius: 12px; overflow: hidden; background: #fff; border: 1px solid #e2e8f0; opacity: .7; }
+.pdp-thumb img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
+.pdp-thumb.is-active { border: 2px solid var(--pdp-em); box-shadow: 0 0 0 2px rgba(15, 81, 50, .2); opacity: 1; }
+
+/* --- العنوان والسعر --- */
+.pdp-meta { padding: 16px; }
+.pdp-meta h1 { font-size: 20px; line-height: 1.4; font-weight: 900; color: var(--pdp-em); }
+.pdp-sub { margin-top: 4px !important; font-size: 12px; line-height: 1.7; color: #475569; font-family: 'Tajawal', sans-serif; }
+.pdp-rating { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f1f5f9; }
+.pdp-rating b { font-size: 12px; font-weight: 700; }
+.pdp-rating__n { font-size: 11px; color: var(--pdp-mute); font-family: 'Tajawal', sans-serif; }
+.pdp-stars { color: #fbbf24; letter-spacing: 1px; }
+.pdp-stars--sm { font-size: 12px; letter-spacing: 0; }
+.pdp-price {
+  margin-top: 16px; padding: 14px; border-radius: 16px; border: 1px solid rgba(209, 250, 229, .8);
+  background: linear-gradient(to right, rgba(236, 253, 245, .8), rgba(255, 251, 235, .6));
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.pdp-price__row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.pdp-price__now { font-size: 24px; font-weight: 900; color: var(--pdp-em); line-height: 1.2; }
+.pdp-price__old { font-size: 14px; color: #94a3b8; text-decoration: line-through; }
+.pdp-price__note { margin-top: 2px !important; font-size: 11px; font-weight: 700; color: var(--pdp-gold); font-family: 'Tajawal', sans-serif; }
+.pdp-save { background: #ef4444; color: #fff; font-size: 12px; font-weight: 800; padding: 6px 10px; border-radius: 12px; white-space: nowrap; }
+.pdp-alert { margin-top: 12px; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #b45309; background: rgba(255, 251, 235, .95); border: 1px solid rgba(253, 230, 138, .9); border-radius: 12px; padding: 8px 12px; }
+.pdp-alert__dot { width: 10px; height: 10px; flex: 0 0 10px; border-radius: 50%; background: #f59e0b; animation: pdpPing 1.6s cubic-bezier(0, 0, .2, 1) infinite; }
+.pdp-alert--out { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
+@keyframes pdpPing { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, .55); } 80%, 100% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); } }
+.pdp-coupon { margin-top: 12px; padding: 12px; border-radius: 16px; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: linear-gradient(to left, #065f46, var(--pdp-em)); }
+.pdp-coupon__lbl { font-size: 11px; font-weight: 500; color: #fde68a; font-family: 'Tajawal', sans-serif; }
+.pdp-coupon__txt { font-size: 12px; font-weight: 700; }
+.pdp-coupon__txt span { background: #fcd34d; color: var(--pdp-em-d); padding: 2px 6px; border-radius: 4px; font-family: ui-monospace, Menlo, Consolas, monospace; font-weight: 900; }
+.pdp-coupon button { font-size: 11px; font-weight: 700; color: #fff; background: rgba(255, 255, 255, .2); border: 1px solid rgba(255, 255, 255, .2); padding: 6px 10px; border-radius: 8px; white-space: nowrap; }
+.pdp-buynow { width: 100%; margin-top: 12px; padding: 12px; border-radius: 16px; font-size: 14px; font-weight: 800; color: var(--pdp-em); background: transparent; border: 1.5px solid var(--pdp-em); }
+
+/* --- المميزات --- */
+.pdp-block { padding: 0 4px; }
+.pdp-h2 { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 10px !important; }
+.pdp-h2--plain { padding: 0 4px; margin-bottom: 12px !important; }
+.pdp-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pdp-em); }
+.pdp-benefits { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pdp-benefit { background: #fff; border: 1px solid var(--pdp-line); border-radius: 16px; padding: 12px; box-shadow: 0 1px 2px rgba(15, 23, 42, .05); }
+.pdp-benefit__ico { width: 32px; height: 32px; border-radius: 12px; background: #ecfdf5; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 8px; }
+.pdp-benefit h3 { font-size: 12px; font-weight: 700; line-height: 1.3; color: #0f172a; }
+.pdp-benefit p { margin-top: 4px !important; font-size: 11px; line-height: 1.4; color: var(--pdp-mute); font-family: 'Tajawal', sans-serif; }
+
+/* --- الأكورديون --- */
+.pdp-acc { background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 16px; padding: 12px; }
+.pdp-acc + .pdp-acc { margin-top: 10px; }
+.pdp-acc summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 700; color: var(--pdp-em); }
+.pdp-acc summary::-webkit-details-marker { display: none; }
+.pdp-acc__ico { font-size: 16px; margin-left: 8px; }
+.pdp-chev { color: #94a3b8; flex: 0 0 16px; transition: transform .2s ease; }
+.pdp-acc[open] .pdp-chev { transform: rotate(180deg); }
+.pdp-acc__body { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(226, 232, 240, .6); font-size: 12px; line-height: 1.7; color: #475569; font-family: 'Tajawal', sans-serif; }
+.pdp-acc__body p, .pdp-acc__body li { font-size: 12px; margin-bottom: 6px; }
+.pdp-acc__body p:last-child { margin-bottom: 0; }
+
+/* --- التقييمات --- */
+.pdp-rev-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 10px; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
+.pdp-rev-head h2 { font-size: 14px; font-weight: 700; color: #0f172a; }
+.pdp-rev-head p { font-size: 11px; color: var(--pdp-mute); font-family: 'Tajawal', sans-serif; }
+.pdp-rev-score { text-align: left; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 4px 10px; }
+.pdp-rev-score b { display: block; font-size: 12px; font-weight: 900; color: var(--pdp-em); }
+.pdp-reviews > * + * { margin-top: 12px; }
+.pdp-review { background: #fafaf9; border: 1px solid rgba(231, 229, 228, .7); border-radius: 16px; padding: 12px; }
+.pdp-review__top { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.pdp-review__top h4 { font-size: 12px; font-weight: 700; color: #0f172a; }
+.pdp-review__top .pdp-stars { margin-right: auto; }
+.pdp-avatar { width: 28px; height: 28px; flex: 0 0 28px; border-radius: 50%; background: #059669; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.pdp-review:nth-child(2) .pdp-avatar { background: #d97706; }
+.pdp-review:nth-child(3) .pdp-avatar { background: #475569; }
+.pdp-review p { font-size: 12px; line-height: 1.7; color: #334155; font-family: 'Tajawal', sans-serif; }
+.pdp-addrev { width: 100%; margin-top: 14px; padding: 10px; border-radius: 999px; font-size: 13px; font-weight: 700; color: var(--pdp-em); background: transparent; border: 2px solid var(--pdp-em); }
+
+/* --- أكملي روتينك --- */
+.pdp-bundle { padding: 16px; border-color: rgba(253, 230, 138, .8); background: linear-gradient(135deg, rgba(255, 251, 235, .7), #fff 50%, rgba(236, 253, 245, .7)); }
+.pdp-bundle h2 { display: flex; align-items: center; gap: 6px; margin-bottom: 10px !important; font-size: 14px; font-weight: 700; color: #0f172a; }
+.pdp-bundle__row { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #fff; border: 1px solid rgba(226, 232, 240, .8); border-radius: 16px; padding: 12px; }
+.pdp-bundle__item { width: 30%; min-width: 0; text-align: center; }
+.pdp-bundle__img { width: 56px; height: 56px; margin: 0 auto; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; background: #fafaf9; }
+.pdp-bundle__img img { width: 100%; height: 100%; object-fit: contain; }
+.pdp-bundle__item p { margin-top: 4px !important; font-size: 11px; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pdp-bundle__item span { font-size: 10px; font-weight: 800; color: var(--pdp-em); font-family: 'Tajawal', sans-serif; }
+.pdp-bundle__plus { color: #94a3b8; font-weight: 700; font-size: 18px; }
+.pdp-bundle__sum { width: 34%; text-align: left; }
+.pdp-bundle__total { font-size: 14px; font-weight: 900; color: var(--pdp-em); }
+.pdp-bundle__sum button { margin-top: 4px; width: 100%; background: var(--pdp-gold); color: #fff; font-size: 10px; font-weight: 700; padding: 6px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, .15); }
+
+/* --- شريط الشراء الثابت (بدون backdrop-filter عشان الأداء) --- */
+.pdp-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; max-width: 448px; margin: 0 auto;
+  background: rgba(255, 255, 255, .98); border-top: 1px solid #e2e8f0; box-shadow: 0 -10px 30px rgba(15, 23, 42, .12);
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+}
+.pdp-bar__row { display: flex; align-items: center; gap: 8px; }
+.pdp-qty { display: flex; align-items: center; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 16px; padding: 4px; }
+.pdp-qty button { width: 32px; height: 32px; border-radius: 12px; background: #fff; color: #334155; font-weight: 700; font-size: 16px; box-shadow: 0 1px 2px rgba(0, 0, 0, .08); display: flex; align-items: center; justify-content: center; padding: 0; }
+.pdp-qty button:active, .pdp-cta:active, .pdp-wa:active { transform: scale(.95); }
+.pdp-qty input { width: 28px; padding: 0; border: 0; background: transparent; text-align: center; font-weight: 800; font-size: 14px; color: #1e293b; -moz-appearance: textfield; appearance: textfield; box-shadow: none; }
+.pdp-qty input::-webkit-outer-spin-button, .pdp-qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.pdp-cta { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 12px; border-radius: 16px; background: var(--pdp-em); color: #fff; font-size: 14px; font-weight: 800; box-shadow: 0 8px 18px rgba(6, 78, 59, .22); white-space: nowrap; }
+.pdp-cta[disabled] { background: #94a3b8; box-shadow: none; }
+.pdp-wa { width: 48px; height: 48px; flex: 0 0 48px; border-radius: 16px; background: #10b981; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(16, 185, 129, .3); }
+.pdp-trust { margin-top: 8px; padding-top: 6px; border-top: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-around; gap: 4px; font-size: 10px; color: var(--pdp-mute); font-family: 'Tajawal', sans-serif; white-space: nowrap; }
+.pdp-trust i { width: 3px; height: 3px; border-radius: 50%; background: #cbd5e1; flex: 0 0 3px; }
+@media (max-width: 359px) { .pdp-trust { font-size: 9px; } .pdp-cta { font-size: 13px; } }

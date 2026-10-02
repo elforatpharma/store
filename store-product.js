@@ -22,6 +22,9 @@
     var getFullImg = S.getFullImg;
     var renderFormattedText = S.renderFormattedText;
     var trackStoreEvent = S.trackStoreEvent;
+    // تصميم الموبايل (أقل من 768px) - نفس الحد اللي mobile.css بيتحمّل عنده
+    var MOBILE_MQ = window.matchMedia('(max-width: 767.98px)');
+    var lastRenderedId = null;
     // ملاحظة: productsDB بيتقرا من S كل مرة (مش نسخة ثابتة) لأن analysis.js
     // بيعيد تعيينه لما يجيب المنتجات من السيرفر.
 
@@ -79,11 +82,12 @@
         return 42 + (seed % 190); // عدد تقييمات متفاوت بين المنتجات
     }
 
-    function renderProductDetails(id) {
+    function renderProductDetails(id, opts) {
         const p = S.productsDB.find(prod => prod.id == id);
         const container = document.getElementById('product-details-container');
         if (!container || !p) return;
-        trackStoreEvent('product_view', {
+        lastRenderedId = p.id;
+        if (!(opts && opts.silent)) trackStoreEvent('product_view', {
             product_id: String(p.id),
             product_name: p.name,
             metadata: { category: p.category, price: p.price, stock: p.stock }
@@ -205,7 +209,8 @@
         window.currentImageIndex = 0;
         window.zoomImageIndex = 0;
 
-        container.innerHTML = `
+        const isMobile = MOBILE_MQ.matches;
+        container.innerHTML = isMobile ? buildMobileProductHtml(p, images) : `
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-start">
                 <!-- معرض الصور -->
                 <div class="space-y-4">
@@ -377,6 +382,7 @@
 
         // تفعيل دعم لوحة المفاتيح للمعرض المكبر
         initProductGalleryKeyboard();
+        if (isMobile) initMobileGallerySwipe();
 
     }
 
@@ -411,6 +417,7 @@
         if (counter) counter.textContent = (window.currentImageIndex % window.productImages.length) + 1;
 
         document.querySelectorAll('.thumbnail-btn').forEach((btn, idx) => {
+            btn.classList.toggle('is-active', idx === window.currentImageIndex);
             if (idx === window.currentImageIndex) {
                 btn.classList.add('border-primary', 'shadow-purple-soft', 'scale-105');
                 btn.classList.remove('border-purple-100');
@@ -580,6 +587,301 @@
 </article>`;
         }).join('');
     }
+
+
+    // ==========================================================
+    // تصميم صفحة المنتج للموبايل فقط (أقل من 768px)
+    // الستايل كله في mobile.css تحت .pdp-m (مفيش اعتماد على كلاسات Tailwind
+    // الجديدة لأن tailwind-built.css مبني بالكلاسات المستخدمة بس).
+    // ==========================================================
+    function pdpSubtitle(desc) {
+        var t = String(desc || '').replace(/[\r\n]+/g, ' ').replace(/^[•\-\*–—\d\.\)\s]+/, '').trim();
+        if (!t) return '';
+        if (t.length > 110) t = t.slice(0, 107).replace(/\s+\S*$/, '') + '…';
+        return t;
+    }
+
+    function pdpMoney(n) {
+        return String(Math.round(Number(n) * 100) / 100);
+    }
+
+    function buildMobileProductHtml(p, images) {
+        var price = Number(p.price) || 0;
+        var old = Number(p.oldPrice) || 0;
+        var hasDisc = old > price;
+        var saved = hasDisc ? old - price : 0;
+        var pct = hasDisc ? Math.round(saved / old * 100) : 0;
+        var outOfStock = p.stock === 0;
+        var lowStock = p.stock > 0 && p.stock <= LOW_STOCK_THRESHOLD;
+        var isFav = FavoritesManager.isFavorite(p.id);
+        var sub = pdpSubtitle(p.desc);
+        var couponOn = !!(window.WelcomeOffer && window.WelcomeOffer.isEligible && window.WelcomeOffer.isEligible());
+        var couponCode = (window.WelcomeOffer && window.WelcomeOffer.code) || 'WELCOME10';
+        var reviews = getReviewsForProduct(p.id, 4);
+        var waText = encodeURIComponent('مرحباً صيدلية الفرات، أريد طلب ' + p.name);
+        var idArg = jsArg(p.id);
+
+        // منتج مكمّل من نفس الفئة (بنفس سعره العادي، من غير خصم مخترع)
+        var mate = (S.productsDB || []).find(function (x) { return x.category === p.category && x.id != p.id && x.stock > 0; });
+
+        var chev = '<svg class="pdp-chev" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>';
+
+        var thumbs = images.length > 1 ? `
+            <div class="pdp-thumbs">
+                ${images.map(function (img, idx) { return `
+                <button type="button" onclick="changeProductImage(${idx})" class="pdp-thumb thumbnail-btn${idx === 0 ? ' is-active' : ''}" data-index="${idx}" aria-label="صورة ${idx + 1}">
+                    <img src="${sanitize(img)}" loading="lazy" alt="" onerror="this.src='logo.png'">
+                </button>`; }).join('')}
+            </div>` : '';
+
+        var benefits = [
+            ['🚚', 'شحن خلال 24–48 ساعة', 'داخل القاهرة والجيزة، و2–4 أيام لباقي المحافظات.'],
+            ['🔍', 'معاينة عند الاستلام', 'تأكدي من الطرد والمنتجات قبل الدفع لمندوب الشحن.'],
+            ['↩️', 'استبدال واسترجاع', 'خلال 14 يوماً من الاستلام وفق سياسة المتجر.'],
+            ['🩺', 'تركيبات آمنة ومدروسة', 'منتجات مختارة بعناية من الفرات فارما.']
+        ].map(function (b) { return `
+            <div class="pdp-benefit">
+                <div class="pdp-benefit__ico">${b[0]}</div>
+                <h3>${b[1]}</h3>
+                <p>${b[2]}</p>
+            </div>`; }).join('');
+
+        var accordions = `
+            <details class="pdp-acc" open>
+                <summary><span><span class="pdp-acc__ico">📋</span>الوصف</span>${chev}</summary>
+                <div class="pdp-acc__body">
+                    ${renderFormattedText(p.desc, 'أفضل منتجات العناية المختارة بعناية فائقة لضمان أفضل النتائج لبشرتك وشعرك.')}
+                    ${p.size ? `<p><strong>الحجم:</strong> ${sanitize(p.size)}</p>` : ''}
+                </div>
+            </details>
+            ${p.ingredients ? `
+            <details class="pdp-acc">
+                <summary><span><span class="pdp-acc__ico">🧪</span>المكونات</span>${chev}</summary>
+                <div class="pdp-acc__body">${renderFormattedText(p.ingredients)}</div>
+            </details>` : ''}
+            <details class="pdp-acc">
+                <summary><span><span class="pdp-acc__ico">🛡️</span>الشحن والاسترجاع (سياسة الفرات فارما)</span>${chev}</summary>
+                <div class="pdp-acc__body">
+                    <p>• شحن وتوصيل خلال 24 إلى 48 ساعة داخل القاهرة والجيزة، وخلال 2 إلى 4 أيام لباقي المحافظات.</p>
+                    <p>• إمكانية معاينة الطرد والتأكد من المنتجات عند الاستلام.</p>
+                    <p>• استبدال أو استرجاع خلال 14 يوماً من الاستلام، بشرط أن يكون المنتج بحالته الأصلية وغير مستخدم.</p>
+                </div>
+            </details>`;
+
+        var reviewCards = reviews.map(function (r) { return `
+            <article class="pdp-review">
+                <div class="pdp-review__top">
+                    <span class="pdp-avatar">${sanitize(r.name.charAt(0))}</span>
+                    <h4>${sanitize(r.name)}</h4>
+                    <span class="pdp-stars pdp-stars--sm">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</span>
+                </div>
+                <p>${sanitize(r.text)}</p>
+            </article>`; }).join('');
+
+        var bundle = mate ? `
+            <div class="pdp-card pdp-bundle">
+                <h2><span>💡</span>أكملي روتينك</h2>
+                <div class="pdp-bundle__row">
+                    <div class="pdp-bundle__item">
+                        <div class="pdp-bundle__img"><img src="${sanitize(images[0])}" alt="" loading="lazy" onerror="this.src='logo.png'"></div>
+                        <p>${sanitize(p.name)}</p>
+                        <span>${sanitize(pdpMoney(price))} ج.م</span>
+                    </div>
+                    <span class="pdp-bundle__plus">+</span>
+                    <div class="pdp-bundle__item" onclick="app.navigate('product', '${jsArg(mate.id)}')">
+                        <div class="pdp-bundle__img"><img src="${sanitize(getFullImg(mate.imgThumb || mate.img))}" alt="" loading="lazy" onerror="this.src='logo.png'"></div>
+                        <p>${sanitize(mate.name)}</p>
+                        <span>${sanitize(pdpMoney(mate.price))} ج.م</span>
+                    </div>
+                    <div class="pdp-bundle__sum">
+                        <div class="pdp-bundle__total">${sanitize(pdpMoney(price + (Number(mate.price) || 0)))} ج.م</div>
+                        <button type="button" onclick="pdpAddBundle('${idArg}', '${jsArg(mate.id)}')">إضافة الاثنين</button>
+                    </div>
+                </div>
+            </div>` : '';
+
+        return `
+        <div class="pdp-m">
+            <!-- الصورة -->
+            <div class="pdp-card pdp-hero">
+                <div class="pdp-stage" id="pdp-stage">
+                    ${p.badge ? `<div class="pdp-badges"><span class="pdp-badge">${sanitize(p.badge)}</span></div>` : ''}
+                    <button id="main-fav-btn" type="button" aria-label="إضافة للمفضلة" onclick="handleMainFavorite('${idArg}'); event.stopPropagation();" class="pdp-fav ${isFav ? 'bg-primary text-white shadow-lg' : 'bg-gray-100 text-gray-400'}">
+                        <svg width="20" height="20" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                    </button>
+                    <button type="button" aria-label="مشاركة المنتج" class="pdp-share" onclick="pdpShare('${jsArg(p.name)}'); event.stopPropagation();">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                    </button>
+                    <img id="main-product-img" class="pdp-main-img" src="${sanitize(images[0])}" alt="${sanitize(p.name)}" onerror="this.src='logo.png'" onclick="openImageZoom(window.productImages[window.currentImageIndex || 0])">
+                    ${images.length > 1 ? `<div class="pdp-count"><span id="gallery-current-idx">1</span> / ${images.length}</div>` : ''}
+                </div>
+                ${thumbs}
+            </div>
+
+            <!-- العنوان والسعر -->
+            <div class="pdp-card pdp-meta">
+                <h1>${sanitize(p.name)}</h1>
+                ${sub ? `<p class="pdp-sub">${sanitize(sub)}</p>` : ''}
+                <div class="pdp-rating">
+                    <span class="pdp-stars">★★★★★</span>
+                    <b>${sanitize(p.rating || '4.9')}</b>
+                    <span class="pdp-rating__n">(${computeReviewCountForId(p.id)} تقييم من عميلات الصيدلية)</span>
+                </div>
+                <div class="pdp-price">
+                    <div>
+                        <div class="pdp-price__row">
+                            <span class="pdp-price__now">${sanitize(pdpMoney(price))} ج.م</span>
+                            ${hasDisc ? `<span class="pdp-price__old">${sanitize(pdpMoney(old))} ج.م</span>` : ''}
+                        </div>
+                        <p class="pdp-price__note">شامل القيمة المضافة${p.size ? ' • عبوة ' + sanitize(p.size) : ''}</p>
+                    </div>
+                    ${hasDisc ? `<span class="pdp-save">وفر ${sanitize(pdpMoney(saved))} ج.م (-${pct}%)</span>` : ''}
+                </div>
+                ${lowStock ? `<div class="pdp-alert"><span class="pdp-alert__dot"></span><span>متبقي ${p.stock} قطع فقط في المخزون الحالي للصيدلية!</span></div>` : ''}
+                ${outOfStock ? `<div class="pdp-alert pdp-alert--out"><span>❌ نفذ من المخزون</span></div>` : ''}
+                ${couponOn ? `
+                <div class="pdp-coupon">
+                    <div>
+                        <p class="pdp-coupon__lbl">خصم ترحيبي خاص:</p>
+                        <p class="pdp-coupon__txt">استخدمي كود <span dir="ltr">${sanitize(couponCode)}</span> لخصم إضافي 10%</p>
+                    </div>
+                    <button type="button" onclick="pdpCopyCoupon(this, '${jsArg(couponCode)}')">نسخ الكود</button>
+                </div>` : ''}
+                ${!outOfStock ? `<button type="button" class="pdp-buynow" onclick="app.buyNow('${idArg}', document.getElementById('product-qty').value)">اشتري الآن</button>` : ''}
+            </div>
+
+            <!-- المميزات -->
+            <div class="pdp-block">
+                <h2 class="pdp-h2"><span class="pdp-dot"></span>لماذا تطلبي من الفرات فارما؟</h2>
+                <div class="pdp-benefits">${benefits}</div>
+            </div>
+
+            <!-- التفاصيل -->
+            <div class="pdp-card pdp-pad">
+                <h2 class="pdp-h2 pdp-h2--plain">تفاصيل المنتج</h2>
+                ${accordions}
+            </div>
+
+            <!-- التقييمات -->
+            <div class="pdp-card pdp-pad">
+                <div class="pdp-rev-head">
+                    <div>
+                        <h2>آراء وتجارب العميلات</h2>
+                        <p>${computeReviewCountForId(p.id)} تقييم</p>
+                    </div>
+                    <div class="pdp-rev-score"><b>${sanitize(p.rating || '4.9')} / 5</b><span class="pdp-stars pdp-stars--sm">★★★★★</span></div>
+                </div>
+                <div class="pdp-reviews">${reviewCards}</div>
+                <button type="button" class="pdp-addrev" onclick="app.openAddReviewModal('${idArg}', '${jsArg(p.name)}')">⭐ إضافة تقييمك وتجربتك</button>
+            </div>
+
+            ${bundle}
+        </div>
+
+        <!-- شريط الشراء الثابت -->
+        <div id="pdp-buy-bar" class="pdp-bar">
+            <div class="pdp-bar__row">
+                ${outOfStock ? '' : `
+                <div class="pdp-qty" dir="ltr">
+                    <button type="button" aria-label="تقليل الكمية" onclick="pdpQty(-1, ${Number(p.stock) || 1}, ${price})">−</button>
+                    <input id="product-qty" type="number" value="1" min="1" max="${Number(p.stock) || 1}" readonly>
+                    <button type="button" aria-label="زيادة الكمية" onclick="pdpQty(1, ${Number(p.stock) || 1}, ${price})">+</button>
+                </div>`}
+                <button type="button" class="pdp-cta" ${outOfStock ? 'disabled' : ''} onclick="app.addToCart('${idArg}', document.getElementById('product-qty').value)">
+                    ${outOfStock ? '<span>نفذ من المخزون</span>' : `
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                    <span>أضيفي للسلة • <span id="pdp-cta-total">${sanitize(pdpMoney(price))}</span> ج.م</span>`}
+                </button>
+                <a class="pdp-wa" aria-label="طلب عبر واتساب واستشارة صيدلانية" href="https://wa.me/201146809133?text=${waText}" rel="noopener noreferrer" target="_blank">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 2C6.496 2 2 6.497 2 12.032c0 1.767.461 3.49 1.336 5.006L2 22l5.105-1.338a9.99 9.99 0 004.926 1.37h.004c5.534 0 10.03-4.498 10.03-10.032A10.007 10.007 0 0012.031 2zm0 18.232h-.003a8.196 8.196 0 01-4.184-1.144l-.3-.178-3.111.816.83-3.033-.195-.311a8.204 8.204 0 01-1.258-4.35c0-4.536 3.69-8.225 8.225-8.225a8.18 8.18 0 015.82 2.41 8.18 8.18 0 012.41 5.82c-.004 4.538-3.693 8.225-8.224 8.225zm4.512-6.16c-.247-.124-1.464-.723-1.691-.806-.228-.083-.393-.124-.559.124-.165.248-.64.806-.784.97-.145.166-.29.186-.537.062-.247-.124-1.045-.386-1.99-1.229-.737-.658-1.234-1.47-1.379-1.718-.145-.248-.016-.382.108-.506.112-.111.248-.289.372-.434.124-.145.166-.248.248-.414.083-.166.042-.311-.02-.434-.063-.125-.559-1.347-.766-1.846-.201-.486-.407-.42-.559-.428l-.476-.008c-.166 0-.434.062-.662.311-.228.248-.869.85-.869 2.073 0 1.223.89 2.405 1.014 2.571.124.165 1.752 2.675 4.244 3.75.593.256 1.056.409 1.417.524.596.189 1.138.163 1.567.098.478-.071 1.464-.599 1.671-1.178.207-.579.207-1.074.145-1.178-.062-.104-.227-.166-.475-.29z"></path></svg>
+                </a>
+            </div>
+            <div class="pdp-trust">
+                <span>💵 دفع عند الاستلام / إنستاباي</span><i></i>
+                <span>🔍 معاينة عند الاستلام</span><i></i>
+                <span>⚡ شحن 24–48 ساعة</span>
+            </div>
+        </div>
+
+        <!-- نافذة تكبير الصور (Modal) -->
+        <div id="image-zoom-modal" class="fixed inset-0 bg-black/95 z-[9999] hidden items-center justify-center" onclick="closeImageZoom()">
+            <button onclick="closeImageZoom()" class="absolute top-6 right-6 text-white" aria-label="إغلاق">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <button onclick="changeZoomImage(-1)" class="absolute left-6 top-1/2 -translate-y-1/2 text-white" aria-label="السابقة">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <button onclick="changeZoomImage(1)" class="absolute right-6 top-1/2 -translate-y-1/2 text-white" aria-label="التالية">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+            <img id="zoomed-image" src="" class="max-w-[90vw] max-h-[90vh] object-contain" onclick="event.stopPropagation()">
+            <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-4 py-2 rounded-full">
+                <span id="zoom-counter">1 / 3</span>
+            </div>
+        </div>`;
+    }
+
+    function initMobileGallerySwipe() {
+        var el = document.getElementById('pdp-stage');
+        if (!el || el._swipeReady) return;
+        el._swipeReady = true;
+        var x0 = null;
+        el.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+        el.addEventListener('touchend', function (e) {
+            if (x0 === null) return;
+            var dx = e.changedTouches[0].clientX - x0;
+            x0 = null;
+            if (Math.abs(dx) > 45 && Array.isArray(window.productImages) && window.productImages.length > 1) {
+                changeProductImage(dx < 0 ? 'next' : 'prev');
+            }
+        }, { passive: true });
+    }
+
+    window.pdpQty = function (delta, stock, price) {
+        var input = document.getElementById('product-qty');
+        if (!input) return;
+        var v = Math.min(Math.max(1, stock || 1), Math.max(1, (parseInt(input.value, 10) || 1) + delta));
+        input.value = v;
+        var t = document.getElementById('pdp-cta-total');
+        if (t) t.textContent = pdpMoney(v * price);
+    };
+
+    window.pdpCopyCoupon = function (btn, code) {
+        var done = function () {
+            if (!btn) return;
+            var old = btn.textContent;
+            btn.textContent = 'تم النسخ ✓';
+            setTimeout(function () { btn.textContent = old; }, 1500);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(done, done);
+        else done();
+    };
+
+    window.pdpShare = function (name) {
+        var url = location.href;
+        if (navigator.share) {
+            navigator.share({ title: name, url: url }).catch(function () { });
+        } else if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(function () {
+                if (window.ToastManager && window.ToastManager.showSuccess) window.ToastManager.showSuccess('تم نسخ رابط المنتج', 2500);
+            }, function () { });
+        }
+    };
+
+    window.pdpAddBundle = function (idA, idB) {
+        if (window.app && window.app.addToCart) {
+            window.app.addToCart(idA, 1);
+            window.app.addToCart(idB, 1);
+        }
+    };
+
+    // لو الشاشة اتدوّرت/اتغيّر حجمها بين موبايل وديسكتوب والصفحة مفتوحة، نعيد الرسم بالتصميم المناسب
+    var onMqChange = function () {
+        var v = document.getElementById('view-product');
+        if (lastRenderedId !== null && v && v.classList.contains('active')) renderProductDetails(lastRenderedId, { silent: true });
+    };
+    if (MOBILE_MQ.addEventListener) MOBILE_MQ.addEventListener('change', onMqChange);
+    else if (MOBILE_MQ.addListener) MOBILE_MQ.addListener(onMqChange);
 
     window.ElforatProduct = {
         render: renderProductDetails,

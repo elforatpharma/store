@@ -1685,33 +1685,29 @@ body.show-mobile-bar .welcome-offer-banner {
     border-radius: 20px;
 }
 
-/* Hero Social Proof Responsive (Desktop: Stars before text / Mobile: Stars under text) */
+/* Hero Social Proof (Centered text with stars underneath on all screen sizes) */
 .hero-social-proof {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-}
-
-.hero-social-proof-stars {
-    order: 2;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    gap: 6px !important;
 }
 
 .hero-social-proof-text {
-    order: 1;
+    order: 1 !important;
+    display: block;
+    line-height: 1.5;
 }
 
-@media (min-width: 768px) {
-    .hero-social-proof {
-        flex-direction: row;
-        gap: 8px;
-    }
-    .hero-social-proof-stars {
-        order: 1;
-    }
-    .hero-social-proof-text {
-        order: 2;
-    }
+.hero-social-proof-stars {
+    order: 2 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 2px;
 }
 
 
