@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
 <head>
@@ -324,97 +324,303 @@
       </p>
     </div>
 
-    <!-- Fan Image Gallery — Edge to Edge Fan (سيروم بالمقدمة، يمين لوشن مرطب للجسم، شمال لوشن نهاري) -->
-    <div class="w-full" style="max-width: 100%; margin: 10px 0 0; overflow: visible;">
-      <div class="relative flex items-end justify-center" style="width: 100%; min-height: 380px; padding: 0 4px;">
+    
+    <!-- 3D Coverflow Carousel Container -->
+    <div id="hero-coverflow-wrapper" class="w-full relative select-none" style="--cf-card: clamp(210px, 28vw, 320px); max-width: 100%; margin-top: 8px;" role="region" aria-roledescription="carousel" aria-label="معرض منتجات الفرات فارما">
+      <div class="relative w-full">
+        <!-- Interactive 3D Frame -->
+        <div id="hero-cf-frame" tabindex="0"
+             class="cursor-grab overflow-hidden outline-none select-none relative"
+             style="perspective: calc(var(--cf-card) * 3); touch-action: pan-y; padding: 30px 0 20px;">
+          <div id="hero-cf-deck" class="relative" style="height: calc(var(--cf-card) * 1.22); transform-style: preserve-3d;">
+            
+              <div class="cf-card absolute left-1/2 top-0 overflow-hidden shadow-2xl transition-shadow duration-300 will-change-transform cursor-pointer"
+                   data-index="0"
+                   data-id="384b541c-6050-4c0a-814e-e8fcc56aea75"
+                   data-title="سيروم الشعر Guzel Gold"
+                   data-subtitle="العناية بالشعر &middot; تركيبة زيت الأرجان والذهب"
+                   data-price="240 ج.م"
+                   data-badge="الأكثر مبيعاً ⭐"
+                   style="width: var(--cf-card); height: calc(var(--cf-card) * 1.22); border-radius: 24px; background: #ffffff; outline: 1px solid rgba(197,155,63,0.22); box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
+                <div class="relative w-full h-full overflow-hidden">
+                  <img src="https://wsrv.nl/?url=https%3A%2F%2Fsidtdxchiqiogfkwbdui.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproducts%2Fuploads%2F1789572065186-guzel-gold.png&w=650&q=80&output=webp" alt="سيروم الشعر Guzel Gold" draggable="false"
+                       class="w-full h-full object-cover select-none pointer-events-none"
+                       loading="eager" decoding="async" />
+                  
+                  <!-- Top Badge -->
+                  <div class="absolute top-3.5 right-3.5 pointer-events-none">
+                    <span class="px-3 py-1 rounded-full text-[11px] font-black tracking-wide text-darkNavy shadow-md border border-white/80"
+                          style="background: rgba(255,255,255,0.92); backdrop-filter: blur(8px);">
+                      الأكثر مبيعاً ⭐
+                    </span>
+                  </div>
 
-        <!-- اليمين (في اتجاه RTL يمين الصفحة): لوشن مرطب للجسم خلف السيروم -->
-        <div class="relative overflow-hidden hero-fan-side shadow-2xl"
-             style="flex-shrink: 0; width: 34%; max-width: 440px; aspect-ratio: 4/5;
-                    transform: rotate(6deg) translateY(24px);
-                    margin-left: -6%;
-                    z-index: 12;
-                    border-radius: 24px 24px 0 0;
-                    outline: 1.5px solid rgba(255,255,255,0.7);
-                    background: #ffffff;">
-          <img style="width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block;"
-               alt="لوشن مرطب للجسم" decoding="async" loading="eager"
-               src="https://wsrv.nl/?url=https%3A%2F%2Fsidtdxchiqiogfkwbdui.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproducts%2Fuploads%2F1789572243477-prod.png&w=700&q=80&output=webp">
-          <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.4) 40%, transparent 100%); padding: 22px 14px 12px; text-align: center;">
-            <span style="font-size: clamp(0.75rem, 1.2vw, 0.95rem); font-weight: 800; color: #ffffff; letter-spacing: 0.03em; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">لوشن مرطب للجسم</span>
+                  <!-- Bottom Gradient & Card Title -->
+                  <div class="absolute inset-x-0 bottom-0 pointer-events-none"
+                       style="background: linear-gradient(to top, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.45) 50%, transparent 100%); padding: 34px 14px 14px; text-align: center;">
+                    <div class="text-white font-extrabold text-sm line-clamp-1 leading-snug drop-shadow-sm">سيروم الشعر Guzel Gold</div>
+                    <div class="text-amber-300 font-black text-xs mt-0.5">240 ج.م</div>
+                  </div>
+                </div>
+              </div>
+            
+              <div class="cf-card absolute left-1/2 top-0 overflow-hidden shadow-2xl transition-shadow duration-300 will-change-transform cursor-pointer"
+                   data-index="1"
+                   data-id="bd18ecc6-a5de-4f7c-9458-ccecd12f8039"
+                   data-title="لوشن مرطب للجسم"
+                   data-subtitle="العناية بالجسم &middot; ترطيب عميق يدوم 24 ساعة"
+                   data-price="200 ج.م"
+                   data-badge="ترطيب فائق 💧"
+                   style="width: var(--cf-card); height: calc(var(--cf-card) * 1.22); border-radius: 24px; background: #ffffff; outline: 1px solid rgba(197,155,63,0.22); box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
+                <div class="relative w-full h-full overflow-hidden">
+                  <img src="https://wsrv.nl/?url=https%3A%2F%2Fsidtdxchiqiogfkwbdui.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproducts%2Fuploads%2F1789572243477-prod.png&w=650&q=80&output=webp" alt="لوشن مرطب للجسم" draggable="false"
+                       class="w-full h-full object-cover select-none pointer-events-none"
+                       loading="eager" decoding="async" />
+                  
+                  <!-- Top Badge -->
+                  <div class="absolute top-3.5 right-3.5 pointer-events-none">
+                    <span class="px-3 py-1 rounded-full text-[11px] font-black tracking-wide text-darkNavy shadow-md border border-white/80"
+                          style="background: rgba(255,255,255,0.92); backdrop-filter: blur(8px);">
+                      ترطيب فائق 💧
+                    </span>
+                  </div>
+
+                  <!-- Bottom Gradient & Card Title -->
+                  <div class="absolute inset-x-0 bottom-0 pointer-events-none"
+                       style="background: linear-gradient(to top, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.45) 50%, transparent 100%); padding: 34px 14px 14px; text-align: center;">
+                    <div class="text-white font-extrabold text-sm line-clamp-1 leading-snug drop-shadow-sm">لوشن مرطب للجسم</div>
+                    <div class="text-amber-300 font-black text-xs mt-0.5">200 ج.م</div>
+                  </div>
+                </div>
+              </div>
+            
+              <div class="cf-card absolute left-1/2 top-0 overflow-hidden shadow-2xl transition-shadow duration-300 will-change-transform cursor-pointer"
+                   data-index="2"
+                   data-id="1fe5d4f8-f606-47e8-8053-e85f42a5d3e8"
+                   data-title="لوشن نهاري للمناطق الحساسة"
+                   data-subtitle="تفتيح وترطيب لطيف وحماية يومية"
+                   data-price="190 ج.م"
+                   data-badge="مختبر طبياً 🌿"
+                   style="width: var(--cf-card); height: calc(var(--cf-card) * 1.22); border-radius: 24px; background: #ffffff; outline: 1px solid rgba(197,155,63,0.22); box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
+                <div class="relative w-full h-full overflow-hidden">
+                  <img src="https://wsrv.nl/?url=https%3A%2F%2Fsidtdxchiqiogfkwbdui.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproducts%2Fuploads%2F1789572271895-prod.png&w=650&q=80&output=webp" alt="لوشن نهاري للمناطق الحساسة" draggable="false"
+                       class="w-full h-full object-cover select-none pointer-events-none"
+                       loading="eager" decoding="async" />
+                  
+                  <!-- Top Badge -->
+                  <div class="absolute top-3.5 right-3.5 pointer-events-none">
+                    <span class="px-3 py-1 rounded-full text-[11px] font-black tracking-wide text-darkNavy shadow-md border border-white/80"
+                          style="background: rgba(255,255,255,0.92); backdrop-filter: blur(8px);">
+                      مختبر طبياً 🌿
+                    </span>
+                  </div>
+
+                  <!-- Bottom Gradient & Card Title -->
+                  <div class="absolute inset-x-0 bottom-0 pointer-events-none"
+                       style="background: linear-gradient(to top, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.45) 50%, transparent 100%); padding: 34px 14px 14px; text-align: center;">
+                    <div class="text-white font-extrabold text-sm line-clamp-1 leading-snug drop-shadow-sm">لوشن نهاري للمناطق الحساسة</div>
+                    <div class="text-amber-300 font-black text-xs mt-0.5">190 ج.م</div>
+                  </div>
+                </div>
+              </div>
+            
+              <div class="cf-card absolute left-1/2 top-0 overflow-hidden shadow-2xl transition-shadow duration-300 will-change-transform cursor-pointer"
+                   data-index="3"
+                   data-id="b348ae8d-c0c1-455b-922c-0a93199cadfe"
+                   data-title="چـل كريم بالهيالورونيك والكافايين"
+                   data-subtitle="العناية بالوجه &middot; نضارة ومقاومة الإجهاد"
+                   data-price="140 ج.م"
+                   data-badge="توهج ونضارة ✨"
+                   style="width: var(--cf-card); height: calc(var(--cf-card) * 1.22); border-radius: 24px; background: #ffffff; outline: 1px solid rgba(197,155,63,0.22); box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
+                <div class="relative w-full h-full overflow-hidden">
+                  <img src="https://wsrv.nl/?url=https%3A%2F%2Fsidtdxchiqiogfkwbdui.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproducts%2Fuploads%2F1790023604685-prod.png&w=650&q=80&output=webp" alt="چـل كريم بالهيالورونيك والكافايين" draggable="false"
+                       class="w-full h-full object-cover select-none pointer-events-none"
+                       loading="lazy" decoding="async" />
+                  
+                  <!-- Top Badge -->
+                  <div class="absolute top-3.5 right-3.5 pointer-events-none">
+                    <span class="px-3 py-1 rounded-full text-[11px] font-black tracking-wide text-darkNavy shadow-md border border-white/80"
+                          style="background: rgba(255,255,255,0.92); backdrop-filter: blur(8px);">
+                      توهج ونضارة ✨
+                    </span>
+                  </div>
+
+                  <!-- Bottom Gradient & Card Title -->
+                  <div class="absolute inset-x-0 bottom-0 pointer-events-none"
+                       style="background: linear-gradient(to top, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.45) 50%, transparent 100%); padding: 34px 14px 14px; text-align: center;">
+                    <div class="text-white font-extrabold text-sm line-clamp-1 leading-snug drop-shadow-sm">چـل كريم بالهيالورونيك والكافايين</div>
+                    <div class="text-amber-300 font-black text-xs mt-0.5">140 ج.م</div>
+                  </div>
+                </div>
+              </div>
+            
+              <div class="cf-card absolute left-1/2 top-0 overflow-hidden shadow-2xl transition-shadow duration-300 will-change-transform cursor-pointer"
+                   data-index="4"
+                   data-id="67252fb1-4b59-4809-863c-00261ccb6ecf"
+                   data-title="كريم لعلاج جلد الوزة"
+                   data-subtitle="نعومة فائقة وتقشير آمن وترطيب باليوريا"
+                   data-price="170 ج.م"
+                   data-badge="حل نهائي وفعال 🌸"
+                   style="width: var(--cf-card); height: calc(var(--cf-card) * 1.22); border-radius: 24px; background: #ffffff; outline: 1px solid rgba(197,155,63,0.22); box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
+                <div class="relative w-full h-full overflow-hidden">
+                  <img src="https://wsrv.nl/?url=https%3A%2F%2Fsidtdxchiqiogfkwbdui.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproducts%2Fuploads%2F1789572786612-prod.png&w=650&q=80&output=webp" alt="كريم لعلاج جلد الوزة" draggable="false"
+                       class="w-full h-full object-cover select-none pointer-events-none"
+                       loading="lazy" decoding="async" />
+                  
+                  <!-- Top Badge -->
+                  <div class="absolute top-3.5 right-3.5 pointer-events-none">
+                    <span class="px-3 py-1 rounded-full text-[11px] font-black tracking-wide text-darkNavy shadow-md border border-white/80"
+                          style="background: rgba(255,255,255,0.92); backdrop-filter: blur(8px);">
+                      حل نهائي وفعال 🌸
+                    </span>
+                  </div>
+
+                  <!-- Bottom Gradient & Card Title -->
+                  <div class="absolute inset-x-0 bottom-0 pointer-events-none"
+                       style="background: linear-gradient(to top, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.45) 50%, transparent 100%); padding: 34px 14px 14px; text-align: center;">
+                    <div class="text-white font-extrabold text-sm line-clamp-1 leading-snug drop-shadow-sm">كريم لعلاج جلد الوزة</div>
+                    <div class="text-amber-300 font-black text-xs mt-0.5">170 ج.م</div>
+                  </div>
+                </div>
+              </div>
+            
+              <div class="cf-card absolute left-1/2 top-0 overflow-hidden shadow-2xl transition-shadow duration-300 will-change-transform cursor-pointer"
+                   data-index="5"
+                   data-id="cef5a726-f945-4314-aa00-0a61c735b997"
+                   data-title="مجموعة النعومة وعلاج جلد الوزة"
+                   data-subtitle="مجموعة متكاملة &middot; عناية مزدوجة مع التوفير"
+                   data-price="430 ج.م"
+                   data-badge="عرض خاص 🔥"
+                   style="width: var(--cf-card); height: calc(var(--cf-card) * 1.22); border-radius: 24px; background: #ffffff; outline: 1px solid rgba(197,155,63,0.22); box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
+                <div class="relative w-full h-full overflow-hidden">
+                  <img src="https://wsrv.nl/?url=https%3A%2F%2Fsidtdxchiqiogfkwbdui.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproducts%2Fuploads%2F1789571515846-prod.png&w=650&q=80&output=webp" alt="مجموعة النعومة وعلاج جلد الوزة" draggable="false"
+                       class="w-full h-full object-cover select-none pointer-events-none"
+                       loading="lazy" decoding="async" />
+                  
+                  <!-- Top Badge -->
+                  <div class="absolute top-3.5 right-3.5 pointer-events-none">
+                    <span class="px-3 py-1 rounded-full text-[11px] font-black tracking-wide text-darkNavy shadow-md border border-white/80"
+                          style="background: rgba(255,255,255,0.92); backdrop-filter: blur(8px);">
+                      عرض خاص 🔥
+                    </span>
+                  </div>
+
+                  <!-- Bottom Gradient & Card Title -->
+                  <div class="absolute inset-x-0 bottom-0 pointer-events-none"
+                       style="background: linear-gradient(to top, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.45) 50%, transparent 100%); padding: 34px 14px 14px; text-align: center;">
+                    <div class="text-white font-extrabold text-sm line-clamp-1 leading-snug drop-shadow-sm">مجموعة النعومة وعلاج جلد الوزة</div>
+                    <div class="text-amber-300 font-black text-xs mt-0.5">430 ج.م</div>
+                  </div>
+                </div>
+              </div>
+            
+              <div class="cf-card absolute left-1/2 top-0 overflow-hidden shadow-2xl transition-shadow duration-300 will-change-transform cursor-pointer"
+                   data-index="6"
+                   data-id="e66d1fe3-40e9-4a69-b661-c2d151630539"
+                   data-title="غسول الوجه للبشرة الدهنية"
+                   data-subtitle="تنظيف عميق للمسام وتحكم في إفراز الدهون"
+                   data-price="180 ج.م"
+                   data-badge="طبيعي 100% 🍃"
+                   style="width: var(--cf-card); height: calc(var(--cf-card) * 1.22); border-radius: 24px; background: #ffffff; outline: 1px solid rgba(197,155,63,0.22); box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
+                <div class="relative w-full h-full overflow-hidden">
+                  <img src="https://wsrv.nl/?url=https%3A%2F%2Fsidtdxchiqiogfkwbdui.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproducts%2Fuploads%2F1789572208792-prod.png&w=650&q=80&output=webp" alt="غسول الوجه للبشرة الدهنية" draggable="false"
+                       class="w-full h-full object-cover select-none pointer-events-none"
+                       loading="lazy" decoding="async" />
+                  
+                  <!-- Top Badge -->
+                  <div class="absolute top-3.5 right-3.5 pointer-events-none">
+                    <span class="px-3 py-1 rounded-full text-[11px] font-black tracking-wide text-darkNavy shadow-md border border-white/80"
+                          style="background: rgba(255,255,255,0.92); backdrop-filter: blur(8px);">
+                      طبيعي 100% 🍃
+                    </span>
+                  </div>
+
+                  <!-- Bottom Gradient & Card Title -->
+                  <div class="absolute inset-x-0 bottom-0 pointer-events-none"
+                       style="background: linear-gradient(to top, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.45) 50%, transparent 100%); padding: 34px 14px 14px; text-align: center;">
+                    <div class="text-white font-extrabold text-sm line-clamp-1 leading-snug drop-shadow-sm">غسول الوجه للبشرة الدهنية</div>
+                    <div class="text-amber-300 font-black text-xs mt-0.5">180 ج.م</div>
+                  </div>
+                </div>
+              </div>
+            
+              <div class="cf-card absolute left-1/2 top-0 overflow-hidden shadow-2xl transition-shadow duration-300 will-change-transform cursor-pointer"
+                   data-index="7"
+                   data-id="e7bf4552-2b80-41e1-9839-8670b085eea0"
+                   data-title="كريم ليلي للمناطق الحساسة"
+                   data-subtitle="تجديد الخلايا والتفتيح أثناء النوم"
+                   data-price="140 ج.م"
+                   data-badge="عناية ليلية 🌙"
+                   style="width: var(--cf-card); height: calc(var(--cf-card) * 1.22); border-radius: 24px; background: #ffffff; outline: 1px solid rgba(197,155,63,0.22); box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
+                <div class="relative w-full h-full overflow-hidden">
+                  <img src="https://wsrv.nl/?url=https%3A%2F%2Fsidtdxchiqiogfkwbdui.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproducts%2Fuploads%2F1789572336065-prod.png&w=650&q=80&output=webp" alt="كريم ليلي للمناطق الحساسة" draggable="false"
+                       class="w-full h-full object-cover select-none pointer-events-none"
+                       loading="lazy" decoding="async" />
+                  
+                  <!-- Top Badge -->
+                  <div class="absolute top-3.5 right-3.5 pointer-events-none">
+                    <span class="px-3 py-1 rounded-full text-[11px] font-black tracking-wide text-darkNavy shadow-md border border-white/80"
+                          style="background: rgba(255,255,255,0.92); backdrop-filter: blur(8px);">
+                      عناية ليلية 🌙
+                    </span>
+                  </div>
+
+                  <!-- Bottom Gradient & Card Title -->
+                  <div class="absolute inset-x-0 bottom-0 pointer-events-none"
+                       style="background: linear-gradient(to top, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.45) 50%, transparent 100%); padding: 34px 14px 14px; text-align: center;">
+                    <div class="text-white font-extrabold text-sm line-clamp-1 leading-snug drop-shadow-sm">كريم ليلي للمناطق الحساسة</div>
+                    <div class="text-amber-300 font-black text-xs mt-0.5">140 ج.م</div>
+                  </div>
+                </div>
+              </div>
+            
           </div>
         </div>
 
-        <!-- المنتصف (المقدمة): سيروم الشعر Guzel Gold -->
-        <div class="relative overflow-hidden shadow-2xl"
-             style="flex-shrink: 0; width: 40%; max-width: 520px; aspect-ratio: 4/5;
-                    transform: translateY(-24px);
-                    z-index: 30;
-                    border-radius: 28px 28px 0 0;
-                    box-shadow: 0 35px 85px rgba(0,0,0,0.28), 0 0 0 2px rgba(197,155,63,0.45);
-                    background: #ffffff;">
-          <img class="hero-main-image"
-               style="width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block;"
-               alt="سيروم الشعر Guzel Gold" decoding="async" fetchpriority="high" loading="eager"
-               width="520" height="650"
-               src="https://wsrv.nl/?url=https%3A%2F%2Fsidtdxchiqiogfkwbdui.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproducts%2Fuploads%2F1789572065186-guzel-gold.png&w=900&q=80&output=webp"
-               data-fallback-src="https://sidtdxchiqiogfkwbdui.supabase.co/storage/v1/object/public/products/uploads/1789572065186-guzel-gold.png"
-               onerror="if(this.src!==this.dataset.fallbackSrc){this.src=this.dataset.fallbackSrc;}">
-          <script>
-            (function () {
-              try {
-                var img = document.currentScript.previousElementSibling;
-                if (!img) return;
-                var cached = JSON.parse(localStorage.getItem('elforat_store_settings_cache_v1') || 'null');
-                var url = cached && cached.data && cached.data.hero_image_url;
-                if (url) {
-                  img.src = 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&w=900&q=80&output=webp';
-                }
-              } catch (e) {}
-            })();
-          </script>
-          <!-- Gradient overlay -->
-          <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,23,42,0.7) 0%, rgba(15,23,42,0.1) 40%, transparent 65%); pointer-events: none;"></div>
-          <!-- Top gold line -->
-          <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, transparent, #c59b3f, transparent);"></div>
-          
-          <!-- Live badge in Center -->
-          <div style="position: absolute; bottom: 18px; left: 0; right: 0; display: flex; justify-content: center; z-index: 10;">
-            <span style="background: rgba(15,23,42,0.85); backdrop-filter: blur(10px); padding: 7px 18px; border-radius: 9999px; font-size: clamp(0.75rem, 1.2vw, 0.88rem); font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.22); box-shadow: 0 8px 20px rgba(0,0,0,0.3);">
-              <span style="width: 8px; height: 8px; border-radius: 50%; background: #34d399; display: inline-block; animation: ping 1s cubic-bezier(0,0,0.2,1) infinite;"></span>
-              سيروم الشعر Guzel Gold الأصلي
-            </span>
-          </div>
-          
-          <!-- Float badge -->
-          <div class="absolute animate-float-slow" style="top: -10px; right: -8px; background: rgba(255,255,255,0.98); padding: 10px 14px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 9px; border: 1px solid rgba(197,155,63,0.3); z-index: 10;">
-            <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(197,155,63,0.15); color: #c59b3f; display: flex; align-items: center; justify-content: center; font-size: 15px;">
-              <i class="fa-solid fa-crown"></i>
-            </div>
-            <div>
-              <div class="font-black text-darkNavy" style="font-size: 11px; line-height: 1.2;">الأكثر طلباً ومبيعاً</div>
-              <div style="font-size: 9px; color: #64748b; font-weight: 600;">سيروم طبيعي 100%</div>
-            </div>
-          </div>
-        </div>
+        <!-- Navigation Buttons -->
+        <button type="button" id="cf-nav-prev" aria-label="السابق"
+                class="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-40 w-11 h-11 rounded-full flex items-center justify-center text-slate-700 bg-white/85 hover:bg-white shadow-xl backdrop-blur-md border border-slate-100 hover:scale-105 active:scale-95 transition-all">
+          <i class="fa-solid fa-chevron-left text-sm"></i>
+        </button>
+        <button type="button" id="cf-nav-next" aria-label="التالي"
+                class="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-40 w-11 h-11 rounded-full flex items-center justify-center text-slate-700 bg-white/85 hover:bg-white shadow-xl backdrop-blur-md border border-slate-100 hover:scale-105 active:scale-95 transition-all">
+          <i class="fa-solid fa-chevron-right text-sm"></i>
+        </button>
+      </div>
 
-        <!-- الشمال (في اتجاه RTL شمال الصفحة): لوشن نهاري خلف السيروم -->
-        <div class="relative overflow-hidden hero-fan-side shadow-2xl"
-             style="flex-shrink: 0; width: 34%; max-width: 440px; aspect-ratio: 4/5;
-                    transform: rotate(-6deg) translateY(24px);
-                    margin-right: -6%;
-                    z-index: 12;
-                    border-radius: 24px 24px 0 0;
-                    outline: 1.5px solid rgba(255,255,255,0.7);
-                    background: #ffffff;">
-          <img style="width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block;"
-               alt="لوشن نهاري للمناطق الحساسة" decoding="async" loading="eager"
-               src="https://wsrv.nl/?url=https%3A%2F%2Fsidtdxchiqiogfkwbdui.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproducts%2Fuploads%2F1789572271895-prod.png&w=700&q=80&output=webp">
-          <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.4) 40%, transparent 100%); padding: 22px 14px 12px; text-align: center;">
-            <span style="font-size: clamp(0.75rem, 1.2vw, 0.95rem); font-weight: 800; color: #ffffff; letter-spacing: 0.03em; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">لوشن نهاري</span>
-          </div>
+      <!-- Active Slide Caption -->
+      <div id="cf-active-caption" class="mt-4 flex flex-col items-center px-4 transition-all duration-300 text-center">
+        <div class="inline-flex items-center gap-2">
+          <span id="cf-caption-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-primary/10 text-primary border border-primary/20"></span>
+          <span id="cf-caption-price" class="text-xs font-black text-primary"></span>
         </div>
+        <h3 id="cf-caption-title" class="text-base sm:text-lg font-black text-darkNavy mt-1"></h3>
+        <p id="cf-caption-subtitle" class="text-xs sm:text-sm text-slate-500 mt-0.5"></p>
+        <button id="cf-view-btn" type="button" class="mt-2 text-xs font-bold text-primary hover:text-darkNavy flex items-center gap-1.5 transition-colors cursor-pointer">
+          <span>عرض تفاصيل المنتج</span>
+          <i class="fa-solid fa-arrow-left text-[10px]"></i>
+        </button>
+      </div>
 
+      <!-- Pagination Dots -->
+      <div id="cf-dots" class="mt-4 flex items-center justify-center gap-2">
+        
+          <button type="button" class="cf-dot w-2 h-2 rounded-full transition-all duration-300 cursor-pointer bg-primary w-6" data-index="0" aria-label="الانتقال للمنتج 1"></button>
+        
+          <button type="button" class="cf-dot w-2 h-2 rounded-full transition-all duration-300 cursor-pointer bg-slate-300 hover:bg-slate-400" data-index="1" aria-label="الانتقال للمنتج 2"></button>
+        
+          <button type="button" class="cf-dot w-2 h-2 rounded-full transition-all duration-300 cursor-pointer bg-slate-300 hover:bg-slate-400" data-index="2" aria-label="الانتقال للمنتج 3"></button>
+        
+          <button type="button" class="cf-dot w-2 h-2 rounded-full transition-all duration-300 cursor-pointer bg-slate-300 hover:bg-slate-400" data-index="3" aria-label="الانتقال للمنتج 4"></button>
+        
+          <button type="button" class="cf-dot w-2 h-2 rounded-full transition-all duration-300 cursor-pointer bg-slate-300 hover:bg-slate-400" data-index="4" aria-label="الانتقال للمنتج 5"></button>
+        
+          <button type="button" class="cf-dot w-2 h-2 rounded-full transition-all duration-300 cursor-pointer bg-slate-300 hover:bg-slate-400" data-index="5" aria-label="الانتقال للمنتج 6"></button>
+        
+          <button type="button" class="cf-dot w-2 h-2 rounded-full transition-all duration-300 cursor-pointer bg-slate-300 hover:bg-slate-400" data-index="6" aria-label="الانتقال للمنتج 7"></button>
+        
+          <button type="button" class="cf-dot w-2 h-2 rounded-full transition-all duration-300 cursor-pointer bg-slate-300 hover:bg-slate-400" data-index="7" aria-label="الانتقال للمنتج 8"></button>
+        
       </div>
     </div>
 
@@ -2122,6 +2328,264 @@
             wrapper.addEventListener('touchcancel', resume, { passive: true });
         })();
     </script>
+
+
+<script id="coverflow-carousel-engine">
+(function() {
+  function initCoverflow() {
+    const frame = document.getElementById('hero-cf-frame');
+    const deck = document.getElementById('hero-cf-deck');
+    if (!frame || !deck) return;
+
+    const cards = Array.from(deck.querySelectorAll('.cf-card'));
+    const count = cards.length;
+    if (count === 0) return;
+
+    const dots = Array.from(document.querySelectorAll('.cf-dot'));
+    const prevBtn = document.getElementById('cf-nav-prev');
+    const nextBtn = document.getElementById('cf-nav-next');
+    const captionTitle = document.getElementById('cf-caption-title');
+    const captionSubtitle = document.getElementById('cf-caption-subtitle');
+    const captionPrice = document.getElementById('cf-caption-price');
+    const captionBadge = document.getElementById('cf-caption-badge');
+    const viewBtn = document.getElementById('cf-view-btn');
+
+    // الإعدادات الفيزيائية للكاروسيل من مكون React
+    const rotate = 44;
+    const depth = 0.6;
+    const falloff = 0.56;
+    const fade = 0.12;
+    const gap = 0.08;
+    const loop = true;
+
+    let width = cards[0].offsetWidth || 260;
+    let pos = 0;
+    let target = 0;
+    let rafId = null;
+    let selected = 0;
+    let drag = null;
+
+    function indexAt(p) {
+      return ((Math.round(p) % count) + count) % count;
+    }
+
+    function updateCaption(idx) {
+      const card = cards[idx];
+      if (!card) return;
+      if (captionTitle) captionTitle.textContent = card.dataset.title || '';
+      if (captionSubtitle) captionSubtitle.innerHTML = card.dataset.subtitle || '';
+      if (captionPrice) captionPrice.textContent = card.dataset.price || '';
+      if (captionBadge) captionBadge.textContent = card.dataset.badge || '';
+      if (viewBtn) {
+        viewBtn.onclick = function() {
+          const id = card.dataset.id;
+          if (id && window.app && typeof window.app.showProductDetails === 'function') {
+            window.app.showProductDetails(id);
+          } else if (id && window.app && typeof window.app.navigate === 'function') {
+            window.app.navigate('catalog');
+          }
+        };
+      }
+      dots.forEach((dot, i) => {
+        if (i === idx) {
+          dot.className = 'cf-dot h-2 rounded-full transition-all duration-300 cursor-pointer bg-primary w-6';
+        } else {
+          dot.className = 'cf-dot w-2 h-2 rounded-full transition-all duration-300 cursor-pointer bg-slate-300 hover:bg-slate-400';
+        }
+      });
+    }
+
+    function paint() {
+      if (!width) width = cards[0].offsetWidth || 260;
+      const pitch = width * (1 + gap);
+
+      cards.forEach((card, index) => {
+        let offset = index - pos;
+        if (loop) {
+          offset = ((offset % count) + count) % count;
+          if (offset > count / 2) offset -= count;
+        }
+
+        const distance = Math.abs(offset);
+        const ramp = Math.pow(distance, falloff);
+        const tilt = Math.min(rotate * ramp, 82) * Math.sign(offset);
+
+        // الحسابات ثلاثية الأبعاد الدقيقة المماثلة لـ React component
+        card.style.transform =
+          'translateX(calc(-50% + ' + (offset * pitch) + 'px)) ' +
+          'translateZ(' + (-depth * width * ramp) + 'px) rotateY(' + (-tilt) + 'deg)';
+
+        const edge = loop ? Math.min(1, Math.max(0, count / 2 - distance)) : 1;
+        card.style.opacity = String(Math.max(0, 1 - fade * distance) * edge);
+        card.style.zIndex = String(100 - Math.round(distance));
+      });
+    }
+
+    function clampPos(p) {
+      return loop ? p : Math.max(0, Math.min(count - 1, p));
+    }
+
+    function settleTo(t) {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      target = t;
+      const newSel = indexAt(t);
+      if (newSel !== selected) {
+        selected = newSel;
+        updateCaption(selected);
+      }
+
+      function step() {
+        const remaining = target - pos;
+        if (Math.abs(remaining) < 0.0004) {
+          pos = target;
+          paint();
+          rafId = null;
+          return;
+        }
+        pos += remaining * 0.16;
+        paint();
+        rafId = requestAnimationFrame(step);
+      }
+      rafId = requestAnimationFrame(step);
+    }
+
+    function goTo(idx) {
+      const tgt = loop
+        ? idx + Math.round((target - idx) / count) * count
+        : idx;
+      settleTo(clampPos(tgt));
+    }
+
+    function nudge(by) {
+      settleTo(clampPos(Math.round(target) + by));
+    }
+
+    // Pointer Drag & Swipe
+    frame.addEventListener('pointerdown', function(e) {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      try { frame.setPointerCapture(e.pointerId); } catch(err){}
+      frame.classList.remove('cursor-grab');
+      frame.classList.add('cursor-grabbing');
+      target = pos;
+      drag = {
+        id: e.pointerId,
+        x: e.clientX,
+        pos: pos,
+        v: 0,
+        t: performance.now(),
+        moved: false
+      };
+    });
+
+    frame.addEventListener('pointermove', function(e) {
+      if (!drag || drag.id !== e.pointerId) return;
+      const pitch = width * (1 + gap);
+      if (!pitch) return;
+
+      const now = performance.now();
+      const previous = pos;
+      const dx = e.clientX - drag.x;
+      if (Math.abs(dx) > 3) drag.moved = true;
+      pos = clampPos(drag.pos - dx / pitch);
+      drag.v = ((pos - previous) / Math.max(now - drag.t, 1)) * 1000;
+      drag.t = now;
+
+      const idx = indexAt(pos);
+      if (idx !== selected) {
+        selected = idx;
+        updateCaption(selected);
+      }
+      paint();
+    });
+
+    function endDrag(e) {
+      if (!drag || drag.id !== e.pointerId) return;
+      frame.classList.remove('cursor-grabbing');
+      frame.classList.add('cursor-grab');
+      const v = drag.v;
+      const wasMoved = drag.moved;
+      drag = null;
+
+      if (!wasMoved) {
+        // إذا كان مجرد كليك عادي
+        const cardEl = e.target.closest('.cf-card');
+        if (cardEl) {
+          const cardIdx = parseInt(cardEl.dataset.index, 10);
+          if (cardIdx === selected) {
+            // الضغط على البطاقة النشطة يفتح المنتج
+            const pId = cardEl.dataset.id;
+            if (pId && window.app && typeof window.app.showProductDetails === 'function') {
+              window.app.showProductDetails(pId);
+            }
+            return;
+          } else {
+            goTo(cardIdx);
+            return;
+          }
+        }
+      }
+
+      const carried = Math.max(-2, Math.min(2, v * 0.18));
+      settleTo(clampPos(Math.round(pos + carried)));
+    }
+
+    frame.addEventListener('pointerup', endDrag);
+    frame.addEventListener('pointercancel', endDrag);
+
+    // Keyboard support
+    frame.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        nudge(-1);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        nudge(1);
+      }
+    });
+
+    // Buttons & Dots
+    if (prevBtn) prevBtn.addEventListener('click', () => nudge(-1));
+    if (nextBtn) nextBtn.addEventListener('click', () => nudge(1));
+
+    dots.forEach((dot, i) => {
+      dot.addEventListener('click', () => goTo(i));
+    });
+
+    // Card click fallback
+    cards.forEach((card, i) => {
+      card.addEventListener('click', (e) => {
+        if (drag && drag.moved) return;
+        if (i !== selected) {
+          goTo(i);
+        }
+      });
+    });
+
+    // Resize observer
+    function measure() {
+      if (cards[0]) {
+        width = cards[0].offsetWidth;
+        paint();
+      }
+    }
+    window.addEventListener('resize', measure);
+
+    // Initial setup
+    measure();
+    updateCaption(0);
+    paint();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCoverflow);
+  } else {
+    setTimeout(initCoverflow, 50);
+  }
+})();
+</script>
 
 </body>
 </html>

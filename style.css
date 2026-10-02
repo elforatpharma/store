@@ -1658,13 +1658,33 @@ body.show-mobile-bar .welcome-offer-banner {
 .hero10-reveal:nth-child(2) { animation-delay: 0.15s; }
 .hero10-reveal:nth-child(3) { animation-delay: 0.25s; }
 
-/* Hide side fan cards on very small screens */
-.hero-fan-side {
-    transition: opacity 0.3s;
+/* =====================================================
+   Coverflow Carousel 3D Engine Styles
+   ===================================================== */
+#hero-cf-deck {
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
 }
-@media (max-width: 420px) {
-    .hero-fan-side { display: none !important; }
+
+.cf-card {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform-origin: 50% 50%;
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
 }
+
+.cf-card:hover {
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.25) !important;
+}
+
+#hero-cf-frame:focus-visible {
+    box-shadow: 0 0 0 2px var(--primary);
+    border-radius: 20px;
+}
+
 
 /* ========== Anti-flicker / performance layer ========== */
 html { scroll-behavior: auto; scrollbar-gutter: stable; -webkit-text-size-adjust: 100%; }
