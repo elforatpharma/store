@@ -504,19 +504,6 @@ div:has(> .relative > #mobile-search-input) {
 .bundle-card__btn i { font-size: 16px; }
 .bundle-card__btn:active { transform: scale(0.95); }
 
-/* ---------- الشريط السفلي ---------- */
-.mobile-bottom-nav {
-  background: rgba(255, 255, 255, 0.97);
-  border-top: 0;
-  box-shadow: 0 -2px 16px rgba(11, 61, 38, 0.07);
-}
-.mobile-bottom-nav-item { color: #404942; }
-.mobile-bottom-nav-item i { font-size: 20px; }
-.mobile-bottom-nav-item.active,
-.mobile-bottom-nav-item.active i { color: var(--m-emerald); }
-.mobile-bottom-nav-item.active { font-weight: 700; }
-.mobile-bottom-nav-badge { background: var(--m-red); color: #fff; }
-
 /* ---------- الفوتر ---------- */
 footer#about { border-radius: 20px 20px 0 0; }
 
@@ -626,8 +613,6 @@ footer#about { border-radius: 20px 20px 0 0; }
 #payment-banner #static-welcome-coupon-block > div > span { color: var(--m-emerald); }
 #payment-banner #static-welcome-coupon-block > div > button { background: var(--m-emerald); color: #fff; }
 
-/* ---------- الشريط السفلي: 4 عناصر بنفس المقاس ---------- */
-.mobile-bottom-nav-item { min-width: 0; }
 
 /* ==========================================================================
    صفحة المنتج الواحد (موبايل فقط) - القالب في store-product.js (buildMobileProductHtml)
@@ -910,20 +895,28 @@ body.show-mobile-bar .welcome-offer-banner { bottom: max(var(--wo-bottom), calc(
 #view-cart .pay-cards { display: flex !important; flex-direction: column; gap: 8px; }
 .pay-card { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; background: #ebf6f1; border: 1px solid #e5ebe7; cursor: pointer; transition: background .15s, border-color .15s; }
 .pay-card.is-on { background: #eff6ff; border-color: #2563eb; box-shadow: 0 0 0 1px #2563eb; }
-.pay-card input[type="radio"] {
+/* الراديو: نفس الشكل بالظبط في كل الحالات (افتراضي / بعد الاختيار / وهو focus).
+   #view-cart في الأول عشان قاعدة focus بتاعة حقول الفورم (أخضر) ماتغلبهاش. */
+#view-cart .pay-card input[type="radio"] {
   -webkit-appearance: none !important; appearance: none !important;
   width: 22px; height: 22px; flex: none; margin: 0; padding: 0;
-  border-radius: 50%; background-color: #fff !important; background-image: none !important;
-  border: 2px solid #9ca3af; color: #2563eb;
-  transition: background-color .15s, border-color .15s, box-shadow .15s;
+  border-radius: 50%; border: 2px solid #9ca3af; color: #2563eb;
+  background-color: #fff !important; background-image: none !important;
+  background-repeat: no-repeat !important; background-position: center !important;
+  background-size: 100% 100% !important; background-origin: border-box !important;
+  box-shadow: none; outline: none;
+  transition: border-color .15s, box-shadow .15s;
 }
-.pay-card input[type="radio"]:checked {
+#view-cart .pay-card input[type="radio"]:checked,
+#view-cart .pay-card input[type="radio"]:checked:focus,
+#view-cart .pay-card input[type="radio"]:checked:active {
   /* دايرة زرقاء من برا + فراغ أبيض + نقطة زرقاء صغيرة في النص */
   background-color: #fff !important;
-  background-image: radial-gradient(circle, #2563eb 0, #2563eb 34%, transparent 38%) !important;
+  background-image: radial-gradient(circle closest-side, #2563eb 0, #2563eb 36%, transparent 40%) !important;
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, .15);
 }
+#view-cart .pay-card input[type="radio"]:focus:not(:checked) { border-color: #9ca3af; box-shadow: none; }
 .pay-card.is-on .pay-card__ico { background: #dbeafe; border-color: #2563eb; color: #2563eb; }
 .pay-card__txt { flex: 1; min-width: 0; }
 .pay-card__txt b { display: block; font-size: 14px; line-height: 20px; font-weight: 700; color: #0d3e30; }

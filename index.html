@@ -65,10 +65,10 @@
     </script>
     <link rel="preload" as="image" href="carousel-images/guzel-serum.webp" type="image/webp" fetchpriority="high">
     <link rel="dns-prefetch" href="https://api.ipify.org">
-    <link rel="stylesheet" href="style.min.css?v=35">
-    <link rel="stylesheet" href="tailwind-built.css?v=35">
-<link rel="stylesheet" href="mobile.css?v=35" media="(max-width: 767.98px)">
-    <style>:where(#view-cart) .m-only{display:none}</style>
+    <link rel="stylesheet" href="style.min.css?v=37">
+    <link rel="stylesheet" href="tailwind-built.css?v=37">
+<link rel="stylesheet" href="mobile.css?v=37" media="(max-width: 767.98px)">
+    <style>:where(#view-cart) .m-only{display:none}@media (max-width:1023.98px){body{padding-bottom:0!important}}</style>
 
     <!-- منع "قفلة" الصفحة عند الريفريش: لو الرابط فيه #hash لصفحة غير الرئيسية
          (كتالوج/منتج/سلة/مفضلة)، الصفحة الافتراضية (الهيرو) كانت بتترسم وتظهر
@@ -145,13 +145,13 @@
          (متولّد من tools/build-fa-subset.js). الخطوط نفسها لسه من cdnjs.
          لازم تتولّد تاني بعد أي إضافة لأيقونة جديدة:
              node tools/build-fa-subset.js -->
-    <link rel="stylesheet" href="fa-subset.css?v=35">
+    <link rel="stylesheet" href="fa-subset.css?v=37">
     
     <!-- عميل Supabase مصغّر محلي (~1.5 KiB بدل 29 KiB من supabase-js v2 الكامل).
          نفس الـ API بالظبط (from/select/insert/upsert/rpc) فأي كود موجود مش متغيّر.
          السبب: supabase-js كان بيحمّل auth + realtime + storage + postgrest كامل،
          وأكتر من نصه مبيتستخدمش خالص (Lighthouse unused JS). -->
-    <script src="supabase-lite.js?v=35" defer></script>
+    <script src="supabase-lite.js?v=37" defer></script>
 
 </head>
 
@@ -1888,52 +1888,13 @@
         </div>
     </footer>
 
-    <!-- Mobile Bottom Navigation Bar (App-like experience) -->
-    <nav id="mobile-bottom-nav" class="mobile-bottom-nav lg:hidden" aria-label="شريط التنقل السفلي">
-        <button type="button" class="mobile-bottom-nav-item active" data-bottom-target="home" onclick="app.navigate('home')">
-            <i class="fa-solid fa-house" aria-hidden="true"></i>
-            <span>الرئيسية</span>
-        </button>
-        <button type="button" class="mobile-bottom-nav-item" data-bottom-target="categories" onclick="bottomNavGo(this, 'home', null, 'categories')">
-            <i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i>
-            <span>الأقسام</span>
-        </button>
-        <button type="button" class="mobile-bottom-nav-item" data-bottom-target="offers" onclick="bottomNavGo(this, 'catalog', 'مجموعات متكاملة')">
-            <i class="fa-solid fa-tag" aria-hidden="true"></i>
-            <span>العروض</span>
-        </button>
-        <button type="button" class="mobile-bottom-nav-item" data-bottom-target="favorites" onclick="app.navigate('favorites')">
-            <i class="fa-regular fa-heart" aria-hidden="true"></i>
-            <span>المفضلة</span>
-            <span id="favorites-badge-bottom" class="mobile-bottom-nav-badge bg-rose-500 text-white">0</span>
-        </button>
-    </nav>
-    <script>
-        // أزرار الشريط السفلي اللي مش صفحة مستقلة (الأقسام / العروض):
-        // analysis.js بيلوّن الزر النشط حسب الصفحة بس، فبنلوّنه هنا بعد ما التنقل يخلص.
-        function bottomNavGo(btn, viewId, param, sectionId) {
-            var done = function () {
-                document.querySelectorAll('.mobile-bottom-nav-item').forEach(function (i) { i.classList.toggle('active', i === btn); });
-            };
-            var scrollToSection = function () {
-                var t = sectionId && document.getElementById(sectionId);
-                if (t) window.scrollTo({ top: Math.max(t.getBoundingClientRect().top + window.scrollY - 70, 0), behavior: 'smooth' });
-            };
-            var main = document.getElementById('view-main');
-            if (sectionId && main && main.classList.contains('active')) { scrollToSection(); done(); return; }
-            Promise.resolve(app.navigate(viewId, param)).then(function () {
-                done();
-                if (sectionId) requestAnimationFrame(function () { requestAnimationFrame(scrollToSection); });
-            });
-        }
-    </script>
 
     <!-- instapay.js / vodafone-cash.js / order-status.js مش محمّلين هنا بعد دلوقتي:
          كلهم بيتستخدموا وقت تأكيد الطلب بس (45 KiB خام كان بيتحمّلوا مع الصفحة
          من غير ما حد يستخدمهم). analysis.js بيحمّلهم بالتوازي لما العميل يفتح
          صفحة السلة/الدفع من خلال loadPaymentScripts(). -->
-    <script src="welcome-offer.js?v=35" defer></script>
-    <script src="analysis.js?v=35" defer></script>
+    <script src="welcome-offer.js?v=37" defer></script>
+    <script src="analysis.js?v=37" defer></script>
     <script>
         // Touch/Swipe gesture support for carousel
         (function() {

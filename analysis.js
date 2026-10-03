@@ -106,8 +106,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // الطريقة بسيطة: نفس الـ Promise بيرجّع لكل نداءات لنفس الملف، والـ prefetch
     // بيحط <link rel="prefetch"> عشان المتصفح يجيبه في الخلفية قبل الضغط.
     const STORE_CHUNKS = {
-        product: 'store-product.js?v=35',
-        checkout: 'store-checkout.js?v=35'
+        product: 'store-product.js?v=37',
+        checkout: 'store-checkout.js?v=37'
     };
     const __storeChunkPromises = Object.create(null);
 
@@ -1125,15 +1125,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // مزامنة شريط التنقل السفلي للموبايل (Mobile Bottom Nav)
-        document.querySelectorAll('.mobile-bottom-nav-item').forEach(item => {
-            const bottomTarget = item.getAttribute('data-bottom-target');
-            if (bottomTarget === activeId || (activeId === 'about' && bottomTarget === 'home')) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
-            }
-        });
     }
 
     window.addEventListener('resize', () => {
@@ -2314,8 +2305,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const favCount = FavoritesManager.getCount();
         const favBadge = document.getElementById('favorites-badge');
         if (favBadge) favBadge.innerText = favCount;
-        const favBadgeBottom = document.getElementById('favorites-badge-bottom');
-        if (favBadgeBottom) favBadgeBottom.innerText = favCount;
     }
 
     // ==========================================
@@ -2393,7 +2382,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // صفحة السلة/الدفع (أو لحظة التأكيد كشبكة أمان)، والتلاتة بالتوازي.
     // ترتيب التحميل مش مهم لأن instapay/vodafone-cash بقوا يقرأوا حالة الطلب
     // وقت الطلب (getters) مش وقت تحميل الملف.
-    const PAYMENT_SCRIPTS = ['order-status.js?v=35', 'instapay.js?v=35', 'vodafone-cash.js?v=35'];
+    const PAYMENT_SCRIPTS = ['order-status.js?v=37', 'instapay.js?v=37', 'vodafone-cash.js?v=37'];
     let __paymentScriptsPromise = null;
     function loadPaymentScripts() {
         if (__paymentScriptsPromise) return __paymentScriptsPromise;
