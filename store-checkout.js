@@ -120,7 +120,7 @@
             }
 
             if (!governorate) {
-                showCustomAlert('اختاري المحافظة عشان نحسب الشحن.', 'error');
+                showCustomAlert('اختاري المحافظة عشان نوصّل الطلب.', 'error');
                 submitBtn.innerText = originalBtnText;
                 submitBtn.disabled = false;
                 return;
@@ -610,8 +610,8 @@
             if (discountAmount > 0) {
                 message += `🏷️ *خصم كود (${couponCode}):* -${discountAmount} ج.م\n`;
             }
-            message += `🚚 *الشحن:* ${shippingFee > 0 ? shippingFee + ' ج.م' : 'مجاني'}\n`;
-            message += `💰 *الإجمالي المطلوب:* ${finalTotal} ج.م\n`;
+            message += `🚚 *الشحن:* ${shipping.later ? 'يُحسب لاحقاً حسب شركة الشحن' : (shippingFee > 0 ? shippingFee + ' ج.م' : 'مجاني')}\n`;
+            message += `💰 *الإجمالي المطلوب:* ${finalTotal} ج.م${shipping.later ? ' (غير شامل الشحن)' : ''}\n`;
             message += `\nشكراً لاختيارك الفرات فارما! 🌺`;
 
             window.OrderStatus?.clearPendingMerchantOrderId?.();

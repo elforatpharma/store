@@ -1,16 +1,16 @@
 // Service Worker - Elforat Pharma PWA
 // غيّري رقم النسخة (وكل ?v= في index.html) مع كل نشر عشان الزوار ياخدوا التحديث.
-const CACHE_NAME = 'elforat-cache-v30';
+const CACHE_NAME = 'elforat-cache-v35';
 const STATIC_ASSETS = [
   './',
   './index.html',
-  './style.min.css?v=30',
-  './tailwind-built.css?v=30',
-  './mobile.css?v=30',
-  './fa-subset.css?v=30',
-  './supabase-lite.js?v=30',
-  './welcome-offer.js?v=30',
-  './analysis.js?v=30',
+  './style.min.css?v=35',
+  './tailwind-built.css?v=35',
+  './mobile.css?v=35',
+  './fa-subset.css?v=35',
+  './supabase-lite.js?v=35',
+  './welcome-offer.js?v=35',
+  './analysis.js?v=35',
   './instapay-logo.webp',
   './vodafone-cash-logo.webp',
   './manifest.json',

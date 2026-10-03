@@ -65,9 +65,9 @@
     </script>
     <link rel="preload" as="image" href="carousel-images/guzel-serum.webp" type="image/webp" fetchpriority="high">
     <link rel="dns-prefetch" href="https://api.ipify.org">
-    <link rel="stylesheet" href="style.min.css?v=30">
-    <link rel="stylesheet" href="tailwind-built.css?v=30">
-<link rel="stylesheet" href="mobile.css?v=30" media="(max-width: 767.98px)">
+    <link rel="stylesheet" href="style.min.css?v=35">
+    <link rel="stylesheet" href="tailwind-built.css?v=35">
+<link rel="stylesheet" href="mobile.css?v=35" media="(max-width: 767.98px)">
     <style>:where(#view-cart) .m-only{display:none}</style>
 
     <!-- منع "قفلة" الصفحة عند الريفريش: لو الرابط فيه #hash لصفحة غير الرئيسية
@@ -145,13 +145,13 @@
          (متولّد من tools/build-fa-subset.js). الخطوط نفسها لسه من cdnjs.
          لازم تتولّد تاني بعد أي إضافة لأيقونة جديدة:
              node tools/build-fa-subset.js -->
-    <link rel="stylesheet" href="fa-subset.css?v=30">
+    <link rel="stylesheet" href="fa-subset.css?v=35">
     
     <!-- عميل Supabase مصغّر محلي (~1.5 KiB بدل 29 KiB من supabase-js v2 الكامل).
          نفس الـ API بالظبط (from/select/insert/upsert/rpc) فأي كود موجود مش متغيّر.
          السبب: supabase-js كان بيحمّل auth + realtime + storage + postgrest كامل،
          وأكتر من نصه مبيتستخدمش خالص (Lighthouse unused JS). -->
-    <script src="supabase-lite.js?v=30" defer></script>
+    <script src="supabase-lite.js?v=35" defer></script>
 
 </head>
 
@@ -1932,8 +1932,8 @@
          كلهم بيتستخدموا وقت تأكيد الطلب بس (45 KiB خام كان بيتحمّلوا مع الصفحة
          من غير ما حد يستخدمهم). analysis.js بيحمّلهم بالتوازي لما العميل يفتح
          صفحة السلة/الدفع من خلال loadPaymentScripts(). -->
-    <script src="welcome-offer.js?v=30" defer></script>
-    <script src="analysis.js?v=30" defer></script>
+    <script src="welcome-offer.js?v=35" defer></script>
+    <script src="analysis.js?v=35" defer></script>
     <script>
         // Touch/Swipe gesture support for carousel
         (function() {
@@ -2032,7 +2032,7 @@
             var META = {
                 'الدفع عند الاستلام': { title: 'الدفع عند الاستلام', sub: 'معاينة وفحص الطرد قبل سداد المبلغ', icon: '<i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i>' },
                 'instapay': { title: 'تحويل إنستاباي (InstaPay)', sub: 'تحويل لحظي وسريع بدون رسوم إضافية', icon: '<img src="instapay-logo.webp" alt="" width="28" height="20" loading="lazy">' },
-                'vodafone_cash': { title: 'فودافون كاش ومحافظ الهاتف', sub: 'تحويل إلكتروني فوري لمحفظة المتجر', icon: '<img src="vodafone-cash-logo.webp" alt="" width="28" height="20" loading="lazy">' }
+                'vodafone_cash': { title: 'فودافون كاش', sub: 'تحويل إلكتروني فوري لمحفظة المتجر', icon: '<img src="vodafone-cash-logo.webp" alt="" width="28" height="20" loading="lazy">' }
             };
             Array.prototype.forEach.call(sel.options, function (o) {
                 if (!o.value || !META[o.value]) return;

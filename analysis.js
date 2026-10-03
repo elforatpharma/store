@@ -106,8 +106,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // الطريقة بسيطة: نفس الـ Promise بيرجّع لكل نداءات لنفس الملف، والـ prefetch
     // بيحط <link rel="prefetch"> عشان المتصفح يجيبه في الخلفية قبل الضغط.
     const STORE_CHUNKS = {
-        product: 'store-product.js?v=30',
-        checkout: 'store-checkout.js?v=30'
+        product: 'store-product.js?v=35',
+        checkout: 'store-checkout.js?v=35'
     };
     const __storeChunkPromises = Object.create(null);
 
@@ -675,12 +675,17 @@ document.addEventListener("DOMContentLoaded", () => {
         return shippingRatesPromise;
     }
 
+    const SHIPPING_CALC_LATER = true;
+
     // ok=false يعني مينفعش نكمل الطلب (محافظة مش مختارة / مش متاحة / الأسعار لسه ما حمّلتش)
     function getShipping(subtotal, governorate) {
         const free = subtotal >= FREE_SHIPPING_THRESHOLD;
         if (!governorate) return { ok: false, reason: 'pick', free: free, fee: 0 };
         if (!shippingRates) return { ok: false, reason: 'loading', free: free, fee: 0 };
         if (!shippingRates.has(governorate)) return { ok: false, reason: 'unavailable', free: free, fee: 0 };
+        // الشحن بيتحسب لاحقاً حسب شركة الشحن: مفيش رقم ثابت بيتضاف على الإجمالي.
+        // (لو رجعتي للأسعار الثابتة من جدول shipping_rates خلّي SHIPPING_CALC_LATER = false)
+        if (SHIPPING_CALC_LATER) return { ok: true, free: free, fee: 0, later: !free };
         return { ok: true, free: free, fee: free ? 0 : shippingRates.get(governorate) };
     }
 
@@ -2200,7 +2205,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const govEl = document.getElementById('cust-governorate');
         const shipping = getShipping(subtotal, govEl ? govEl.value : '');
         const finalTotal = Math.round((Math.max(subtotal - discount, 0) + (shipping.ok ? shipping.fee : 0)) * 100) / 100;
-        const shippingLabel = shipping.free ? 'مجاني 🎉' : (shipping.ok ? `${sanitize(shipping.fee)} ج.م` : 'اختاري المحافظة');
+        const shippingLabel = shipping.free ? 'مجاني 🎉' : (shipping.later ? 'يُحسب لاحقاً' : (shipping.ok ? `${sanitize(shipping.fee)} ج.م` : 'اختاري المحافظة'));
         const itemsCount = cart.reduce((s, i) => s + i.qty, 0);
         const freeShippingLeft = Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0);
         const freeShippingPct = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
@@ -2239,7 +2244,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
                 <div class="cart-sum__total relative overflow-hidden rounded-2xl bg-gradient-to-l from-primary to-secondary text-white px-4 py-4 flex items-center justify-between mt-1">
                     <div class="absolute -top-6 -left-6 w-20 h-20 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-                    <span class="relative font-bold text-sm">الإجمالي<small class="m-only cart-sum__note">شامل كافة الضرائب وتكاليف الشحن</small></span>
+                    <span class="relative font-bold text-sm">الإجمالي<small class="cart-sum__note block text-[10px] font-medium text-white/80 mt-0.5">${shipping.free ? 'شحن مجاني' : 'غير شامل مصاريف الشحن'}</small></span>
                     <span class="relative text-xl font-black">${sanitize(finalTotal)} <span class="text-xs font-bold">ج.م</span></span>
                 </div>
             `;
@@ -2388,7 +2393,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // صفحة السلة/الدفع (أو لحظة التأكيد كشبكة أمان)، والتلاتة بالتوازي.
     // ترتيب التحميل مش مهم لأن instapay/vodafone-cash بقوا يقرأوا حالة الطلب
     // وقت الطلب (getters) مش وقت تحميل الملف.
-    const PAYMENT_SCRIPTS = ['order-status.js?v=30', 'instapay.js?v=30', 'vodafone-cash.js?v=30'];
+    const PAYMENT_SCRIPTS = ['order-status.js?v=35', 'instapay.js?v=35', 'vodafone-cash.js?v=35'];
     let __paymentScriptsPromise = null;
     function loadPaymentScripts() {
         if (__paymentScriptsPromise) return __paymentScriptsPromise;
