@@ -792,3 +792,186 @@ body.show-mobile-bar .welcome-offer-banner { bottom: max(var(--wo-bottom), calc(
 .pdp-trust { margin-top: 8px; padding-top: 6px; border-top: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-around; gap: 4px; font-size: 10px; color: var(--pdp-mute); font-family: 'Tajawal', sans-serif; white-space: nowrap; }
 .pdp-trust i { width: 3px; height: 3px; border-radius: 50%; background: #cbd5e1; flex: 0 0 3px; }
 @media (max-width: 359px) { .pdp-trust { font-size: 9px; } .pdp-cta { font-size: 13px; } }
+
+/* ==========================================================================
+   صفحة السلة "حقيبة التسوق" (موبايل فقط)
+   - العناصر اللي عليها .m-only مخفية على الديسكتوب (القاعدة الأساسية inline في index.html)
+     وبتظهر من هنا بس، فالديسكتوب مبيتأثرش.
+   - الـ aside والـ form بنفككهم بـ display:contents ونرتّب الأجزاء بـ order،
+     عشان نفس الفورم/الـ ids/الـ handlers تفضل شغالة (store-checkout.js من غير أي تعديل).
+   ========================================================================== */
+#view-cart { padding: 8px 0 24px; max-width: 100%; }
+#view-cart .cart-h1 { display: none; }
+#view-cart > .grid { display: flex; flex-direction: column; gap: 12px; padding: 0 12px; }
+#view-cart .m-only { display: block; }
+
+#view-cart aside { display: contents; }
+#view-cart aside > div:first-child { display: none; }        /* هيدر "ملخص الطلب" البنفسجي */
+#view-cart aside > .p-6 { display: contents; }
+#checkout-form { display: contents; }
+#checkout-form > * { margin: 0 !important; }
+
+/* الترتيب: كارت الشحن ← العنوان ← المنتجات ← الكوبون ← التوصيل ← قد يعجبك ← الفاتورة ← الثقة ← الزر */
+#view-cart .cart-m-ship { order: 1; }
+#view-cart .cart-m-head { order: 2; }
+#cart-items-container { order: 3; display: flex; flex-direction: column; gap: 8px; }
+#cart-items-container > * { margin: 0 !important; }
+#view-cart .cart-coupon { order: 4; }
+#view-cart .cart-delivery { order: 5; }
+#view-cart .cart-cross { order: 6; }
+#cart-summary-totals { order: 7; }
+#view-cart .cart-trust { order: 8; }
+#checkout-form > button[type="submit"] { order: 9; }
+#view-cart aside .p-6 > p.flex { order: 10; margin: 0; }
+
+/* ---------- كارت الشحن المجاني + كوبون الترحيب ---------- */
+#view-cart .cart-m-ship {
+  background: linear-gradient(90deg, #fbf8f0, #fdfcf7 50%, #f5ede0);
+  border: 1px solid rgba(212, 175, 55, .4);
+  border-radius: 16px;
+  padding: 16px;
+}
+#view-cart .cart-m-ship:empty { display: none; }
+.cart-ship__top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.cart-ship__ico { width: 32px; height: 32px; flex: none; border-radius: 50%; background: rgba(197, 155, 39, .15); border: 1px solid rgba(197, 155, 39, .3); color: #c59b27; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.cart-ship__txt { flex: 1; min-width: 0; }
+.cart-ship__txt h3 { margin: 0; font-size: 15px; line-height: 20px; font-weight: 700; color: #0d3e30; }
+.cart-ship__txt p { margin: 2px 0 0; font-size: 12px; line-height: 18px; font-weight: 600; color: #b8860b; }
+.cart-ship__pct { flex: none; padding: 2px 10px; border-radius: 9999px; background: linear-gradient(90deg, #c59b27, #dfba45); color: #fff; font-size: 10px; line-height: 14px; font-weight: 700; }
+.cart-ship__bar { height: 10px; border-radius: 9999px; background: #f5ede0; border: 1px solid rgba(212, 175, 55, .2); overflow: hidden; margin-bottom: 12px; }
+.cart-ship__bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(270deg, #0f4c3a, #135d46 50%, #c59b27); transition: width .5s ease-out; }
+.cart-ship__coupon { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px; border-radius: 12px; background: rgba(255, 255, 255, .9); border: 1px solid rgba(212, 175, 55, .3); }
+.cart-ship__coupon p { margin: 0; min-width: 0; font-size: 12px; line-height: 18px; color: #141e1b; }
+.cart-ship__coupon p b { color: #0f4c3a; }
+.cart-ship__coupon code { display: inline-block; padding: 1px 6px; border-radius: 4px; background: #fbf8f0; border: 1px solid rgba(212, 175, 55, .3); color: #c59b27; font-weight: 700; letter-spacing: .05em; }
+.cart-ship__coupon button { flex: none; padding: 6px 12px; border-radius: 9999px; background: linear-gradient(90deg, #c59b27, #b8860b); color: #fff; font-size: 10px; line-height: 14px; font-weight: 700; }
+.cart-ship__coupon button:active { transform: scale(.95); }
+
+/* ---------- عنوان الحقيبة ---------- */
+#view-cart .cart-m-head { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.cart-m-head__title { font-family: 'Cairo', 'Tajawal', sans-serif; font-size: 20px; line-height: 30px; font-weight: 700; color: #0d3e30; }
+.cart-m-head__count { padding: 2px 10px; border-radius: 9999px; background: #0f4c3a; color: #fff; font-size: 10px; line-height: 14px; font-weight: 700; }
+.cart-m-head__count:empty { display: none; }
+.cart-m-head__clear { margin-inline-start: auto; display: flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 600; color: #707974; }
+.cart-m-head__clear:active { color: #dc2626; }
+
+/* ---------- كروت المنتجات ---------- */
+#view-cart .cart-card {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px; background: #fff; border: 1px solid #e5ebe7; border-radius: 16px;
+  box-shadow: var(--m-shadow);
+}
+#view-cart .cart-card__img { width: 80px; height: 80px; flex: none; padding: 6px; border-radius: 12px; background: #ebf5f0; border: 1px solid rgba(229, 235, 231, .7); }
+#view-cart .cart-card--gift .cart-card__img { background: #fbf8f0; }
+#view-cart .cart-card__body { flex: 1; min-width: 0; padding: 0; }
+#view-cart .cart-card__body > * { margin: 0 !important; }
+#view-cart .cart-card__tags { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding-inline-end: 28px; min-height: 18px; }
+.cart-card__cat { font-size: 11px; line-height: 16px; font-weight: 600; color: #135d46; }
+.cart-card__cat:empty { display: none; }
+.cart-card__badge { padding: 1px 8px; border-radius: 9999px; background: linear-gradient(90deg, #c59b27, #b8860b); color: #fff; font-size: 10px; line-height: 16px; font-weight: 700; }
+#view-cart .cart-card h3 { margin-top: 4px !important; font-size: 15px; line-height: 20px; font-weight: 700; color: #0d3e30; text-transform: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#view-cart .cart-card__row { padding-top: 8px; }
+#view-cart .cart-card__row > span { font-family: 'Cairo', 'Tajawal', sans-serif; font-size: 18px; line-height: 28px; font-weight: 700; color: #0f4c3a; }
+#view-cart .cart-card__row > div { align-items: center; padding: 2px; border-radius: 9999px; background: #e5f0eb; border: 1px solid #e5ebe7; }
+#view-cart .cart-card__row > div button { width: 28px; height: 28px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; line-height: 1; font-weight: 700; box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
+#view-cart .cart-card__row > div button:first-child { background: #0f4c3a; color: #fff; }
+#view-cart .cart-card__row > div button:last-child { background: #fff; color: #141e1b; }
+#view-cart .cart-card__row > div button:active { transform: scale(.9); }
+#view-cart .cart-card__row > div span { padding: 0 12px; font-size: 12px; font-weight: 700; color: #141e1b; }
+#view-cart .cart-card__x { position: absolute; top: 10px; left: 10px; width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 22px; line-height: 1; color: #707974; }
+#view-cart .cart-card__x:active { color: #dc2626; }
+#view-cart .cart-empty { padding: 48px 16px; background: #fff; border-radius: 16px; border: 1px solid rgba(212, 175, 55, .3); letter-spacing: 0; font-weight: 700; color: #0d3e30; }
+
+/* ---------- كود الخصم ---------- */
+#view-cart .cart-coupon { margin: 0 !important; padding: 16px; background: #fff; border: 1px solid #e5ebe7; border-radius: 16px; box-shadow: var(--m-shadow); }
+.cart-card-title { margin-bottom: 8px; font-size: 15px; line-height: 20px; font-weight: 700; color: #0d3e30; }
+#coupon-input-wrap { gap: 8px; }
+#coupon-code-input { height: 48px; padding-block: 0; background: #ebf6f1; border-color: #e5ebe7; border-radius: 12px; font-size: 12px; font-weight: 600; letter-spacing: .05em; }
+#apply-coupon-btn { height: 48px; padding: 0 16px; border-radius: 12px; background: linear-gradient(90deg, #0f4c3a, #0d3e30); font-size: 12px; font-weight: 700; }
+#coupon-applied-wrap { background: #fbf8f0; border-color: rgba(212, 175, 55, .3); border-radius: 12px; padding: 8px 12px; }
+#coupon-applied-wrap > span { color: #16a34a; font-size: 12px; }
+
+/* ---------- بيانات التوصيل والدفع ---------- */
+#view-cart .cart-delivery { display: flex; flex-direction: column; gap: 6px; padding: 16px; background: #fff; border: 1px solid #e5ebe7; border-radius: 16px; box-shadow: var(--m-shadow); }
+#view-cart .cart-delivery > * { margin: 0 !important; }
+#view-cart .cart-delivery__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 8px; margin-bottom: 4px !important; border-bottom: 1px solid #e5ebe7; }
+.cart-delivery__title { display: flex; align-items: center; gap: 8px; font-family: 'Cairo', 'Tajawal', sans-serif; font-size: 16px; line-height: 20px; font-weight: 800; color: #0d3e30; }
+.cart-delivery__title i { color: #0f4c3a; font-size: 18px; }
+.cart-delivery__badge { flex: none; padding: 3px 10px; border-radius: 9999px; background: #fbf8f0; border: 1px solid rgba(212, 175, 55, .4); color: #b8860b; font-size: 10px; line-height: 14px; font-weight: 700; }
+#view-cart .cart-lbl { margin-top: 10px !important; font-size: 12px; line-height: 16px; font-weight: 700; color: #0d3e30; }
+#view-cart .cart-delivery__head + .cart-lbl { margin-top: 0 !important; }
+#view-cart .cart-delivery :is(input, select, textarea):not([type="radio"]) { width: 100%; height: 48px; padding: 0 12px; background: #ebf6f1; border: 1px solid #e5ebe7; border-radius: 12px; font-size: 14px; color: #141e1b; box-shadow: none; }
+#view-cart .cart-delivery textarea { height: 84px; padding: 12px; resize: none; }
+#view-cart .cart-delivery :is(input, select, textarea):focus { outline: none; background: #fff; border-color: #0f4c3a; box-shadow: 0 0 0 3px rgba(15, 76, 58, .12); }
+/* الـ select الأصلي للدفع بيفضل في الـ DOM (الطلب بيقرا منه) لكن مخفي بصرياً لحد ما الكروت تحل محله */
+#view-cart #cust-payment { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; border: 0 !important; opacity: 0; overflow: hidden; clip: rect(0 0 0 0); pointer-events: none; }
+
+#view-cart .pay-cards { display: flex !important; flex-direction: column; gap: 8px; }
+.pay-card { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; background: #ebf6f1; border: 1px solid #e5ebe7; cursor: pointer; transition: background .15s, border-color .15s; }
+.pay-card.is-on { background: #e5f0eb; border-color: #0f4c3a; }
+.pay-card input { width: 16px; height: 16px; flex: none; accent-color: #0f4c3a; margin: 0; }
+.pay-card__txt { flex: 1; min-width: 0; }
+.pay-card__txt b { display: block; font-size: 14px; line-height: 20px; font-weight: 700; color: #0d3e30; }
+.pay-card__txt small { display: block; margin-top: 2px; font-size: 12px; line-height: 16px; color: #404944; }
+.pay-card__ico { width: 36px; height: 36px; flex: none; border-radius: 50%; background: #fff; border: 1px solid #e5ebe7; box-shadow: 0 1px 2px rgba(0, 0, 0, .06); display: flex; align-items: center; justify-content: center; color: #0f4c3a; font-size: 18px; }
+.pay-card__ico img { width: 24px; height: auto; max-height: 20px; object-fit: contain; }
+#instapay-hint, #vodafone-cash-hint { margin-top: 4px !important; background: #fbf8f0; border-color: rgba(212, 175, 55, .3); border-radius: 12px; padding: 10px 12px; font-size: 12px; line-height: 18px; color: #141e1b; }
+
+/* ---------- قد يعجبكِ أيضاً ---------- */
+#view-cart .cart-cross { margin: 0 -12px; }
+#view-cart .cart-cross:empty { display: none; }
+.cart-cross__head { padding: 0 12px 8px; }
+.cart-cross__head h3 { margin: 0; font-size: 18px; line-height: 28px; font-weight: 700; color: #0d3e30; }
+.cart-cross__head p { margin: 0; font-size: 12px; line-height: 18px; color: #404944; }
+.cart-cross__row { display: flex; gap: 12px; padding: 0 12px 4px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.cart-cross__row::-webkit-scrollbar { display: none; }
+.cart-cross__card { width: 176px; flex: none; display: flex; flex-direction: column; padding: 12px; background: #fff; border: 1px solid #e5ebe7; border-radius: 16px; box-shadow: var(--m-shadow); }
+.cart-cross__img { width: 100%; height: 112px; margin-bottom: 8px; border-radius: 12px; overflow: hidden; background: #e5f0eb; border: 1px solid #e5ebe7; }
+.cart-cross__img img { width: 100%; height: 100%; object-fit: cover; }
+.cart-cross__cat { font-size: 11px; line-height: 16px; font-weight: 600; color: #135d46; }
+.cart-cross__card h4 { margin: 2px 0 0; font-size: 14px; line-height: 20px; font-weight: 700; color: #0d3e30; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cart-cross__price { margin: 4px 0 0; font-size: 14px; font-weight: 700; color: #0f4c3a; }
+.cart-cross__price small { font-size: 10px; color: #404944; font-weight: 600; }
+.cart-cross__card button { margin-top: auto; padding: 6px; border-radius: 9999px; background: #dfebe6; border: 1px solid #e5ebe7; color: #0f4c3a; font-size: 11px; line-height: 16px; font-weight: 700; }
+.cart-cross__card h4 + .cart-cross__price { margin-bottom: 8px; }
+.cart-cross__card button:active { background: #0f4c3a; color: #fff; }
+
+/* ---------- ملخص الحساب (فاتورة) ---------- */
+#cart-summary-totals { padding: 16px; background: #fff; border: 1px solid rgba(212, 175, 55, .3); border-radius: 16px; box-shadow: var(--m-shadow); margin: 0 !important; }
+#cart-summary-totals:empty { display: none; }
+#cart-summary-totals > * + * { margin-top: 8px; }
+#view-cart .cart-sum__head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1px solid #e5ebe7; }
+.cart-sum__head b { font-family: 'Cairo', 'Tajawal', sans-serif; font-size: 18px; line-height: 28px; font-weight: 800; color: #0d3e30; }
+.cart-sum__head span { display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; color: #b8860b; }
+#cart-summary-totals .cart-sum__ship { display: none; }
+#cart-summary-totals .cart-sum__total { background: none; color: #0f4c3a; border-top: 1px solid rgba(197, 155, 39, .2); border-radius: 0; padding: 12px 0 0; margin-top: 8px; }
+.cart-sum__total > div.absolute { display: none; }
+.cart-sum__total > span:first-of-type { font-size: 16px; font-weight: 800; color: #0d3e30; }
+#view-cart .cart-sum__note { display: block; margin-top: 2px; font-size: 12px; line-height: 16px; font-weight: 400; color: #707974; }
+.cart-sum__total > span:last-child { font-family: 'Cairo', 'Tajawal', sans-serif; font-size: 26px; line-height: 36px; font-weight: 800; color: #0f4c3a; }
+.cart-sum__total > span:last-child span { color: #b8860b; }
+
+/* ---------- شارات الثقة ---------- */
+#view-cart .cart-trust { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.cart-trust > div { display: flex; align-items: center; gap: 8px; padding: 8px; background: #fff; border: 1px solid #e5ebe7; border-radius: 12px; box-shadow: var(--m-shadow); }
+.cart-trust i { width: 32px; height: 32px; flex: none; border-radius: 50%; background: rgba(15, 76, 58, .1); color: #0f4c3a; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.cart-trust > div:nth-child(even) i { background: #fbf8f0; border: 1px solid rgba(212, 175, 55, .4); color: #c59b27; }
+.cart-trust span { min-width: 0; }
+.cart-trust b { display: block; font-size: 12px; line-height: 16px; font-weight: 700; color: #141e1b; }
+.cart-trust small { display: block; font-size: 11px; line-height: 14px; color: #404944; }
+
+/* ---------- زر تأكيد الطلب ---------- */
+#checkout-form > button[type="submit"] {
+  width: 100%; height: 56px; padding: 0 16px; margin-top: 8px !important;
+  border-radius: 9999px; border: 1px solid rgba(212, 175, 55, .3);
+  background: #0f4c3a; box-shadow: 0 4px 12px rgba(15, 76, 58, .25);
+  font-family: 'Cairo', 'Tajawal', sans-serif; font-size: 17px; font-weight: 700; color: #fff;
+}
+#checkout-form > button[type="submit"]:hover { background: #0d3e30; filter: none; }
+#checkout-form > button[type="submit"][data-total]:not(:disabled)::after { content: " (" attr(data-total) " ج.م)"; }
+#checkout-form > button[type="submit"]:disabled { opacity: .7; }
+
+/* ---------- سلة فاضية: نخفي كل اللي ملوش لازمة ---------- */
+#view-cart.cart-is-empty :is(.cart-m-ship, .cart-m-head, .cart-cross, .cart-trust, .cart-coupon, .cart-delivery, #cart-summary-totals) { display: none; }
+#view-cart.cart-is-empty #checkout-form > button[type="submit"],
+#view-cart.cart-is-empty aside .p-6 > p.flex { display: none; }

@@ -106,8 +106,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // الطريقة بسيطة: نفس الـ Promise بيرجّع لكل نداءات لنفس الملف، والـ prefetch
     // بيحط <link rel="prefetch"> عشان المتصفح يجيبه في الخلفية قبل الضغط.
     const STORE_CHUNKS = {
-        product: 'store-product.js?v=25',
-        checkout: 'store-checkout.js?v=25'
+        product: 'store-product.js?v=29',
+        checkout: 'store-checkout.js?v=29'
     };
     const __storeChunkPromises = Object.create(null);
 
@@ -1746,6 +1746,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 updateBadge();
             }
         },
+        // تفريغ السلة (زر موبايل): بيشيل المنتجات والهدايا المرتبطة بيها
+        clearCartItems: function () {
+            if (!cart.length) return;
+            if (!window.confirm('هل تريدين تفريغ سلة المشتريات؟')) return;
+            cart = [];
+            checkOffers();
+            saveCart();
+            renderCart();
+            updateBadge();
+        },
+        quickApplyWelcome: function () {
+            const input = document.getElementById('coupon-code-input');
+            if (input) input.value = 'WELCOME10';
+            return this.applyCoupon();
+        },
         removeItem: function (id) {
             cart = cart.filter(i => i.id !== id);
             checkOffers();
@@ -2136,8 +2151,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const summary = document.getElementById('cart-summary-totals');
         if (!container) return;
         if (cart.length === 0) {
-            container.innerHTML = '<div class="py-32 text-center text-gray-400 uppercase tracking-widest">حقيبة التسوق فارغة</div>';
+            container.innerHTML = '<div class="py-32 text-center text-gray-400 uppercase tracking-widest cart-empty">حقيبة التسوق فارغة</div>';
             if (summary) summary.innerHTML = '';
+            const viewCartE = document.getElementById('view-cart');
+            if (viewCartE) viewCartE.classList.add('cart-is-empty');
+            ['cart-ship-card', 'cart-cross', 'cart-m-count'].forEach(function (id) { const el = document.getElementById(id); if (el) el.innerHTML = ''; });
             const countLabelEmpty = document.getElementById('cart-summary-count');
             if (countLabelEmpty) countLabelEmpty.textContent = '';
             renderCouponUI();
@@ -2147,8 +2165,8 @@ document.addEventListener("DOMContentLoaded", () => {
         container.innerHTML = cart.map(item => {
             if (item.isGift) {
                 return `
-                <div class="flex gap-4 sm:gap-8 border-b border-gray-100 pb-10 text-right group relative">
-                    <div class="w-20 h-20 sm:w-24 sm:h-24 bg-[#fdf2f5] p-3 sm:p-4 rounded-2xl relative shrink-0">
+                <div class="cart-card cart-card--gift flex gap-4 sm:gap-8 border-b border-gray-100 pb-10 text-right group relative">
+                    <div class="cart-card__img w-20 h-20 sm:w-24 sm:h-24 bg-[#fdf2f5] p-3 sm:p-4 rounded-2xl relative shrink-0">
                         <img src="${sanitize(item.img)}" class="w-full h-full object-contain mix-blend-multiply">
                         <span class="absolute -bottom-2 -left-2 bg-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full">x${item.qty}</span>
                     </div>
@@ -2160,11 +2178,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>`;
             }
             return `
-            <div class="flex gap-4 sm:gap-8 border-b border-gray-100 pb-10 text-right group relative">
-                <div class="w-20 h-20 sm:w-24 sm:h-24 bg-[#f9f9f9] p-3 sm:p-4 rounded-2xl relative"><img src="${sanitize(item.img)}" class="w-full h-full object-contain mix-blend-multiply"></div>
-                <div class="flex-grow space-y-1">
+            <div class="cart-card flex gap-4 sm:gap-8 border-b border-gray-100 pb-10 text-right group relative">
+                <div class="cart-card__img w-20 h-20 sm:w-24 sm:h-24 bg-[#f9f9f9] p-3 sm:p-4 rounded-2xl relative"><img src="${sanitize(item.img)}" alt="${sanitize(item.name)}" class="w-full h-full object-contain mix-blend-multiply"></div>
+                <div class="cart-card__body flex-grow space-y-1">
+                    <div class="m-only cart-card__tags"><span class="cart-card__cat">${sanitize(item.category || '')}</span>${item.badge ? `<span class="cart-card__badge">${sanitize(item.badge)}</span>` : ''}</div>
                     <h3 class="text-sm font-extrabold uppercase text-black">${sanitize(item.name)}</h3>
-                    <div class="flex flex-row-reverse justify-between items-center pt-4">
+                    <div class="cart-card__row flex flex-row-reverse justify-between items-center pt-4">
                         <span class="text-base font-bold text-primary">${sanitize(item.price * item.qty)} ج.م</span>
                         <div class="flex border border-gray-100 rounded-full" dir="ltr">
                             <button onclick="app.updateQty('${jsArg(item.id)}', 1)" class="px-3 py-1 text-primary font-bold">+</button>
@@ -2173,7 +2192,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                     </div>
                 </div>
-                <button onclick="app.removeItem('${jsArg(item.id)}')" class="text-gray-300 hover:text-red-500 transition-colors">×</button>
+                <button onclick="app.removeItem('${jsArg(item.id)}')" aria-label="حذف المنتج" class="cart-card__x text-gray-300 hover:text-red-500 transition-colors">×</button>
             </div>`;
         }).join('');
 
@@ -2192,6 +2211,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (summary) {
             summary.innerHTML = `
+                <div class="m-only cart-sum__head"><b>ملخص الحساب الدقيق</b><span><i class="fa-solid fa-receipt" aria-hidden="true"></i> فاتورة الطلب</span></div>
                 <div class="flex items-center justify-between text-sm text-slate-600">
                     <span class="flex items-center gap-2"><i class="fa-solid fa-bag-shopping text-slate-300 w-4 text-center"></i> الإجمالي الفرعي</span>
                     <span class="font-bold text-darkNavy">${sanitize(subtotal)} ج.م</span>
@@ -2205,7 +2225,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span class="flex items-center gap-2"><i class="fa-solid fa-truck-fast text-slate-300 w-4 text-center"></i> الشحن</span>
                     <span class="font-bold ${shipping.free ? 'text-emerald-600' : 'text-darkNavy'}">${shippingLabel}</span>
                 </div>
-                <div class="pt-1">
+                <div class="pt-1 cart-sum__ship">
                     <div class="flex items-center justify-between text-[11px] font-bold mb-1.5">
                         <span class="flex items-center gap-1.5" style="color:${freeShippingColor}">
                             <i class="fa-solid fa-truck-fast"></i>
@@ -2217,14 +2237,65 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div class="h-full rounded-full transition-all duration-500 ease-out" style="width:${freeShippingPct}%; background-color:${freeShippingColor};"></div>
                     </div>
                 </div>
-                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-l from-primary to-secondary text-white px-4 py-4 flex items-center justify-between mt-1">
+                <div class="cart-sum__total relative overflow-hidden rounded-2xl bg-gradient-to-l from-primary to-secondary text-white px-4 py-4 flex items-center justify-between mt-1">
                     <div class="absolute -top-6 -left-6 w-20 h-20 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-                    <span class="relative font-bold text-sm">الإجمالي</span>
+                    <span class="relative font-bold text-sm">الإجمالي<small class="m-only cart-sum__note">شامل كافة الضرائب وتكاليف الشحن</small></span>
                     <span class="relative text-xl font-black">${sanitize(finalTotal)} <span class="text-xs font-bold">ج.م</span></span>
                 </div>
             `;
         }
         renderCouponUI();
+        renderCartMobileExtras({ subtotal: subtotal, itemsCount: itemsCount, freeShippingLeft: freeShippingLeft, freeShippingPct: freeShippingPct, finalTotal: finalTotal });
+    }
+
+    // موبايل فقط (العناصر دي m-only: مخفية على الديسكتوب ومبتظهرش غير من mobile.css):
+    // كارت الشحن المجاني + عدّاد المنتجات + "قد يعجبكِ أيضاً" + إجمالي زر التأكيد.
+    function renderCartMobileExtras(d) {
+        const viewCart = document.getElementById('view-cart');
+        if (viewCart) viewCart.classList.remove('cart-is-empty');
+
+        const countEl = document.getElementById('cart-m-count');
+        if (countEl) countEl.textContent = `${d.itemsCount} ${d.itemsCount === 1 ? 'منتج' : 'منتجات'}`;
+
+        const submitBtn = document.querySelector('#checkout-form button[type="submit"]');
+        if (submitBtn) submitBtn.setAttribute('data-total', String(d.finalTotal));
+
+        const pct = Math.round(d.freeShippingPct);
+        const shipEl = document.getElementById('cart-ship-card');
+        if (shipEl) {
+            let welcomeOk = false;
+            try { welcomeOk = !appliedCoupon && !!(window.WelcomeOffer && window.WelcomeOffer.guard('WELCOME10').ok); } catch (_) { }
+            shipEl.innerHTML = `
+                <div class="cart-ship__top">
+                    <span class="cart-ship__ico"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i></span>
+                    <div class="cart-ship__txt">
+                        <h3>شحن مجاني للطلبات فوق ${sanitize(FREE_SHIPPING_THRESHOLD)} ج.م</h3>
+                        <p>${d.freeShippingLeft > 0 ? `أضيفي ${sanitize(d.freeShippingLeft)} ج.م إضافية واحصلي على شحن مجاني لكافة المحافظات!` : 'مبروك! مؤهلة للشحن المجاني 🚚'}</p>
+                    </div>
+                    <span class="cart-ship__pct">${pct}%</span>
+                </div>
+                <div class="cart-ship__bar"><i style="width:${pct}%"></i></div>
+                ${welcomeOk ? `<div class="cart-ship__coupon">
+                    <p>خصم <b>10% إضافي</b> لكود: <code dir="ltr">WELCOME10</code></p>
+                    <button type="button" onclick="app.quickApplyWelcome()">تطبيق الكود</button>
+                </div>` : ''}`;
+        }
+
+        const crossEl = document.getElementById('cart-cross');
+        if (crossEl) {
+            const inCart = new Set(cart.map(i => i.id));
+            const picks = productsDB.filter(p => !inCart.has(p.id) && p.price > 0 && p.stock > 0 && p.category !== 'مجموعات متكاملة').slice(0, 6);
+            crossEl.innerHTML = picks.length ? `
+                <div class="cart-cross__head"><div><h3>قد يعجبكِ أيضاً</h3><p>منتجات مختارة بعناية لإكمال روتينكِ اليومي</p></div></div>
+                <div class="cart-cross__row">${picks.map(p => `
+                    <div class="cart-cross__card">
+                        <div class="cart-cross__img"><img src="${sanitize(p.imgThumb || p.img)}" alt="${sanitize(p.name)}" loading="lazy"></div>
+                        <span class="cart-cross__cat">${sanitize(p.category)}</span>
+                        <h4>${sanitize(p.name)}</h4>
+                        <p class="cart-cross__price">${sanitize(p.price)} <small>ج.م</small></p>
+                        <button type="button" onclick="app.addToCart('${jsArg(p.id)}')">+ أضيفي للسلة</button>
+                    </div>`).join('')}</div>` : '';
+        }
     }
 
     function updateBadge() {
@@ -2317,7 +2388,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // صفحة السلة/الدفع (أو لحظة التأكيد كشبكة أمان)، والتلاتة بالتوازي.
     // ترتيب التحميل مش مهم لأن instapay/vodafone-cash بقوا يقرأوا حالة الطلب
     // وقت الطلب (getters) مش وقت تحميل الملف.
-    const PAYMENT_SCRIPTS = ['order-status.js?v=25', 'instapay.js?v=25', 'vodafone-cash.js?v=25'];
+    const PAYMENT_SCRIPTS = ['order-status.js?v=29', 'instapay.js?v=29', 'vodafone-cash.js?v=29'];
     let __paymentScriptsPromise = null;
     function loadPaymentScripts() {
         if (__paymentScriptsPromise) return __paymentScriptsPromise;
