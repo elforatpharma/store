@@ -93,33 +93,30 @@ window.OrderStatus = (() => {
   }
 
   async function insertOrderIdempotent(supabaseClient, orderData) {
-    // ⚠️ لازم الـ insert يتبعت من غير .select() ولا return=representation.
-    // PostgREST بيحوّل الشكل ده لـ INSERT ... RETURNING، و RLS بيطبّق
-    // سياسة SELECT على الـ RETURNING نفسه. وده معناه إن الطلب كله بيترفض
-    // بـ 42501 والصف ما يتكتبش أصلاً (متحقّق عليهagainst السيرفر الحقيقي:
-    //   POST /rest/v1/orders?select=id + Prefer: return=representation -> 401 42501
-    //   POST /rest/v1/orders                                          -> 201 ok)
-    // الـ anon عنده سياسة INSERT بس، وده الصح أمنياً (مش عايزين الـ anon
-    // يقرأ طلبات كل العملاء). فلازم نكتفي بـ 201 ونحدّد النجاح من الكود.
-    // الطلبات تُنشأ الآن عبر RPC مقيد الأعمدة؛ الـdatabase triggers ما زالت
-    // هي طبقة التحقق النهائية للأسعار والمخزون والكوبونات والـrate limits.
-    // لا يوجد direct INSERT من public client إلى جدول orders.
-    const { data: rpcData, error } = await supabaseClient.rpc('create_secure_order', {
-      p_order: orderData
-    });
+    // الطلبات العامة تُنشأ من المتجر مباشرة عبر INSERT واحد فقط.
+    // RLS يسمح للـanon بـINSERT فقط على orders، بينما SELECT/UPDATE/DELETE
+    // ممنوعة عليه. كده العميل يقدر ينشئ الطلب، لكنه لا يستطيع قراءة أو
+    // تعديل أو حذف طلبات العملاء الآخرين.
+    //
+    // مهم: لا نستخدم .select() هنا، لأن RETURNING يحتاج SELECT policy
+    // وقد يحوّل الطلب الناجح إلى permission denied. نجاح العملية يعتمد
+    // على عدم وجود error من INSERT نفسه.
+    const { error } = await supabaseClient
+      .from('orders')
+      .insert([orderData]);
 
     if (!error) {
       return {
-        data: { id: rpcData && rpcData[0] ? rpcData[0].id : null },
+        data: { id: null },
         error: null,
         wasDuplicate: false
       };
     }
 
     if (await isDuplicateOrderError(error) && orderData.merchant_order_id) {
-      // الطلب ده اتسجل قبل كده بنفس merchant_order_id (تكرار من العميل أو
-      // إعادة محاولة بعد انقطاع الشبكة) - الطلب موجود بالفعل، فده نجاح.
-      console.warn('الطلب ده اتسجل قبل كده بنفس merchant_order_id (محاولة متكررة) - مش هنضيف نسخة تانية.');
+      // نفس merchant_order_id يعني أن محاولة الشراء نفسها وصلت للسيرفر بالفعل.
+      // لا نعمل نسخة ثانية، ونعتبرها نجاحاً من ناحية الـcheckout.
+      console.warn('الطلب ده اتسجل قبل كده بنفس merchant_order_id - مش هنضيف نسخة تانية.');
       return { data: { id: null }, error: null, wasDuplicate: true };
     }
 
