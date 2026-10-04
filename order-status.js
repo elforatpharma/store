@@ -101,9 +101,20 @@ window.OrderStatus = (() => {
     //   POST /rest/v1/orders                                          -> 201 ok)
     // الـ anon عنده سياسة INSERT بس، وده الصح أمنياً (مش عايزين الـ anon
     // يقرأ طلبات كل العملاء). فلازم نكتفي بـ 201 ونحدّد النجاح من الكود.
-    const { error } = await supabaseClient.from('orders').insert([orderData]);
+    // الطلبات تُنشأ الآن عبر RPC مقيد الأعمدة؛ الـdatabase triggers ما زالت
+    // هي طبقة التحقق النهائية للأسعار والمخزون والكوبونات والـrate limits.
+    // لا يوجد direct INSERT من public client إلى جدول orders.
+    const { data: rpcData, error } = await supabaseClient.rpc('create_secure_order', {
+      p_order: orderData
+    });
 
-    if (!error) return { data: { id: null }, error: null, wasDuplicate: false };
+    if (!error) {
+      return {
+        data: { id: rpcData && rpcData[0] ? rpcData[0].id : null },
+        error: null,
+        wasDuplicate: false
+      };
+    }
 
     if (await isDuplicateOrderError(error) && orderData.merchant_order_id) {
       // الطلب ده اتسجل قبل كده بنفس merchant_order_id (تكرار من العميل أو
