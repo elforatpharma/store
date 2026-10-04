@@ -20,6 +20,13 @@
     var sanitize = S.sanitize;
     var jsArg = S.jsArg;
     var getFullImg = S.getFullImg;
+    function optimizeDisplayImage(url, width, quality) {
+        if (!url) return 'logo.png';
+        if (!/^https?:\/\//i.test(url)) return url;
+        width = width || 700;
+        quality = quality || 78;
+        return 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&w=' + width + '&q=' + quality + '&output=webp';
+    }
     var renderFormattedText = S.renderFormattedText;
     var trackStoreEvent = S.trackStoreEvent;
     // تصميم الموبايل (أقل من 768px) - نفس الحد اللي mobile.css بيتحمّل عنده
@@ -215,7 +222,7 @@
                 <!-- معرض الصور -->
                 <div class="space-y-4">
                     <div class="product-visual-glass aspect-square flex items-center justify-center p-4 sm:p-6 md:p-8 rounded-3xl overflow-hidden group relative bg-white/50 border border-purple-100/60 shadow-lg">
-                        <img id="main-product-img" src="${sanitize(images[0])}" loading="lazy" class="max-h-full max-w-full object-contain transition-all duration-500 hover:scale-105 cursor-zoom-in drop-shadow-xl" onerror="this.src='logo.png'" onclick="openImageZoom('${jsArg(images[0])}')">
+                        <img id="main-product-img" src="${sanitize(optimizeDisplayImage(images[0], 700, 78))}" loading="eager" fetchpriority="high" decoding="async" class="max-h-full max-w-full object-contain transition-all duration-500 hover:scale-105 cursor-zoom-in drop-shadow-xl" onerror="this.src='logo.png'" onclick="openImageZoom('${jsArg(images[0])}')">
                         <!-- أزرار التنقل للمعرض (تظهر فقط عند وجود أكثر من صورة) -->
                         ${images.length > 1 ? `
                         <button onclick="changeProductImage('prev')" class="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white active:scale-90 z-20" title="الصورة السابقة">
@@ -239,7 +246,7 @@
                             <button onclick="changeProductImage(${idx})" 
                                     class="thumbnail-btn w-14 h-14 sm:w-20 sm:h-20 bg-white/80 rounded-2xl p-1.5 border-2 ${idx === 0 ? 'border-primary shadow-purple-soft scale-105' : 'border-purple-100 hover:border-primary/50'} transition-all overflow-hidden relative group"
                                     data-index="${idx}">
-                                <img src="${sanitize(img)}" loading="lazy" class="w-full h-full object-contain rounded-xl thumbnail-img group-hover:scale-105 transition-transform" onerror="this.src='logo.png'">
+                                <img src="${sanitize(optimizeDisplayImage(img, 120, 72))}" loading="lazy" decoding="async" class="w-full h-full object-contain rounded-xl thumbnail-img group-hover:scale-105 transition-transform" onerror="this.src='logo.png'">
                             </button>
                         `).join('')}
                     </div>
@@ -683,13 +690,13 @@
                 <h2><span>💡</span>أكملي روتينك</h2>
                 <div class="pdp-bundle__row">
                     <div class="pdp-bundle__item">
-                        <div class="pdp-bundle__img"><img src="${sanitize(images[0])}" alt="" loading="lazy" onerror="this.src='logo.png'"></div>
+                        <div class="pdp-bundle__img"><img src="${sanitize(optimizeDisplayImage(images[0], 320, 72))}" alt="" loading="lazy" decoding="async" onerror="this.src='logo.png'"></div>
                         <p>${sanitize(p.name)}</p>
                         <span>${sanitize(pdpMoney(price))} ج.م</span>
                     </div>
                     <span class="pdp-bundle__plus">+</span>
                     <div class="pdp-bundle__item" onclick="app.navigate('product', '${jsArg(mate.id)}')">
-                        <div class="pdp-bundle__img"><img src="${sanitize(getFullImg(mate.imgThumb || mate.img))}" alt="" loading="lazy" onerror="this.src='logo.png'"></div>
+                        <div class="pdp-bundle__img"><img src="${sanitize(optimizeDisplayImage(getFullImg(mate.imgThumb || mate.img), 160, 72))}" alt="" loading="lazy" decoding="async" onerror="this.src='logo.png'"></div>
                         <p>${sanitize(mate.name)}</p>
                         <span>${sanitize(pdpMoney(mate.price))} ج.م</span>
                     </div>
