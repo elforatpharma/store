@@ -57,9 +57,16 @@
                     pl.rel = 'preload'; pl.as = 'image'; pl.href = hu; pl.media = '(min-width:1024px)'; pl.setAttribute('fetchpriority', 'high');
                     document.head.appendChild(pl);
                 } catch (e2) { }
-                window.__productsPrefetch = fetch(base + '/rest/v1/products?select=id,name,category,price,oldPrice,img,badge,desc,ingredients,size,stock,images,gallery,is_active&order=priority.desc,id.asc&limit=1000', {
-                    headers: { apikey: key, Authorization: 'Bearer ' + key }
-                }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+                var shouldPrefetch = true;
+                try {
+                    var pc = JSON.parse(localStorage.getItem('elforat_products_cache_v4') || 'null');
+                    shouldPrefetch = !pc || !pc.savedAt || (Date.now() - pc.savedAt >= 300000);
+                } catch (e3) {}
+                window.__productsPrefetch = shouldPrefetch
+                    ? fetch(base + '/rest/v1/products?select=id,name,category,price,oldPrice,img,badge,desc,ingredients,size,stock,images,gallery,is_active&order=priority.desc,id.asc&limit=1000', {
+                        headers: { apikey: key, Authorization: 'Bearer ' + key }
+                    }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+                    : null;
             } catch (e) { window.__productsPrefetch = null; }
         })();
     </script>
