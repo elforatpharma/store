@@ -1,5 +1,5 @@
 // Service Worker - Elforat Pharma PWA
-const CACHE_NAME = 'elforat-cache-v38';
+const CACHE_NAME = 'elforat-cache-v39';
 const STATIC_ASSETS = ['./','./index.html','./style.min.css?v=37','./tailwind-built.css?v=37','./mobile.css?v=37','./fa-subset.css?v=37','./supabase-lite.js?v=37','./welcome-offer.js?v=37','./analysis.js?v=37','./image-performance.js?v=1','./instapay-logo.webp','./vodafone-cash-logo.webp','./manifest.json','./logo.png','./logo-96.png','./logo-96.webp','./favicon-32.png','./icon-192.png','./icon-512.png','./hero-products.webp'];
 
 self.addEventListener('install', (event) => {
@@ -45,9 +45,9 @@ self.addEventListener('fetch', (event) => {
   if (url.hostname.includes('telegram.org') || url.pathname.includes('/rest/v1/') || url.pathname.includes('/functions/v1/') || url.hostname === 'api.ipify.org') return;
 
   if (req.mode === 'navigate') {
+    // HTML: الشبكة أولاً حتى يظهر آخر إصدار من المتجر بعد أي نشر،
+    // مع fallback للكاش لو الزائر أوفلاين.
     event.respondWith((async () => {
-      const cache = await caches.open(CACHE_NAME);
-      const cachedRaw = (await cache.match('./index.html')) || (await cache.match(req, { ignoreSearch: true }));
       const network = (async () => {
         try {
           const res = (await event.preloadResponse) || (await fetch(req));
@@ -55,9 +55,13 @@ self.addEventListener('fetch', (event) => {
           return res;
         } catch (_) { return null; }
       })();
-      if (cachedRaw) return injectImagePerformance(cachedRaw);
+
       const fresh = await network;
-      return fresh ? injectImagePerformance(fresh) : Response.error();
+      if (fresh) return injectImagePerformance(fresh);
+
+      const cache = await caches.open(CACHE_NAME);
+      const cachedRaw = (await cache.match('./index.html')) || (await cache.match(req, { ignoreSearch: true }));
+      return cachedRaw ? injectImagePerformance(cachedRaw) : Response.error();
     })());
     return;
   }
