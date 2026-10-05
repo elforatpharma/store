@@ -5,5 +5,5 @@
 .cir-search__field{flex:1;min-width:0;width:0;height:100%;border:0;outline:0;background:transparent;font:inherit;font-size:12px;color:#172033;direction:rtl;text-align:right}
 .cir-search__field::placeholder{color:#94a0b2}
 .cir-search__kbd{display:inline-flex;align-items:center;justify-content:center;height:24px;min-width:38px;padding:0 7px;box-sizing:border-box;background:#f3f6fa;border:1px solid #eef2f6;border-radius:999px;font-family:inherit;font-size:9px;font-weight:600;color:#697487;letter-spacing:.02em;direction:ltr;flex:0 0 auto}
-.cir-search:focus-within{border-color:#c59b3f;box-shadow:0 0 0 3px rgba(197,155,63,.12),0 10px 24px -18px rgba(14,17,22,.2)}
+.cir-search:focus-within{border-color:#c59b3f;box-shadow:0 10px 24px -18px rgba(14,17,22,.2)}.cir-search,.cir-search:focus,.cir-search:focus-visible,.cir-search__field,.cir-search__field:focus,.cir-search__field:focus-visible{outline:none!important}
 @media (max-width:1279.98px){.cir-search__kbd{display:none}}
