@@ -1,57 +1,40 @@
 // Service Worker - Elforat Pharma PWA
-// غيّري رقم النسخة (وكل ?v= في index.html) مع كل نشر عشان الزوار ياخدوا التحديث.
-const CACHE_NAME = 'elforat-cache-v37';
-const STATIC_ASSETS = [
-  './',
-  './index.html',
-  './style.min.css?v=37',
-  './tailwind-built.css?v=37',
-  './mobile.css?v=37',
-  './fa-subset.css?v=37',
-  './supabase-lite.js?v=37',
-  './welcome-offer.js?v=37',
-  './analysis.js?v=37',
-  './instapay-logo.webp',
-  './vodafone-cash-logo.webp',
-  './manifest.json',
-  './logo.png',
-  './logo-96.png',
-  './logo-96.webp',
-  './favicon-32.png',
-  './icon-192.png',
-  './icon-512.png',
-  './hero-products.webp'
-];
+const CACHE_NAME = 'elforat-cache-v38';
+const STATIC_ASSETS = ['./','./index.html','./style.min.css?v=37','./tailwind-built.css?v=37','./mobile.css?v=37','./fa-subset.css?v=37','./supabase-lite.js?v=37','./welcome-offer.js?v=37','./analysis.js?v=37','./image-performance.js?v=1','./instapay-logo.webp','./vodafone-cash-logo.webp','./manifest.json','./logo.png','./logo-96.png','./logo-96.webp','./favicon-32.png','./icon-192.png','./icon-512.png','./hero-products.webp'];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) =>
-      // addAll كانت بتفشل كلها لو ملف واحد مش موجود (فمفيش حاجة كانت بتتخزن).
-      // دلوقتي كل ملف لوحده: اللي موجود بيتخزن واللي مش موجود بيتجاهل.
-      // cache:'reload' عشان GitHub Pages بيرجّع max-age=600 وممكن نخزّن نسخة قديمة من كاش المتصفح
-      Promise.allSettled(STATIC_ASSETS.map((url) => cache.add(new Request(url, { cache: 'reload' }))))
-    )
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => Promise.allSettled(STATIC_ASSETS.map((url) => cache.add(new Request(url, { cache: 'reload' }))))));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    Promise.all([
-      caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))),
-      // navigation preload: الطلب بيبدأ بالتوازي مع تشغيل الـ SW بدل ما ينتظره
-      self.registration.navigationPreload ? self.registration.navigationPreload.enable() : Promise.resolve()
-    ])
-  );
+  event.waitUntil(Promise.all([
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))),
+    self.registration.navigationPreload ? self.registration.navigationPreload.enable() : Promise.resolve()
+  ]));
   self.clients.claim();
 });
 
 function putInCache(request, response) {
   if (response && response.status === 200 && response.type === 'basic') {
-    const copy = response.clone();
-    return caches.open(CACHE_NAME).then((cache) => cache.put(request, copy)).catch(() => { });
+    return caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone())).catch(() => {});
   }
   return Promise.resolve();
+}
+
+// يضمن تشغيل محسن الصور حتى لو index.html القديم في كاش المتصفح لم يحتوِ على السكريبت.
+async function injectImagePerformance(response) {
+  try {
+    if (!response || !response.ok) return response;
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('text/html')) return response;
+    const html = await response.text();
+    if (html.includes('image-performance.js')) return new Response(html, { status: response.status, statusText: response.statusText, headers: response.headers });
+    const injected = html.replace('</head>', '<script src="image-performance.js?v=1" defer></script>\n</head>');
+    const headers = new Headers(response.headers);
+    headers.delete('content-length');
+    return new Response(injected, { status: response.status, statusText: response.statusText, headers });
+  } catch (_) { return response; }
 }
 
 self.addEventListener('fetch', (event) => {
@@ -59,20 +42,12 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // API الحقيقية (Supabase REST/Functions) وتليجرام: مفيش كاش أبداً
-  if (
-    url.hostname.includes('telegram.org') ||
-    url.pathname.includes('/rest/v1/') ||
-    url.pathname.includes('/functions/v1/') ||
-    url.hostname === 'api.ipify.org'
-  ) return;
+  if (url.hostname.includes('telegram.org') || url.pathname.includes('/rest/v1/') || url.pathname.includes('/functions/v1/') || url.hostname === 'api.ipify.org') return;
 
-  // صفحات التنقل (HTML): من الكاش فوراً + تحديث في الخلفية (الصفحة بتفتح لحظياً،
-  // والبيانات نفسها بتيجي طازة من سوبابيز). لو مفيش كاش: الشبكة ثم صفحة الأوفلاين.
   if (req.mode === 'navigate') {
     event.respondWith((async () => {
       const cache = await caches.open(CACHE_NAME);
-      const cached = (await cache.match('./index.html')) || (await cache.match(req, { ignoreSearch: true }));
+      const cachedRaw = (await cache.match('./index.html')) || (await cache.match(req, { ignoreSearch: true }));
       const network = (async () => {
         try {
           const res = (await event.preloadResponse) || (await fetch(req));
@@ -80,15 +55,13 @@ self.addEventListener('fetch', (event) => {
           return res;
         } catch (_) { return null; }
       })();
-      if (cached) { event.waitUntil(network); return cached; }
-      return (await network) || (await cache.match('./index.html')) || Response.error();
+      if (cachedRaw) return injectImagePerformance(cachedRaw);
+      const fresh = await network;
+      return fresh ? injectImagePerformance(fresh) : Response.error();
     })());
     return;
   }
 
-  // ملفات الموقع نفسه (CSS/JS/صور/manifest): stale-while-revalidate
-  // ملحوظة: صور Supabase/wsrv.nl (cross-origin) بيكاشيها المتصفح نفسه (HTTP cache)؛
-  // مبنخزنهاش هنا لأن الردود opaque بتاكل مساحة كبيرة من حصة التخزين.
   if (url.origin === self.location.origin) {
     event.respondWith((async () => {
       const cache = await caches.open(CACHE_NAME);
