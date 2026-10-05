@@ -105,8 +105,7 @@ window.VodafoneCashCheckout = (() => {
 
   // رابط Vodafone Dynamic Link الرسمي الذي تم اختباره على الهاتف ويفتح تطبيق "أنا فودافون".
   // نستخدم /home فقط لأنه المسار المؤكد أنه يعمل، ولا نفترض مسارًا داخليًا لشاشة Vodafone Cash.
-  const VODAFONE_DYNAMIC_LINK =
-    "https://web.vodafone.com.eg/LB/DynamicLinks/Business/index.html?url=/home";
+  const VODAFONE_DYNAMIC_LINK = "https://vf.eg/p?9";
 
   function getOpenAppTarget(platform) {
     if (platform === "android") {
