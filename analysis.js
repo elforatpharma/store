@@ -2907,7 +2907,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // [تعديل أداء]: بدل ما نجيب العدد ونزوده يدوي (read-then-write بيعمل
             // race condition لو حصلت زيارتين في نفس اللحظة)، بنستخدم دالة ذرية
             // (atomic RPC) في قاعدة البيانات بتزوّد العداد في خطوة واحدة آمنة.
-            const { error } = await _supabase.rpc('increment_visitor_count');
+            const { error } = await _supabase.rpc('increment_visitor_count', { p_session_id: getVisitorSessionId() });
             if (error) throw error;
         } catch (e) {
             console.warn('visitor tracking skipped:', e.message || e);
