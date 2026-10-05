@@ -197,8 +197,7 @@
 </a>
 <a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group" onclick="app.navigate('catalog', 'العناية بالشعر')" data-target="catalog:العناية بالشعر">
           العناية بالشعر
-</a>
-<a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group" onclick="app.navigate('catalog', 'العناية بالبشرة')" data-target="catalog:العناية بالبشرة">
+</a><a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group" onclick="app.navigate('catalog', 'العناية بالبشرة')" data-target="catalog:العناية بالبشرة">
           العناية بالبشرة
 </a>
 <a class="nav-link cursor-pointer hover:text-primary transition-colors py-1 relative group flex items-center gap-1.5" onclick="app.navigate('catalog', 'مجموعات متكاملة')" data-target="catalog:مجموعات متكاملة">
@@ -214,11 +213,15 @@
 </nav>
 <!-- Search Bar -->
 <div class="hidden lg:flex flex-1 max-w-xs xl:max-w-sm mx-2">
-<div class="relative w-full group">
-<input type="text" id="desktop-search-input" placeholder="ابحث عن منتج..." class="w-full bg-slate-100/80 hover:bg-white border border-slate-200/80 focus:bg-white text-darkNavy text-xs rounded-full pr-10 pl-4 py-2.5 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all placeholder:text-slate-400" oninput="app.handleSearch(this.value)" autocomplete="off">
-<div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
-<i class="fa-solid fa-magnifying-glass text-xs"></i>
-</div>
+<div class="relative w-full">
+<label class="cir-search" aria-label="بحث عن منتج">
+<svg class="cir-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<circle cx="11" cy="11" r="8"></circle>
+<path d="m21 21-4.34-4.34"></path>
+</svg>
+<input type="text" id="desktop-search-input" class="cir-search__field" placeholder="ابحث عن منتج..." aria-label="بحث عن منتج" oninput="app.handleSearch(this.value)" autocomplete="off">
+<kbd class="cir-search__kbd" aria-label="اختصار البحث">⌘ K</kbd>
+</label>
 <div id="search-suggestions-desktop" class="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 hidden z-50 overflow-hidden"></div>
 </div>
 </div>
@@ -397,8 +400,7 @@
                     <div class="text-white font-extrabold text-sm sm:text-base line-clamp-1 leading-snug drop-shadow-sm">كريم لعلاج جلد الوزة</div>
                     <div class="text-amber-300 font-black text-xs sm:text-sm mt-0.5">170 ج.م</div>
                   </div>
-                </div>
-              </div>
+                </div>              </div>
             
               <div class="cf-card absolute left-1/2 top-0 overflow-hidden shadow-2xl transition-shadow duration-300 will-change-transform cursor-pointer"
                    data-index="2"
@@ -597,8 +599,7 @@
       <!-- Active Slide Caption -->
       <div id="cf-active-caption" class="mt-4 flex flex-col items-center px-4 transition-all duration-300 text-center">
         <div class="inline-flex items-center gap-2">
-          <span id="cf-caption-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-primary/10 text-primary border border-primary/20"></span>
-          <span id="cf-caption-price" class="text-xs font-black text-primary"></span>
+          <span id="cf-caption-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-primary/10 text-primary border border-primary/20"></span>          <span id="cf-caption-price" class="text-xs font-black text-primary"></span>
         </div>
         <h3 id="cf-caption-title" class="text-base sm:text-lg font-black text-darkNavy mt-1"></h3>
         <p id="cf-caption-subtitle" class="text-xs sm:text-sm text-slate-500 mt-0.5"></p>
@@ -797,8 +798,7 @@
                     "الكريم استخدمته النهاردة كان تحفة ف الترطيب وله لمعة جميلة كدا."
                 </p>
 <div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
-<div class="w-9 h-9 rounded-full bg-purple-50 text-secondary flex items-center justify-center font-black text-sm">ع</div>
-<div>
+<div class="w-9 h-9 rounded-full bg-purple-50 text-secondary flex items-center justify-center font-black text-sm">ع</div><div>
 <div class="text-xs font-black text-darkNavy">عميلة</div>
 <div class="text-[10px] text-slate-400">رسالة فيسبوك موثقة</div>
 </div>
@@ -997,8 +997,7 @@
 <div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
 </div>
-<p class="text-sm text-slate-600 leading-relaxed flex-1">
-                    "تجربتي مع جوزال جولد: من أول استخدام حسيت إن شعري اتغير، الملمس أنعم وفيه لمعة صحية من غير أي إحساس بالزيت أو الثقل. مع الاستمرار التسريح بقى أسهل والهيشان قل، وشعري بقى بيحتفظ بترطيبه لفترة أطول. جوزال جولد فعلاً يستاهل يتجرب."
+<p class="text-sm text-slate-600 leading-relaxed flex-1">                    "تجربتي مع جوزال جولد: من أول استخدام حسيت إن شعري اتغير، الملمس أنعم وفيه لمعة صحية من غير أي إحساس بالزيت أو الثقل. مع الاستمرار التسريح بقى أسهل والهيشان قل، وشعري بقى بيحتفظ بترطيبه لفترة أطول. جوزال جولد فعلاً يستاهل يتجرب."
                 </p>
 <div class="flex items-center gap-3 mt-5 pt-4 border-t border-slate-100">
 <div class="w-9 h-9 rounded-full bg-purple-50 text-primary flex items-center justify-center font-black text-sm">ع</div>
@@ -1197,8 +1196,7 @@
 </div>
 
 <div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
-<i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i>
-<div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
+<i class="fa-solid fa-quote-right text-3xl text-secondary/10 absolute top-4 left-4"></i><div class="flex items-center gap-1 text-amber-400 text-xs mb-3">
 <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
 </div>
 <p class="text-sm text-slate-600 leading-relaxed flex-1">
@@ -1397,8 +1395,7 @@
 <div class="text-xs font-black text-darkNavy">عميلة</div>
 <div class="text-[10px] text-slate-400">رسالة فيسبوك موثقة</div>
 </div>
-</div>
-</div>
+</div></div>
 
 <div class="testimonial-card relative p-6 rounded-3xl bg-white border border-purple-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-[270px] sm:w-80 md:w-96 flex-shrink-0" dir="rtl">
 <i class="fa-solid fa-quote-right text-3xl text-primary/10 absolute top-4 left-4"></i>
@@ -1597,8 +1594,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </div>            </section>
             <script>
                 // كارت الكوبون الثابت في بانر "الشحن والدفع" (مش بانر WelcomeOffer العائم):
                 // بمجرد ما الزائرة تنسخ الكود، الكارت ده يختفي فورًا. الكوبون نفسه
@@ -1797,8 +1793,7 @@
     <div id="view-favorites" class="view-section hidden max-w-7xl mx-auto px-4 py-12">
         <h1 class="text-3xl font-bold mb-8 text-right flex items-center gap-3">
             <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-            </svg>
+                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>            </svg>
             المنتجات المفضلة
         </h1>
         <div id="favorites-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10 text-right">
@@ -1997,8 +1992,7 @@
             var box = document.getElementById('pay-cards');
             if (!sel || !box) return;
             var mq = window.matchMedia('(max-width: 767.98px)');
-            var META = {
-                'الدفع عند الاستلام': { title: 'الدفع عند الاستلام', sub: 'معاينة وفحص الطرد قبل سداد المبلغ', icon: '<i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i>' },
+            var META = {                'الدفع عند الاستلام': { title: 'الدفع عند الاستلام', sub: 'معاينة وفحص الطرد قبل سداد المبلغ', icon: '<i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i>' },
                 'instapay': { title: 'تحويل إنستاباي (InstaPay)', sub: 'تحويل لحظي وسريع بدون رسوم إضافية', icon: '<img src="instapay-logo.webp" alt="" width="28" height="20" loading="lazy">' },
                 'vodafone_cash': { title: 'فودافون كاش', sub: 'تحويل إلكتروني فوري لمحفظة المتجر', icon: '<img src="vodafone-cash-logo.webp" alt="" width="28" height="20" loading="lazy">' }
             };
@@ -2198,7 +2192,6 @@
                             تخضع جميع الطلبات والمعاملات في متجر الفرات فارما لأحكام التجارة الإلكترونية وقانون حماية المستهلك المصري.
                         </p>
                     </div>
-
                     <div>
                         <h4 class="font-black text-slate-900 text-sm mb-1.5 flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full bg-amber-600"></span> 1. سياسة الاستبدال والاسترجاع
@@ -2397,8 +2390,7 @@
 
     // الإعدادات الفيزيائية للكاروسيل من مكون React
     const rotate = 44;
-    const depth = 0.6;
-    const falloff = 0.56;
+    const depth = 0.6;    const falloff = 0.56;
     const fade = 0.12;
     const gap = 0.08;
     const loop = true;
@@ -2597,8 +2589,7 @@
     // Keyboard support
     frame.addEventListener('keydown', function(e) {
       if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        nudge(-1);
+        e.preventDefault();        nudge(-1);
       } else if (e.key === 'ArrowRight') {
         e.preventDefault();
         nudge(1);
