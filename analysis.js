@@ -2523,7 +2523,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // 2) هل نفس الـ IP استخدم WELCOME10 في طلب سابق.
         // لذلك مسح localStorage / cookies لا يعيد الكوبون.
         const { data, error } = await _supabase
-            .rpc('get_welcome_offer_status', { p_ip: ip });
+            .rpc('get_welcome_offer_status');
 
         if (error) {
             console.warn('تعذر التحقق من كوبون الترحيب على السيرفر:', error.message);
