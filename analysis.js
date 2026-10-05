@@ -1392,7 +1392,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         customer_name: name,
                         rating: Number(stars),
                         comment: comment,
-                        is_approved: true
+                        is_approved: false
                     }]);
                     if (error) throw error;
                     return true;
