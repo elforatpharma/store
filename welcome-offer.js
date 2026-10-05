@@ -218,6 +218,35 @@
     return 0;
   }
 
+  // الكوبون لازم يكون فوق الكوكيز وهو ظاهر،
+  // وبمجرد قبول الكوكيز ينزل تلقائياً لمكان الكوكيز السابق.
+  function positionBanner() {
+    if (!bannerEl) return;
+    var offset = cookieBannerOffset();
+    bannerEl.style.setProperty('--wo-bottom', (offset || 16) + 'px');
+  }
+
+  function watchCookieBanner() {
+    try {
+      var cb = document.getElementById('cookie-consent-banner');
+      if (!cb || cb.__woObserver) return;
+
+      var observer = new MutationObserver(function () {
+        // تأجيل بسيط لحد ما transition بتاع الكوكيز يبدأ/ينتهي
+        requestAnimationFrame(function () {
+          positionBanner();
+          setTimeout(positionBanner, 520);
+        });
+      });
+
+      observer.observe(cb, {
+        attributes: true,
+        attributeFilter: ['class', 'style']
+      });
+      cb.__woObserver = observer;
+    } catch (e) {}
+  }
+
   function showBanner() {
     // النافذة بتظهر مرة واحدة بس في عمر المتصفح: أول ما تتعرض بنسجّل shown=true
     // فلو الزائرة قفلتها أو عملت ريفريش أو رجعت بعد كده ما بتظهرش تاني خالص.
@@ -225,9 +254,9 @@
     var el = document.createElement('div');
     el.setAttribute('dir', 'rtl');
     el.className = 'welcome-offer-banner';
-    // الشكل كله في style.css؛ هنا بس بنبلّغ الـ CSS لو لازم يترفع فوق بانر الكوكيز
+    // الكوبون فوق الكوكيز لو الكوكيز ظاهر.
     var offset = cookieBannerOffset();
-    if (offset) el.style.setProperty('--wo-bottom', offset + 'px');
+    el.style.setProperty('--wo-bottom', (offset || 16) + 'px');
 
     textEl = document.createElement('div');
     textEl.className = 'welcome-offer-text';
@@ -249,6 +278,8 @@
     el.appendChild(close);
     document.body.appendChild(el);
     bannerEl = el;
+    watchCookieBanner();
+    positionBanner();
     state.shown = true;
     if (canStore) write(state);
     fillText(null);
@@ -257,6 +288,7 @@
 
   function init() {
     syncExpiry();
+    watchCookieBanner();
     if (!isEligible()) return;
     scheduleExpiry();
     // لا نعرض البانر من التخمين المحلي (ممكن السيرفر يقول إن العرض خلص فيختفي بعد ثواني).
