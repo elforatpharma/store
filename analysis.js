@@ -2551,44 +2551,27 @@ document.addEventListener("DOMContentLoaded", () => {
         const minutesEl = document.getElementById('minutes');
         const secondsEl = document.getElementById('seconds');
 
-        const DURATION = 24 * 60 * 60 * 1000;
         let endTime = null;
-        let expired = false;
-        let ip = null;
+        let expired = true;
+        let verified = false;
 
         try {
-            ip = await getVisitorIP();
-            if (ip) {
-                const win = await getOfferWindowForIP(ip);
-                endTime = win.endTime;
-                expired = win.expired;
-            }
+            const win = await getOfferWindowForIP();
+            endTime = win.endTime;
+            expired = win.expired;
+            verified = win.verified === true;
         } catch (e) {
-            console.warn('فشل ربط العداد بالـ IP، هيشتغل بالطريقة المحلية:', e);
+            console.warn('فشل التحقق من عرض الترحيب على السيرفر:', e);
         }
 
-        // لو معرفناش الـ IP (مفيش نت مثلاً)، نرجع لأسلوب localStorage القديم كبديل مؤقت بس
-        // (ده أضعف من الربط بالـ IP لأنه بيتصفّر لو الزائر مسح الكاش، لكن أحسن من مفيش حاجة)
-        if (endTime == null) {
-            if (localStorage.getItem('elforat_offer_expired')) {
-                expired = true;
-                endTime = Date.now();
-            } else {
-                const stored = localStorage.getItem('elforat_offer_end');
-                if (!stored) {
-                    endTime = Date.now() + DURATION;
-                    localStorage.setItem('elforat_offer_end', endTime);
-                } else if (parseInt(stored, 10) <= Date.now()) {
-                    expired = true;
-                    endTime = parseInt(stored, 10);
-                    localStorage.setItem('elforat_offer_expired', '1');
-                } else {
-                    endTime = parseInt(stored, 10);
-                }
-            }
+        // لا نسمح بإظهار WELCOME10 اعتماداً على localStorage إذا فشل
+        // التحقق من الـ IP الحقيقي على السيرفر.
+        if (!verified) {
+            endTime = Date.now();
+            expired = true;
         }
 
-        // كوبون الترحيب مربوط بنفس نافذة الـ 24 ساعة: نافذة واحدة لكل زائر (IP) للعرض والكوبون معاً
+        // كوبون الترحيب مربوط بنفس نافذة الـ 24 ساعة وبحالة الاستخدام على السيرفر.
         if (window.WelcomeOffer && typeof window.WelcomeOffer.reconcile === 'function') {
             window.WelcomeOffer.reconcile(endTime, expired);
         }
