@@ -2517,56 +2517,44 @@ document.addEventListener("DOMContentLoaded", () => {
     // القاعدة: نافذة الـ 24 ساعة تتحدد مرة واحدة بس لكل IP وقت أول ظهور ليه.
     // لو خلصت، بتفضل خلصت للأبد لنفس الـ IP - من غير أي تجديد تلقائي.
     async function getOfferWindowForIP(ip) {
-        const DURATION = 24 * 60 * 60 * 1000; // 24 ساعة بالظبط
-        const localKey = 'elforat_offer_end_' + ip;
-        const localExpiredKey = 'elforat_offer_expired_' + ip;
-        const now = Date.now();
-
-        // 1) السيرفر هو مصدر الحقيقة (بيفضل صحيح حتى لو الزائر مسح الكاش)
+        // السيرفر هو مصدر الحقيقة للعرض والكوبون معاً.
+        // الـ RPC بيتحقق من:
+        // 1) نافذة الـ 24 ساعة المحفوظة لهذا الـ IP.
+        // 2) هل نفس الـ IP استخدم WELCOME10 في طلب سابق.
+        // لذلك مسح localStorage / cookies لا يعيد الكوبون.
         const { data, error } = await _supabase
-            .from('offer_countdowns')
-            .select('end_time')
-            .eq('ip', ip)
-            .maybeSingle();
+            .rpc('get_welcome_offer_status', { p_ip: ip });
 
-        if (!error && data && data.end_time) {
-            if (data.end_time > now) {
-                localStorage.setItem(localKey, data.end_time);
-                return { endTime: data.end_time, expired: false };
+        if (error) {
+            console.warn('تعذر التحقق من كوبون الترحيب على السيرفر:', error.message);
+            // في حالة عدم القدرة على التحقق من هوية الـ IP، نقفل الكوبون بدلاً
+            // من السماح باستخدامه بعد مسح بيانات التصفح.
+            return { endTime: Date.now(), expired: true, verified: false };
+        }
+
+        const row = Array.isArray(data) ? data[0] : data;
+        if (!row) {
+            return { endTime: Date.now(), expired: true, verified: false };
+        }
+
+        const endTime = row.end_time != null ? Number(row.end_time) : Date.now();
+        const used = row.used === true;
+        const expired = used || row.expired === true || endTime <= Date.now();
+
+        // الاحتفاظ بنسخة محلية للعداد فقط كتحسين للأداء؛ القرار النهائي
+        // يظل قرار السيرفر.
+        try {
+            const localKey = 'elforat_offer_end_' + ip;
+            const localExpiredKey = 'elforat_offer_expired_' + ip;
+            if (expired) {
+                localStorage.setItem(localExpiredKey, '1');
+            } else {
+                localStorage.setItem(localKey, String(endTime));
+                localStorage.removeItem(localExpiredKey);
             }
-            // خلصت فعلاً على السيرفر - تفضل خلصت، من غير تجديد
-            localStorage.setItem(localExpiredKey, '1');
-            return { endTime: data.end_time, expired: true };
-        }
+        } catch (_) {}
 
-        // 2) السيرفر ما رجّعش نتيجة (مشكلة شبكة/RLS)، نستأنس بالنسخة المحلية لنفس الـ IP
-        if (localStorage.getItem(localExpiredKey)) {
-            return { endTime: now, expired: true };
-        }
-        const cached = localStorage.getItem(localKey);
-        if (cached) {
-            const cachedEndTime = parseInt(cached, 10);
-            if (cachedEndTime > now) {
-                _supabase.from('offer_countdowns')
-                    .upsert({ ip: ip, end_time: cachedEndTime }, { onConflict: 'ip' })
-                    .then(() => { });
-                return { endTime: cachedEndTime, expired: false };
-            }
-            localStorage.setItem(localExpiredKey, '1');
-            return { endTime: cachedEndTime, expired: true };
-        }
-
-        // 3) أول ظهور فعلي لهذا الـ IP على الإطلاق: ننشئ نافذة 24 ساعة جديدة (مرة واحدة بس)
-        const newEndTime = now + DURATION;
-        localStorage.setItem(localKey, newEndTime);
-        const { error: upsertError } = await _supabase
-            .from('offer_countdowns')
-            .upsert({ ip: ip, end_time: newEndTime }, { onConflict: 'ip' });
-        if (upsertError) {
-            console.warn('تعذر حفظ العداد على السيرفر، هيتحفظ محليًا فقط:', upsertError.message);
-        }
-
-        return { endTime: newEndTime, expired: false };
+        return { endTime, expired, used, verified: true };
     }
 
     // بيخفي عنصر العداد وبطاقات العروض المرتبطة بيه لما الوقت يخلص
