@@ -1600,6 +1600,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             checkOffers();
             saveCart(); // [جديد] حفظ التحديث
+
+            // لو العميل داخل صفحة السلة، أعد رسم السلة فوراً بعد الإضافة
+            // عشان المنتج المقترح يدخل في نفس الطلب، ويتحدث الإجمالي
+            // والـ checkout total بدون انتظار فتح السلة مرة ثانية.
+            renderCart();
+
             updateBadge();
             trackStoreEvent('add_to_cart', {
                 product_id: String(product.id),
