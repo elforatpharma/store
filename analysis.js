@@ -2498,37 +2498,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 8. كود العداد الذكي (معدل ليتجدد تلقائياً)
     // ==========================================
-    // بيجيب IP الزائر من خدمة خارجية مجانية
-    async function getVisitorIP() {
-        try {
-            const ctrl = new AbortController();
-            const t = setTimeout(() => ctrl.abort(), 3500);
-            const res = await fetch('https://api.ipify.org?format=json', { signal: ctrl.signal });
-            clearTimeout(t);
-            const data = await res.json();
-            return data.ip;
-        } catch (e) {
-            return null; // لو فشل النت، هنرجع لأسلوب localStorage العادي
-        }
-    }
-
-    // بيجيب أو بيتحقق من نافذة العرض الخاصة بالـ IP ده من Supabase
-    // (جدول offer_countdowns: ip (text, primary key), end_time (bigint))
-    // القاعدة: نافذة الـ 24 ساعة تتحدد مرة واحدة بس لكل IP وقت أول ظهور ليه.
-    // لو خلصت، بتفضل خلصت للأبد لنفس الـ IP - من غير أي تجديد تلقائي.
-    async function getOfferWindowForIP(ip) {
-        // السيرفر هو مصدر الحقيقة للعرض والكوبون معاً.
-        // الـ RPC بيتحقق من:
-        // 1) نافذة الـ 24 ساعة المحفوظة لهذا الـ IP.
-        // 2) هل نفس الـ IP استخدم WELCOME10 في طلب سابق.
-        // لذلك مسح localStorage / cookies لا يعيد الكوبون.
+    // ==========================================
+    // 8. كود العداد الذكي (مربوط بالـ IP الحقيقي من Supabase)
+    // ==========================================
+    // مفيش اعتماد على localStorage/cookies لتحديد أهلية كوبون الترحيب.
+    // get_welcome_offer_status() يقرأ X-Forwarded-For داخل Supabase
+    // ويقارن الـ IP بطلبات WELCOME10 السابقة.
+    async function getOfferWindowForIP() {
         const { data, error } = await _supabase
             .rpc('get_welcome_offer_status');
 
         if (error) {
             console.warn('تعذر التحقق من كوبون الترحيب على السيرفر:', error.message);
-            // في حالة عدم القدرة على التحقق من هوية الـ IP، نقفل الكوبون بدلاً
-            // من السماح باستخدامه بعد مسح بيانات التصفح.
             return { endTime: Date.now(), expired: true, verified: false };
         }
 
@@ -2541,13 +2522,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const used = row.used === true;
         const expired = used || row.expired === true || endTime <= Date.now();
 
-        // الاحتفاظ بنسخة محلية للعداد فقط كتحسين للأداء؛ القرار النهائي
-        // يظل قرار السيرفر.
+        // نسخة محلية للعداد فقط كتحسين للأداء؛ القرار النهائي من السيرفر.
         try {
-            const localKey = 'elforat_offer_end_' + ip;
-            const localExpiredKey = 'elforat_offer_expired_' + ip;
+            const localKey = 'elforat_offer_end_server_ip';
+            const localExpiredKey = 'elforat_offer_expired_server_ip';
             if (expired) {
                 localStorage.setItem(localExpiredKey, '1');
+                localStorage.removeItem(localKey);
             } else {
                 localStorage.setItem(localKey, String(endTime));
                 localStorage.removeItem(localExpiredKey);
