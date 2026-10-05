@@ -94,8 +94,8 @@ window.VodafoneCashCheckout = (() => {
   }
 
   /* ---------- فتح تطبيق Vodafone Cash ----------
-   * مفيش رابط دفع مباشر زي InstaPay (ipn.eg)، فبنحاول نفتح التطبيق عن طريق
-   * الباكدج، ولو مش متاح بيفتح صفحة التطبيق في المتجر (Play/App Store). */
+   * مفيش رابط دفع مباشر زي InstaPay (ipn.eg)، فبنستخدم رابط Vodafone الرسمي
+   * لفتح تطبيق أنا فودافون مباشرة على أندرويد، مع بقاء الـ fallback الرسمي للرابط. */
   function detectPlatform() {
     const ua = navigator.userAgent || "";
     if (/android/i.test(ua)) return "android";
@@ -103,24 +103,14 @@ window.VodafoneCashCheckout = (() => {
     return "desktop";
   }
 
-  // محاولة تشغيل تطبيق "أنا فودافون" مباشرة على أندرويد عن طريق intent بالباكدج (MAIN/LAUNCHER)،
-  // ولو فشلت (التطبيق مش مركّب، أو المتصفح رفض intent من غير BROWSABLE) بيفتح صفحة Play زي الأول.
-  // ملحوظة: كروم بيضيف BROWSABLE تلقائياً، وأغلب التطبيقات مش بتعلنه على شاشتها الرئيسية، فالتشغيل
-  // المباشر مش مضمون على كل متصفح/جهاز. الحل المضمون: لو عرفتي الـ scheme الحقيقي للتطبيق
-  // (شوفي الشرح) حطيه في APP_SCHEME_URL وهيتستخدم بدل التشغيل بالباكدج.
-  const APP_SCHEME_URL = ""; // مثال: "someScheme://home" - سيبيه فاضي لحد ما تتأكدي منه
+  // رابط Vodafone Dynamic Link الرسمي الذي تم اختباره على الهاتف ويفتح تطبيق "أنا فودافون".
+  // نستخدم /home فقط لأنه المسار المؤكد أنه يعمل، ولا نفترض مسارًا داخليًا لشاشة Vodafone Cash.
+  const VODAFONE_DYNAMIC_LINK =
+    "https://web.vodafone.com.eg/LB/DynamicLinks/Business/index.html?url=/home";
 
   function getOpenAppTarget(platform) {
     if (platform === "android") {
-      const fb = "S.browser_fallback_url=" + encodeURIComponent(PLAY_URL);
-      const m = APP_SCHEME_URL.match(/^([a-z][a-z0-9+.-]*):\/\/(.*)$/i);
-      if (m) {
-        return { mode: "navigate", url: `intent://${m[2]}#Intent;scheme=${m[1]};package=${ANDROID_PACKAGE};${fb};end` };
-      }
-      return {
-        mode: "navigate",
-        url: `intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=${ANDROID_PACKAGE};${fb};end`,
-      };
+      return { mode: "navigate", url: VODAFONE_DYNAMIC_LINK };
     }
     if (platform === "ios") return { mode: "open", url: IOS_URL };
     return { mode: "open", url: WEB_URL };
