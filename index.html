@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <!-- ============================================================
          Security Headers (Meta-tag fallback)
@@ -132,7 +132,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="الفرات فارما">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="logo-96.png">
     <link rel="manifest" href="manifest.json">
 
     
@@ -159,6 +159,19 @@
          السبب: supabase-js كان بيحمّل auth + realtime + storage + postgrest كامل،
          وأكتر من نصه مبيتستخدمش خالص (Lighthouse unused JS). -->
     <script src="supabase-lite.js?v=37" defer></script>
+
+    <style id="safe-area-fix">
+        /* PWA safe-area support: keeps the top UI below the phone notch/status area. */
+        @supports (padding-top: env(safe-area-inset-top)) {
+            .sticky.top-0 {
+                padding-top: env(safe-area-inset-top);
+            }
+
+            #mobile-menu-panel {
+                padding-top: env(safe-area-inset-top);
+            }
+        }
+    </style>
 
 </head>
 
