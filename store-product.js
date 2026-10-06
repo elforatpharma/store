@@ -131,6 +131,10 @@
             }
         });
 
+        const images = mergedImgs.length > 0
+            ? mergedImgs
+            : (p.img ? [getFullImg(p.img)] : ['logo.png']);
+
         // تهيئة حالة المعرض مباشرة (بدون الاعتماد على سكربت مضمّن داخل innerHTML)
         window.productImages = images;
         window.currentImageIndex = 0;
