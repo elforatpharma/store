@@ -20,12 +20,14 @@
     var sanitize = S.sanitize;
     var jsArg = S.jsArg;
     var getFullImg = S.getFullImg;
+    var getOptimizedImg = S.getOptimizedImg;
     function optimizeDisplayImage(url, width, quality) {
         if (!url) return 'logo.png';
+        if (getOptimizedImg) return getOptimizedImg(url, width || 700, quality || 78);
         if (!/^https?:\/\//i.test(url)) return url;
         width = width || 700;
         quality = quality || 78;
-        return 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&w=' + width + '&q=' + quality + '&output=webp';
+        return 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&w=' + width + '&q=' + quality + '&output=webp&we&maxage=1y';
     }
     var renderFormattedText = S.renderFormattedText;
     var trackStoreEvent = S.trackStoreEvent;
@@ -146,7 +148,7 @@
                 <!-- معرض الصور -->
                 <div class="space-y-4">
                     <div class="product-visual-glass aspect-square flex items-center justify-center p-4 sm:p-6 md:p-8 rounded-3xl overflow-hidden group relative bg-white/50 border border-purple-100/60 shadow-lg">
-                        <img id="main-product-img" src="${sanitize(optimizeDisplayImage(images[0], 700, 78))}" loading="eager" fetchpriority="high" decoding="async" class="max-h-full max-w-full object-contain transition-all duration-500 hover:scale-105 cursor-zoom-in drop-shadow-xl" onerror="this.src='logo.png'" onclick="openImageZoom('${jsArg(images[0])}')">
+                        <img id="main-product-img" src="${sanitize(optimizeDisplayImage(images[0], 700, 78))}" loading="eager" fetchpriority="high" decoding="async" width="700" height="700" class="max-h-full max-w-full object-contain transition-all duration-500 hover:scale-105 cursor-zoom-in drop-shadow-xl" onerror="this.src='logo.png'" onclick="openImageZoom('${jsArg(images[0])}')">
                         <!-- أزرار التنقل للمعرض (تظهر فقط عند وجود أكثر من صورة) -->
                         ${images.length > 1 ? `
                         <button onclick="changeProductImage('prev')" class="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white/95 text-darkNavy backdrop-blur-md rounded-full flex items-center justify-center shadow-lg transition-all hover:bg-primary hover:text-white active:scale-90 z-20" title="الصورة السابقة">
@@ -170,7 +172,7 @@
                             <button onclick="changeProductImage(${idx})" 
                                     class="thumbnail-btn w-14 h-14 sm:w-20 sm:h-20 bg-white/80 rounded-2xl p-1.5 border-2 ${idx === 0 ? 'border-primary shadow-purple-soft scale-105' : 'border-purple-100 hover:border-primary/50'} transition-all overflow-hidden relative group"
                                     data-index="${idx}">
-                                <img src="${sanitize(optimizeDisplayImage(img, 120, 72))}" loading="lazy" decoding="async" class="w-full h-full object-contain rounded-xl thumbnail-img group-hover:scale-105 transition-transform" onerror="this.src='logo.png'">
+                                <img src="${sanitize(optimizeDisplayImage(img, 120, 72))}" loading="lazy" decoding="async" width="120" height="120" class="w-full h-full object-contain rounded-xl thumbnail-img group-hover:scale-105 transition-transform" onerror="this.src='logo.png'">
                             </button>
                         `).join('')}
                     </div>
@@ -338,7 +340,8 @@
         mainImg.style.transform = 'scale(0.95)';
 
         setTimeout(() => {
-            mainImg.src = window.productImages[window.currentImageIndex];
+            mainImg.src = optimizeDisplayImage(window.productImages[window.currentImageIndex], window.innerWidth <= 767 ? 480 : 700, 78);
+            mainImg.setAttribute('fetchpriority', 'high');
             mainImg.style.opacity = '1';
             mainImg.style.transform = 'scale(1)';
         }, 200);
@@ -561,7 +564,7 @@
             <div class="pdp-thumbs">
                 ${images.map(function (img, idx) { return `
                 <button type="button" onclick="changeProductImage(${idx})" class="pdp-thumb thumbnail-btn${idx === 0 ? ' is-active' : ''}" data-index="${idx}" aria-label="صورة ${idx + 1}">
-                    <img src="${sanitize(img)}" loading="lazy" alt="" onerror="this.src='logo.png'">
+                    <img src="${sanitize(optimizeDisplayImage(img, 120, 72))}" loading="lazy" decoding="async" width="120" height="120" alt="" onerror="this.src='logo.png'">
                 </button>`; }).join('')}
             </div>` : '';
 
@@ -643,7 +646,7 @@
                     <button type="button" aria-label="مشاركة المنتج" class="pdp-share" onclick="pdpShare('${jsArg(p.name)}'); event.stopPropagation();">
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
                     </button>
-                    <img id="main-product-img" class="pdp-main-img" src="${sanitize(images[0])}" alt="${sanitize(p.name)}" onerror="this.src='logo.png'" onclick="openImageZoom(window.productImages[window.currentImageIndex || 0])">
+                    <img id="main-product-img" class="pdp-main-img" src="${sanitize(optimizeDisplayImage(images[0], 480, 78))}" loading="eager" fetchpriority="high" decoding="async" width="480" height="480" alt="${sanitize(p.name)}" onerror="this.src='logo.png'" onclick="openImageZoom(window.productImages[window.currentImageIndex || 0])">
                     ${images.length > 1 ? `<div class="pdp-count"><span id="gallery-current-idx">1</span> / ${images.length}</div>` : ''}
                 </div>
                 ${thumbs}
