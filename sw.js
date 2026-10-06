@@ -1,6 +1,6 @@
 // Service Worker - Elforat Pharma PWA
-const CACHE_NAME = 'elforat-cache-v41';
-const STATIC_ASSETS = ['./','./index.html','./style.min.css?v=47','./tailwind-built.css?v=47','./mobile.css?v=47','./fa-subset.css?v=47','./supabase-lite.js?v=47','./welcome-offer.js?v=47','./analysis.js?v=47','./image-performance.js?v=1','./instapay-logo.webp','./vodafone-cash-logo.webp','./manifest.json?v=4','./pwa-icon-192.svg?v=4','./pwa-icon-512.svg?v=4','./pwa-icon-maskable-512.svg?v=4','./logo.png','./logo-96.png','./logo-96.webp','./favicon-32.png','./hero-products.webp'];
+const CACHE_NAME = 'elforat-cache-v42';
+const STATIC_ASSETS = ['./','./index.html','./style.min.css?v=47','./tailwind-built.css?v=47','./mobile.css?v=47','./fa-subset.css?v=47','./supabase-lite.js?v=47','./welcome-offer.js?v=47','./analysis.js?v=47','./image-performance.js?v=1','./instapay-logo.webp','./vodafone-cash-logo.webp','./manifest.json?v=5','./icon-192.png?v=5','./icon-512.png?v=5','./icon-512.png?v=5','./logo.png','./logo-96.png','./logo-96.webp','./favicon-32.png','./hero-products.webp'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => Promise.allSettled(STATIC_ASSETS.map((url) => cache.add(new Request(url, { cache: 'reload' }))))));
