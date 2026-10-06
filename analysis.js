@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // الطريقة بسيطة: نفس الـ Promise بيرجّع لكل نداءات لنفس الملف، والـ prefetch
     // بيحط <link rel="prefetch"> عشان المتصفح يجيبه في الخلفية قبل الضغط.
     const STORE_CHUNKS = {
-        product: 'store-product.js?v=40',
+        product: 'store-product.js?v=41',
         checkout: 'store-checkout.js?v=37'
     };
     const __storeChunkPromises = Object.create(null);
@@ -793,7 +793,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function getOptimizedImg(path, width = 320, quality = 72) {
         const fullUrl = getFullImg(path);
         if (!fullUrl.startsWith('http')) return fullUrl; // لوجو محلي مثلاً - سيبه زي ما هو
-        return `https://wsrv.nl/?url=${encodeURIComponent(fullUrl)}&w=${width}&q=${quality}&output=webp`;
+        return `https://wsrv.nl/?url=${encodeURIComponent(fullUrl)}&w=${width}&q=${quality}&output=webp&we&maxage=1y`;
     }
 
     // معالج موحّد لفشل تحميل الصور: أول محاولة فشل بترجع للصورة الأصلية،
@@ -2180,7 +2180,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return `
                 <div class="cart-card cart-card--gift flex gap-4 sm:gap-8 border-b border-gray-100 pb-10 text-right group relative">
                     <div class="cart-card__img w-20 h-20 sm:w-24 sm:h-24 bg-[#fdf2f5] p-3 sm:p-4 rounded-2xl relative shrink-0">
-                        <img src="${sanitize(item.img)}" class="w-full h-full object-contain mix-blend-multiply">
+                        <img src="${sanitize(getOptimizedImg(item.img, 160, 72))}" loading="lazy" decoding="async" width="160" height="160" class="w-full h-full object-contain mix-blend-multiply">
                         <span class="absolute -bottom-2 -left-2 bg-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full">x${item.qty}</span>
                     </div>
                     <div class="flex-grow space-y-1">
@@ -2192,7 +2192,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             return `
             <div class="cart-card flex gap-4 sm:gap-8 border-b border-gray-100 pb-10 text-right group relative">
-                <div class="cart-card__img w-20 h-20 sm:w-24 sm:h-24 bg-[#f9f9f9] p-3 sm:p-4 rounded-2xl relative"><img src="${sanitize(item.img)}" alt="${sanitize(item.name)}" class="w-full h-full object-contain mix-blend-multiply"></div>
+                <div class="cart-card__img w-20 h-20 sm:w-24 sm:h-24 bg-[#f9f9f9] p-3 sm:p-4 rounded-2xl relative"><img src="${sanitize(getOptimizedImg(item.img, 160, 72))}" alt="${sanitize(item.name)}" loading="lazy" decoding="async" width="160" height="160" class="w-full h-full object-contain mix-blend-multiply" onerror="handleImgError(this, '${jsArg(item.img)}')"></div>
                 <div class="cart-card__body flex-grow space-y-1">
                     <div class="m-only cart-card__tags"><span class="cart-card__cat">${sanitize(item.category || '')}</span>${item.badge ? `<span class="cart-card__badge">${sanitize(item.badge)}</span>` : ''}</div>
                     <h3 class="text-sm font-extrabold uppercase text-black">${sanitize(item.name)}</h3>
@@ -2434,6 +2434,7 @@ document.addEventListener("DOMContentLoaded", () => {
         sanitize: sanitize,
         jsArg: jsArg,
         getFullImg: getFullImg,
+        getOptimizedImg: getOptimizedImg,
         renderFormattedText: renderFormattedText,
         renderCart: renderCart,
         saveCart: saveCart,
