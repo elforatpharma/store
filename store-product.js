@@ -201,14 +201,33 @@
         let dbImgs = parseGalleryField(p.gallery);
         if (dbImgs.length === 0) dbImgs = parseGalleryField(p.images); // توافق مع أي بيانات قديمة كانت مخزنة باسم images
         const candidateImgs = dbImgs.length > 0 ? dbImgs : (extraImgs || []);
+
+        // استبعاد صور لوجو المتجر من معرض المنتج.
+        // بعض المنتجات القديمة/المضافة من لوحة التحكم كان معرضها يحتوي
+        // على logo.png أو logo-96.* أو روابط تنتهي باسم logo، وده كان بيظهر
+        // اللوجو كأنه صورة من صور المنتج.
+        function isStoreLogoImage(value) {
+            if (!value || typeof value !== 'string') return false;
+            const raw = value.toLowerCase().split('?')[0].split('#')[0];
+            const fileName = raw.substring(raw.lastIndexOf('/') + 1);
+            return /^(logo|logo-96|logo_96)(?:[-_]?\\d+)?\\.(?:png|jpe?g|webp|avif|gif|svg)$/i.test(fileName)
+                || /(?:^|[-_])(?:store[-_]?logo|elforat[-_]?logo)(?:[-_\\d]*)\\.(?:png|jpe?g|webp|avif|gif|svg)$/i.test(fileName);
+        }
+
         let mergedImgs = [];
-        if (p.img) mergedImgs.push(getFullImg(p.img));
+        if (p.img && !isStoreLogoImage(p.img)) mergedImgs.push(getFullImg(p.img));
         candidateImgs.forEach(im => {
-            if (im && typeof im === 'string') {
+            if (im && typeof im === 'string' && !isStoreLogoImage(im)) {
                 const full = getFullImg(im);
                 if (!mergedImgs.includes(full)) mergedImgs.push(full);
             }
         });
+
+        // لو البيانات القديمة كان فيها اللوجو فقط، نرجع للصورة الأساسية للمنتج
+        // بدل ما يظهر معرض فارغ أو صورة لوجو.
+        if (mergedImgs.length === 0 && p.img) {
+            mergedImgs.push(getFullImg(p.img));
+        }
         const images = mergedImgs.length > 0 ? mergedImgs : (p.img ? [getFullImg(p.img)] : ['logo.png']);
 
         // تهيئة حالة المعرض مباشرة (بدون الاعتماد على سكربت مضمّن داخل innerHTML)
