@@ -125,7 +125,7 @@ div:has(> .relative > #mobile-search-input) {
   animation: none;
 }
 #home p:not(.hero-social-proof) {
-  order: 2;
+  order: 3;
   margin: 0 auto;
   max-width: 20rem;
   font-size: 14px;
@@ -154,7 +154,7 @@ div:has(> .relative > #mobile-search-input) {
 }
 
 /* صورة الهيرو */
-#home .max-w-7xl > .grid > div:nth-child(2) { order: 3; width: 100%; }
+#home .max-w-7xl > .grid > div:nth-child(2) { order: 2; width: 100%; }
 #home .max-w-7xl > .grid > div:nth-child(2) > div { max-width: none; }
 #home .blur-2xl,
 #home .animate-float-slow,
