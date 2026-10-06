@@ -798,6 +798,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // معالج موحّد لفشل تحميل الصور: أول محاولة فشل بترجع للصورة الأصلية،
     // ولو دي كمان فشلت بيرجع للوجو كحل أخير (بدل ما تفضل مكسورة).
+    function handleImgLoad(imgEl) {
+        if (!imgEl) return;
+        imgEl.classList.remove('image-loading');
+        imgEl.classList.add('image-loaded');
+        const skeletonHost = imgEl.closest('[data-image-skeleton]');
+        if (skeletonHost) skeletonHost.classList.remove('skeleton-img');
+    }
+    window.handleImgLoad = handleImgLoad;
+
     function handleImgError(imgEl, fallbackUrl) {
         if (!imgEl) return;
         if (imgEl.dataset.imgFallback === '1') {
@@ -1942,8 +1951,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         </button>
     </div>
-    <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden">
-        <img src="${sanitize(p.imgThumb || p.img)}" loading="${index === 0 ? 'eager' : 'lazy'}" decoding="async" fetchpriority="${index === 0 ? 'high' : 'auto'}" width="320" height="320" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" onerror="handleImgError(this, '${jsArg(p.img)}')">
+    <div class="relative w-full aspect-square rounded-2xl bg-gradient-to-tr from-purple-50/80 to-purple-100/40 p-3 sm:p-4 mb-3.5 flex items-center justify-center overflow-hidden skeleton-img" data-image-skeleton>
+        <img src="${sanitize(p.imgThumb || p.img)}" loading="${index === 0 ? 'eager' : 'lazy'}" decoding="async" fetchpriority="${index === 0 ? 'high' : 'auto'}" width="320" height="320" alt="${sanitize(p.name)}" class="w-full h-full object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500 image-loading" onload="handleImgLoad(this)" onerror="handleImgError(this, '${jsArg(p.img)}')">
         <span class="hidden sm:flex absolute bottom-2 left-2 items-center bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-400 font-mono tracking-widest">ELFORAT</span>
     </div>
     <div class="flex flex-col flex-1">
@@ -1992,8 +2001,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="bundle-card__rating"><i class="fa-solid fa-star"></i><span>${p.rating || '4.9'}</span></div>
     </div>
     <div class="bundle-card__body">
-        <div class="bundle-card__img">
-            <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" decoding="async" fetchpriority="low" width="80" height="80" alt="${sanitize(p.name)}" onerror="handleImgError(this, '${jsArg(p.img)}')">
+        <div class="bundle-card__img skeleton-img" data-image-skeleton>
+            <img src="${sanitize(p.imgThumb || p.img)}" loading="lazy" decoding="async" fetchpriority="low" width="80" height="80" alt="${sanitize(p.name)}" class="image-loading" onload="handleImgLoad(this)" onerror="handleImgError(this, '${jsArg(p.img)}')">
         </div>
         <div class="bundle-card__text">
             <h3 class="bundle-card__title">${sanitize(p.name)}</h3>
