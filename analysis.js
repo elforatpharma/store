@@ -9,6 +9,13 @@
 (function () {
     let toastContainer = null;
 
+    // Treat toast messages as plain text. Messages may contain server/user-controlled data.
+    function escapeToastText(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+        ));
+    }
+
     function getToastContainer() {
         if (!toastContainer || !document.body.contains(toastContainer)) {
             toastContainer = document.createElement('div');
@@ -35,7 +42,7 @@
         toast.className = `pointer-events-auto flex items-center gap-3 bg-gradient-to-l ${s.bg} text-white font-bold text-sm px-5 py-3.5 rounded-2xl shadow-purple-glow border border-white/20 max-w-sm w-fit opacity-0 -translate-y-4 transition-all duration-300 ease-out`;
         toast.innerHTML = `
             <span class="${s.iconColor} text-lg leading-none"><i class="fa-solid ${s.icon}"></i></span>
-            <span class="flex-1 leading-snug">${message}</span>
+            <span class="flex-1 leading-snug">${escapeToastText(message)}</span>
         `;
 
         container.appendChild(toast);
@@ -322,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
             toast.innerHTML = `
                 <div class="toast-icon">${icons[type]}</div>
                 <div class="toast-content">
-                    <div class="toast-title">${title || titles[type]}${message ? ' - ' + message : ''}</div>
+                    <div class="toast-title">${sanitize(title || titles[type])}${message ? ' - ' + sanitize(message) : ''}</div>
                 </div>
                 <button class="toast-close" onclick="ToastManager.dismiss(this.closest('.toast-notification'))">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
