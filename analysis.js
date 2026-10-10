@@ -97,6 +97,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let reloadScrollY = Number.isFinite(history.state?.scrollY) ? history.state.scrollY : 0;
     let scrollSaveFrame = 0;
 
+    window.addEventListener('pagehide', () => {
+        const y = Math.max(0, window.scrollY || window.pageYOffset || 0);
+        reloadScrollY = y;
+        try { history.replaceState({ ...(history.state || {}), scrollY: y }, ''); } catch (_) { }
+    });
+
     window.addEventListener('scroll', () => {
         if (scrollSaveFrame) return;
         scrollSaveFrame = requestAnimationFrame(() => {
