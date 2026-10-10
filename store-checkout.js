@@ -44,6 +44,73 @@
         try { if (ErrorHandler && ErrorHandler.logError) ErrorHandler.logError(err, context); } catch (_) { }
     }
 
+    // نافذة نجاح خاصة بالدفع عند الاستلام: لا تفتح واتساب لأن الطلب مسجل بالفعل في الداشبورد.
+    function showCashOnDeliverySuccess(orderNo) {
+        const existing = document.getElementById('cod-order-success-modal');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'cod-order-success-modal';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.62);backdrop-filter:blur(5px);';
+
+        const dialog = document.createElement('div');
+        dialog.setAttribute('role', 'dialog');
+        dialog.setAttribute('aria-modal', 'true');
+        dialog.setAttribute('aria-labelledby', 'cod-order-success-title');
+        dialog.style.cssText = 'width:min(100%,390px);background:#fff;border-radius:24px;padding:30px 24px 24px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.24);direction:rtl;animation:codSuccessPop .22s ease-out;';
+
+        const style = document.createElement('style');
+        style.textContent = '@keyframes codSuccessPop{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}@media(prefers-reduced-motion:reduce){#cod-order-success-modal>div{animation:none!important}}';
+        overlay.appendChild(style);
+
+        const icon = document.createElement('div');
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = '✓';
+        icon.style.cssText = 'display:flex;align-items:center;justify-content:center;width:76px;height:76px;margin:0 auto 18px;border-radius:50%;background:#dcfce7;border:3px solid #22c55e;color:#15803d;font-size:46px;font-weight:900;line-height:1;box-shadow:0 0 0 8px #f0fdf4;';
+        dialog.appendChild(icon);
+
+        const title = document.createElement('h2');
+        title.id = 'cod-order-success-title';
+        title.textContent = 'تم استلام طلبك بنجاح';
+        title.style.cssText = 'margin:0 0 10px;color:#0f172a;font-size:22px;font-weight:900;line-height:1.5;';
+        dialog.appendChild(title);
+
+        const description = document.createElement('p');
+        description.textContent = 'شكراً لثقتك في الفرات فارما. تم تسجيل طلبك وسيظهر لفريقنا لتجهيزه.';
+        description.style.cssText = 'margin:0;color:#64748b;font-size:14px;line-height:1.9;';
+        dialog.appendChild(description);
+
+        if (orderNo) {
+            const number = document.createElement('p');
+            number.textContent = 'رقم الطلب: #' + orderNo;
+            number.style.cssText = 'margin:14px 0 0;padding:10px 12px;border-radius:12px;background:#f8fafc;color:#334155;font-size:14px;font-weight:800;';
+            dialog.appendChild(number);
+        }
+
+        const closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.textContent = 'متابعة التسوق';
+        closeButton.style.cssText = 'display:block;width:100%;margin-top:22px;padding:13px 18px;border:0;border-radius:14px;background:#15803d;color:#fff;font-size:15px;font-weight:800;cursor:pointer;';
+        dialog.appendChild(closeButton);
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+
+        const onKeyDown = (event) => {
+            if (event.key === 'Escape' && document.getElementById('cod-order-success-modal') === overlay) close();
+        };
+        const close = () => {
+            document.removeEventListener('keydown', onKeyDown);
+            overlay.remove();
+            if (app && typeof app.navigate === 'function') app.navigate('home');
+        };
+        closeButton.addEventListener('click', close);
+        overlay.addEventListener('click', (event) => {
+            if (event.target === overlay) close();
+        });
+        document.addEventListener('keydown', onKeyDown);
+        closeButton.focus({ preventScroll: true });
+    }
+
     async function handleSubmit(checkoutForm, e) {
             e.preventDefault();
 
@@ -588,6 +655,21 @@
                     config: vodafoneCashConfig,
                     onClose: () => app.navigate('home')
                 });
+                return;
+            }
+
+            // الدفع عند الاستلام: الطلب محفوظ بالفعل في orders، فلا حاجة لتحويل العميل إلى واتساب.
+            if (payment === 'الدفع عند الاستلام') {
+                window.OrderStatus?.clearPendingMerchantOrderId?.();
+                S.cart = [];
+                saveCart();
+                S.appliedCoupon = null;
+                saveCoupon();
+                updateBadge();
+                checkoutForm.reset();
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+                showCashOnDeliverySuccess(orderWasSaved && instapayOrderNo ? instapayOrderNo : '');
                 return;
             }
 
