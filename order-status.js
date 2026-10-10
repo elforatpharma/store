@@ -89,7 +89,9 @@ window.OrderStatus = (() => {
     if (!error) return false;
     const code = error.code || '';
     const msg = (error.message || '') + ' ' + (error.details || '');
-    return code === '23505' || /duplicate key|already exists/i.test(msg);
+    // لا نعتبر أي تعارض فريد نجاحًا: النجاح المتكرر مسموح فقط عند تعارض
+    // merchant_order_id نفسه. تعارض order_number أو أي قيد آخر يجب أن يفشل بوضوح.
+    return code === '23505' && /merchant_order_id/i.test(msg);
   }
 
   async function insertOrderIdempotent(supabaseClient, orderData) {
