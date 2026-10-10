@@ -115,6 +115,8 @@
             e.preventDefault();
 
             const submitBtn = checkoutForm.querySelector('button[type="submit"]');
+            // حارس متزامن: يمنع ضغطتين/حدثي submit قبل اكتمال أول طلب.
+            if (!submitBtn || submitBtn.disabled) return;
             const originalBtnText = submitBtn.innerText;
             submitBtn.innerText = 'جاري تسجيل طلبك...';
             submitBtn.disabled = true;
@@ -345,7 +347,8 @@
                 }
                 const pct = dbCoupon ? Number(dbCoupon.discount_percentage) : 0;
                 const usesOk = dbCoupon && ((dbCoupon.max_uses == null) || (Number(dbCoupon.used_count) || 0) < Number(dbCoupon.max_uses));
-                if (dbCoupon && pct > 0 && usesOk) {
+                const minAmountOk = dbCoupon && subtotal >= (Number(dbCoupon.min_amount) || 0);
+                if (dbCoupon && pct > 0 && usesOk && minAmountOk) {
                     verifiedCouponCode = dbCoupon.code;
                     verifiedDiscountAmount = Math.round(((subtotal * pct) / 100) * 100) / 100;
                 } else {
@@ -489,7 +492,7 @@
                     submitBtn.innerText = originalBtnText;
                     submitBtn.disabled = false;
                     return;
-                } else if (orderError && /ORDER_(TOTAL_MISMATCH|INVALID_COUPON|BAD_GOVERNORATE|UNKNOWN_PRODUCT|INVALID_ITEMS|INVALID_GIFT)/.test(orderError.message || '')) {
+                } else if (orderError && /ORDER_(TOTAL_MISMATCH|INVALID_COUPON|BAD_GOVERNORATE|UNKNOWN_PRODUCT|PRODUCT_INACTIVE|INVALID_ITEMS|INVALID_GIFT)/.test(orderError.message || '')) {
                     // السيرفر رفض الطلب لأن الأسعار/الشحن/الكوبون اتغيروا عن اللي كان ظاهر للعميلة.
                     // مفيش محاولة بحد أدنى هنا (هتترفض برضه) - بنحدّث السلة ونوقف.
                     reportCheckoutError(new Error('order rejected by server: ' + orderError.message), 'checkout:order_rejected');
@@ -503,7 +506,11 @@
                         saveCoupon();
                     }
                     renderCart();
-                    showCustomAlert('الأسعار أو الشحن أو الكوبون اتغيروا عن اللي كان ظاهر. راجعي الإجمالي وأكدي الطلب تاني.', 'error');
+                    showCustomAlert(/ORDER_PRODUCT_INACTIVE/.test(orderError.message || '')
+                        ? 'أحد المنتجات لم يعد متاحًا للطلب، لم يتم تسجيل الطلب. احذفي المنتج أو اختاري منتجًا آخر.'
+                        : /ORDER_TOTAL_MISMATCH/.test(orderError.message || '')
+                            ? 'تغيّر سعر منتج أو رسوم الشحن أو قيمة الخصم أثناء إتمام الطلب. لم يتم تسجيل الطلب؛ راجعي الإجمالي الحالي وأكدي مرة أخرى.'
+                            : 'الكوبون أو بيانات المنتجات أو الشحن لم تعد صالحة. لم يتم تسجيل الطلب؛ راجعي السلة وأكدي مرة أخرى.', 'error');
                     submitBtn.innerText = originalBtnText;
                     submitBtn.disabled = false;
                     return;
