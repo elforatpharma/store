@@ -83,11 +83,12 @@ window.VodafoneCashCheckout = (() => {
   }
 
   /* ---------- رسالة واتساب الجاهزة ---------- */
-  function buildWhatsAppUrl({ whatsapp, orderNo, total }) {
+  function buildWhatsAppUrl({ whatsapp, orderNo, total, shippingLater = false }) {
     const text = [
       `مرحبًا، أريد تأكيد دفع الطلب رقم #${orderNo}`,
       `طريقة الدفع: ${PAYMENT_LABEL}`,
       `المبلغ: ${formatAmount(total)} جنيه`,
+      ...(shippingLater ? ['تنبيه: المبلغ لا يشمل مصاريف الشحن، وسيتم تحديدها لاحقًا حسب شركة الشحن.'] : []),
       "سأرسل إيصال الدفع هنا.",
     ].join("\n");
     return `https://wa.me/${whatsapp}?text=${encodeURIComponent(text)}`;
@@ -290,12 +291,12 @@ window.VodafoneCashCheckout = (() => {
   }
 
   /* ---------- الـ Popup ---------- */
-  function showPopup({ orderNo, total, config, onClose }) {
+  function showPopup({ orderNo, total, config, onClose, shippingLater = false }) {
     injectStyles();
     document.getElementById("vcx-overlay")?.remove();
 
     const previouslyFocused = document.activeElement;
-    const waUrl = buildWhatsAppUrl({ whatsapp: config.whatsapp, orderNo, total });
+    const waUrl = buildWhatsAppUrl({ whatsapp: config.whatsapp, orderNo, total, shippingLater });
     const amountText = formatAmount(total);
 
     const overlay = document.createElement("div");
@@ -321,10 +322,11 @@ window.VodafoneCashCheckout = (() => {
 
           <div class="vcx-amount" role="region" aria-label="المبلغ المطلوب">
             <div class="vcx-amount-top">
-              <span><i class="fa-solid fa-circle-check"></i>المبلغ المطلوب تحويله بالكامل</span>
-              <span class="vcx-tag">شامل الخصم والشحن</span>
+              <span><i class="fa-solid fa-circle-check"></i>${shippingLater ? 'المبلغ المطلوب تحويله الآن' : 'المبلغ المطلوب تحويله بالكامل'}</span>
+              <span class="vcx-tag">${shippingLater ? 'غير شامل مصاريف الشحن' : 'شامل الخصم والشحن'}</span>
             </div>
             <div class="vcx-amount-val"><strong>${esc(amountText)}</strong><span>جنيه مصري</span></div>
+            ${shippingLater ? '<p role="note" style="margin:0;color:#fff7d6;font-size:12px;line-height:1.7;text-align:center;">مصاريف الشحن غير مشمولة في المبلغ الحالي، وستُحدد لاحقًا حسب شركة الشحن.</p>' : ''}
             <button type="button" class="vcx-btn-copyamt"><i class="fa-regular fa-copy"></i><span>نسخ المبلغ (${esc(amountText)} ج.م)</span></button>
           </div>
 
