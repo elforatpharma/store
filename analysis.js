@@ -91,6 +91,41 @@ document.addEventListener("DOMContentLoaded", () => {
         try { history.scrollRestoration = 'manual'; } catch (_) { }
     }
 
+    // نحفظ موضع التمرير باستمرار داخل سجل الصفحة الحالي، لأن الريلود لا يطلق
+    // popstate وبالتالي لا يكفي حفظ المكان وقت الانتقال بين الأقسام فقط.
+    let pendingReloadScrollRestore = true;
+    let reloadScrollY = Number.isFinite(history.state?.scrollY) ? history.state.scrollY : 0;
+    let scrollSaveFrame = 0;
+
+    window.addEventListener('scroll', () => {
+        if (scrollSaveFrame) return;
+        scrollSaveFrame = requestAnimationFrame(() => {
+            scrollSaveFrame = 0;
+            const y = Math.max(0, window.scrollY || window.pageYOffset || 0);
+            reloadScrollY = y;
+            try {
+                history.replaceState({ ...(history.state || {}), scrollY: y }, '');
+            } catch (_) { }
+        });
+    }, { passive: true });
+
+    function restoreReloadScrollPosition() {
+        if (!pendingReloadScrollRestore) return;
+        pendingReloadScrollRestore = false;
+        const targetY = Math.max(0, reloadScrollY || 0);
+        const apply = () => {
+            // لو الصفحة لسه بتبني محتواها، كرر المحاولة لحد ما الارتفاع يسمح بالمكان المحفوظ.
+            const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+            window.scrollTo({ top: Math.min(targetY, maxY), behavior: 'instant' });
+        };
+        requestAnimationFrame(() => {
+            apply();
+            requestAnimationFrame(apply);
+            setTimeout(apply, 150);
+            setTimeout(apply, 500);
+        });
+    }
+
     const VALID_STORE_VIEWS = new Set(['home', 'catalog', 'about', 'product', 'cart', 'favorites']);
 
     function parseHash() {
@@ -188,6 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             console.warn('تعذّر استرجاع الصفحة من الرابط:', err);
         } finally {
+            restoreReloadScrollPosition();
             releaseRouteRestoring();
         }
     }
