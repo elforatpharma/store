@@ -633,6 +633,7 @@
                     orderNo: instapayOrderNo,
                     total: paidTotal,
                     config: instapayConfig,
+                    shippingLater: !!shipping.later,
                     onClose: () => app.navigate('home')
                 });
                 return;
@@ -660,6 +661,7 @@
                     orderNo: instapayOrderNo,
                     total: paidTotal,
                     config: vodafoneCashConfig,
+                    shippingLater: !!shipping.later,
                     onClose: () => app.navigate('home')
                 });
                 return;
