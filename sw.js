@@ -1,5 +1,5 @@
 // Service Worker - Elforat Pharma PWA
-const CACHE_NAME = 'elforat-cache-v45';
+const CACHE_NAME = 'elforat-cache-v46';
 const STATIC_ASSETS = ['./','./index.html','./style.min.css?v=47','./tailwind-built.css?v=47','./mobile.css?v=47','./fa-subset.css?v=47','./supabase-lite.js?v=47','./welcome-offer.js?v=47','./analysis.js?v=46','./image-performance.js?v=1','./instapay-logo.webp','./vodafone-cash-logo.webp','./manifest.json?v=5','./icon-192.png?v=5','./icon-512.png?v=5','./icon-512.png?v=5','./logo.png','./logo-96.png','./logo-96.webp','./favicon-32.png','./hero-products.webp'];
 
 self.addEventListener('install', (event) => {
