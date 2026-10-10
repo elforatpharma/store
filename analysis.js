@@ -91,16 +91,22 @@ document.addEventListener("DOMContentLoaded", () => {
         try { history.scrollRestoration = 'manual'; } catch (_) { }
     }
 
+    const VALID_STORE_VIEWS = new Set(['home', 'catalog', 'about', 'product', 'cart', 'favorites']);
+
     function parseHash() {
         const raw = location.hash.slice(1);
         if (!raw) return null;
-        const [viewId, queryPart] = raw.split('?');
-        if (!viewId) return null;
+        const questionIndex = raw.indexOf('?');
+        const viewId = (questionIndex >= 0 ? raw.slice(0, questionIndex) : raw).trim();
+        if (!VALID_STORE_VIEWS.has(viewId)) return null;
+        const queryPart = questionIndex >= 0 ? raw.slice(questionIndex + 1) : '';
         let param = null;
         if (queryPart) {
             const params = new URLSearchParams(queryPart);
             param = params.get('item') || params.get('category');
         }
+        // صفحة المنتج لا يمكن استعادتها بدون معرّف؛ نرجع للرئيسية بدل شاشة فارغة.
+        if (viewId === 'product' && !param) return { viewId: 'home', param: null };
         return { viewId, param };
     }
 
@@ -187,18 +193,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     window.restoreViewFromHash = restoreViewFromHash;
 
-    window.addEventListener('popstate', () => {
+    window.addEventListener('popstate', async () => {
         try {
             const target = parseHash();
-            // لو السجل اللي المتصفح رجعلنا له من غير هاش (أول صفحة قبل أي pushState)،
-            // نعتبره الهوم صراحة بدل ما نسيب الشكل زي ما هو (كان ده سبب إن أول
-            // ضغطة رجوع مكنتش بترجع لحاجة مفهومة، وبعدين ضغطة تانية كانت بتقفل الموقع).
-            const resolved = target && target.viewId ? target : { viewId: 'home', param: null };
+            // الـ hash هو مصدر الحقيقة؛ لو رجع المتصفح لسجل قديم أو رابط غير صالح،
+            // نعيده للرئيسية بدل ما تختفي كل الأقسام ويظهر محتوى فارغ.
+            const resolved = target || { viewId: 'home', param: null };
             if (window.app && typeof window.app.navigate === 'function') {
-                app.navigate(resolved.viewId, resolved.param, false);
+                const needsAsyncRestore = resolved.viewId === 'product' || resolved.viewId === 'cart';
+                if (needsAsyncRestore) document.documentElement.classList.add('route-restoring');
+                try {
+                    await app.navigate(resolved.viewId, resolved.param, false);
+                } finally {
+                    if (needsAsyncRestore) requestAnimationFrame(() => document.documentElement.classList.remove('route-restoring'));
+                }
             }
         } catch (err) {
             console.warn('تعذّر تنفيذ رجوع/تقدم المتصفح:', err);
+            document.documentElement.classList.remove('route-restoring');
+            if (window.app && typeof window.app.navigate === 'function') {
+                await app.navigate('home', null, false);
+            }
         }
     });
 
@@ -1448,7 +1463,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     // نحفظ مكان السكرول الحالي على السجل اللي هنسيبه، عشان لو
                     // رجعنا له بعدين بزرار "رجوع" يرجعنا لنفس المكان بدل أول الصفحة
                     try { history.replaceState({ ...(history.state || {}), scrollY: window.scrollY }, ""); } catch (_) { }
-                    history.pushState({ viewId, param, scrollY: 0 }, "", param ? `#${viewId}?item=${param}` : `#${viewId}`);
+                    const encodedParam = param == null ? '' : encodeURIComponent(String(param));
+                    history.pushState(
+                        { viewId, param, scrollY: 0 },
+                        "",
+                        encodedParam ? `#${viewId}?item=${encodedParam}` : `#${viewId}`
+                    );
                 }
                 const mainWasActive = !!document.getElementById('view-main')?.classList.contains('active');
                 document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
