@@ -12,7 +12,36 @@
          ممكنة عن طريق <meta> لحد ما تتفعّل الهيدرز الحقيقية عبر
          Cloudflare أو استضافة بتدعم _headers (شوفي security-headers-README.md)
          ============================================================ -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; script-src-elem 'self' 'unsafe-inline'; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://sidtdxchiqiogfkwbdui.supabase.co https://wsrv.nl; media-src 'self' https://actions.google.com; connect-src 'self' https://sidtdxchiqiogfkwbdui.supabase.co https://api.ipify.org; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://connect.facebook.net; script-src-elem 'self' 'unsafe-inline' https://connect.facebook.net; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://sidtdxchiqiogfkwbdui.supabase.co https://wsrv.nl https://www.facebook.com; media-src 'self' https://actions.google.com; connect-src 'self' https://sidtdxchiqiogfkwbdui.supabase.co https://api.ipify.org; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <!-- Meta Pixel: Elforat Pharma -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1430010131919526');
+    fbq('track', 'PageView');
+    // The storefront uses hash-based SPA navigation, so track virtual page views too.
+    (function () {
+        var lastUrl = location.pathname + location.search + location.hash;
+        function trackVirtualPageView() {
+            var nextUrl = location.pathname + location.search + location.hash;
+            if (nextUrl === lastUrl) return;
+            lastUrl = nextUrl;
+            if (typeof window.fbq === 'function') window.fbq('track', 'PageView');
+        }
+        window.addEventListener('hashchange', trackVirtualPageView);
+        window.addEventListener('popstate', trackVirtualPageView);
+    })();
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=1430010131919526&ev=PageView&noscript=1"
+    alt=""></noscript>
+    <!-- End Meta Pixel -->
     <meta name="referrer" content="strict-origin-when-cross-origin">
 
     <title>متجر الفُرات فارما الإلكتروني | ELFORAT PHARMA STORE</title>
