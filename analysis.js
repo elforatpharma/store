@@ -259,10 +259,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // نثبّت "#home" كأول سجل في تاريخ التصفح من غير ما نضيف سجل زيادة (replaceState
-    // مش pushState)، عشان أول رجوع للخلف من أي صفحة تاني يبقى له مكان واضح يرجعله.
+    // نثبّت سجلّ الصفحة الرئيسية كبداية لتاريخ التصفح من غير إضافة #home للرابط.
+    // استخدام المسار الحالي يحافظ على الدومين النظيف، مع بقاء زر الرجوع قادرًا على
+    // العودة للرئيسية من أي قسم آخر.
     if (!parseHash()) {
-        try { history.replaceState({ viewId: 'home', param: null, scrollY: 0 }, '', '#home'); } catch (_) { }
+        try {
+            history.replaceState(
+                { viewId: 'home', param: null, scrollY: 0 },
+                '',
+                location.pathname + location.search
+            );
+        } catch (_) { }
     }
 
 
