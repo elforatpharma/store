@@ -281,8 +281,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // العودة للرئيسية من أي قسم آخر.
     if (!location.hash || location.hash === '#home') {
         try {
+            const savedRoute = history.state && ['home', 'catalog', 'about', 'product', 'cart', 'favorites'].includes(history.state.viewId)
+                ? history.state
+                : { viewId: 'home', param: null, scrollY: 0 };
             history.replaceState(
-                { viewId: 'home', param: null, scrollY: 0 },
+                { ...savedRoute, param: savedRoute.param ?? null, scrollY: Number.isFinite(savedRoute.scrollY) ? savedRoute.scrollY : 0 },
                 '',
                 location.pathname + location.search
             );
