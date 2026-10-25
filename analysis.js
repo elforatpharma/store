@@ -1513,10 +1513,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     // رجعنا له بعدين بزرار "رجوع" يرجعنا لنفس المكان بدل أول الصفحة
                     try { history.replaceState({ ...(history.state || {}), scrollY: window.scrollY }, ""); } catch (_) { }
                     const encodedParam = param == null ? '' : encodeURIComponent(String(param));
+                    // Keep the home URL clean; other views continue using hash routes.
+                    const targetUrl = viewId === 'home'
+                        ? (location.pathname + location.search)
+                        : (encodedParam ? `#${viewId}?item=${encodedParam}` : `#${viewId}`);
                     history.pushState(
                         { viewId, param, scrollY: 0 },
                         "",
-                        encodedParam ? `#${viewId}?item=${encodedParam}` : `#${viewId}`
+                        targetUrl
                     );
                 }
                 const mainWasActive = !!document.getElementById('view-main')?.classList.contains('active');
