@@ -210,10 +210,28 @@ document.addEventListener("DOMContentLoaded", () => {
         requestAnimationFrame(() => document.documentElement.classList.remove('route-restoring'));
     }
 
+    function getHistoryRoute() {
+        const state = history.state;
+        if (state && ['home', 'catalog', 'about', 'product', 'cart', 'favorites'].includes(state.viewId)) {
+            return { viewId: state.viewId, param: state.param ?? null };
+        }
+        return parseHash();
+    }
+
     async function restoreViewFromHash() {
         try {
-            const target = parseHash();
+            const target = getHistoryRoute();
             if (!target || !['home', 'catalog', 'about', 'product', 'cart', 'favorites'].includes(target.viewId)) return;
+            // Migrate old hash URLs to the clean URL while preserving the selected view in history.state.
+            if (location.hash) {
+                try {
+                    history.replaceState(
+                        { ...(history.state || {}), viewId: target.viewId, param: target.param ?? null, scrollY: Number(history.state?.scrollY) || 0 },
+                        '',
+                        location.pathname + location.search
+                    );
+                } catch (_) { }
+            }
             // بنستنى لحد ما القسم يبان فعلاً (صفحة المنتج محتاجة lazy chunk)
             // عشان شاشة الاسترجاع تفضل مخفية لحد ما المحتوى يتبني، بدل ما
             // البانتير يتفك ويبان قسم فاضي.
@@ -237,9 +255,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.addEventListener('popstate', async () => {
         try {
-            const target = parseHash();
-            // الـ hash هو مصدر الحقيقة؛ لو رجع المتصفح لسجل قديم أو رابط غير صالح،
-            // نعيده للرئيسية بدل ما تختفي كل الأقسام ويظهر محتوى فارغ.
+            const target = getHistoryRoute();
+            // history.state preserves the selected view while the visible URL stays clean.
             const resolved = target || { viewId: 'home', param: null };
             if (window.app && typeof window.app.navigate === 'function') {
                 const needsAsyncRestore = resolved.viewId === 'product' || resolved.viewId === 'cart';
@@ -1512,15 +1529,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     // نحفظ مكان السكرول الحالي على السجل اللي هنسيبه، عشان لو
                     // رجعنا له بعدين بزرار "رجوع" يرجعنا لنفس المكان بدل أول الصفحة
                     try { history.replaceState({ ...(history.state || {}), scrollY: window.scrollY }, ""); } catch (_) { }
-                    const encodedParam = param == null ? '' : encodeURIComponent(String(param));
-                    // Keep the home URL clean; other views continue using hash routes.
-                    const targetUrl = viewId === 'home'
-                        ? (location.pathname + location.search)
-                        : (encodedParam ? `#${viewId}?item=${encodedParam}` : `#${viewId}`);
+                    // Keep every store view on the clean URL. The current view and
+                    // its parameter live in history.state so Back/Forward still work.
                     history.pushState(
                         { viewId, param, scrollY: 0 },
                         "",
-                        targetUrl
+                        location.pathname + location.search
                     );
                 }
                 const mainWasActive = !!document.getElementById('view-main')?.classList.contains('active');
@@ -1586,8 +1600,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (viewId !== 'product') document.body.classList.remove('show-mobile-bar');
             };
 
-            // ترتيب مهم: doNav الأول لأنه يحدّث الـ hash (pushState) وtrackStoreEvent
-            // بيسجّل location.hash في الحدث.
+            // ترتيب مهم: doNav الأول عشان يحدّث سجل التصفح، ثم نسجل حدث الصفحة.
             const viewReady = doNav();
             trackStoreEvent('page_view', { metadata: { view: viewId, item: param } });
             // بيرجّع Promise دايماً (حتى لو القسم اترسم على طول) عشان
