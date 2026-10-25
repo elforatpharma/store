@@ -210,28 +210,10 @@ document.addEventListener("DOMContentLoaded", () => {
         requestAnimationFrame(() => document.documentElement.classList.remove('route-restoring'));
     }
 
-    function getHistoryRoute() {
-        const state = history.state;
-        if (state && ['home', 'catalog', 'about', 'product', 'cart', 'favorites'].includes(state.viewId)) {
-            return { viewId: state.viewId, param: state.param ?? null };
-        }
-        return parseHash();
-    }
-
     async function restoreViewFromHash() {
         try {
-            const target = getHistoryRoute();
+            const target = parseHash();
             if (!target || !['home', 'catalog', 'about', 'product', 'cart', 'favorites'].includes(target.viewId)) return;
-            // Migrate old hash URLs to the clean URL while preserving the selected view in history.state.
-            if (location.hash) {
-                try {
-                    history.replaceState(
-                        { ...(history.state || {}), viewId: target.viewId, param: target.param ?? null, scrollY: Number(history.state?.scrollY) || 0 },
-                        '',
-                        location.pathname + location.search
-                    );
-                } catch (_) { }
-            }
             // بنستنى لحد ما القسم يبان فعلاً (صفحة المنتج محتاجة lazy chunk)
             // عشان شاشة الاسترجاع تفضل مخفية لحد ما المحتوى يتبني، بدل ما
             // البانتير يتفك ويبان قسم فاضي.
@@ -255,8 +237,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.addEventListener('popstate', async () => {
         try {
-            const target = getHistoryRoute();
-            // history.state preserves the selected view while the visible URL stays clean.
+            const target = parseHash();
+            // الـ hash هو مصدر الحقيقة؛ لو رجع المتصفح لسجل قديم أو رابط غير صالح،
+            // نعيده للرئيسية بدل ما تختفي كل الأقسام ويظهر محتوى فارغ.
             const resolved = target || { viewId: 'home', param: null };
             if (window.app && typeof window.app.navigate === 'function') {
                 const needsAsyncRestore = resolved.viewId === 'product' || resolved.viewId === 'cart';
@@ -281,11 +264,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // العودة للرئيسية من أي قسم آخر.
     if (!location.hash || location.hash === '#home') {
         try {
-            const savedRoute = history.state && ['home', 'catalog', 'about', 'product', 'cart', 'favorites'].includes(history.state.viewId)
-                ? history.state
-                : { viewId: 'home', param: null, scrollY: 0 };
             history.replaceState(
-                { ...savedRoute, param: savedRoute.param ?? null, scrollY: Number.isFinite(savedRoute.scrollY) ? savedRoute.scrollY : 0 },
+                { viewId: 'home', param: null, scrollY: 0 },
                 '',
                 location.pathname + location.search
             );
@@ -1532,12 +1512,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     // نحفظ مكان السكرول الحالي على السجل اللي هنسيبه، عشان لو
                     // رجعنا له بعدين بزرار "رجوع" يرجعنا لنفس المكان بدل أول الصفحة
                     try { history.replaceState({ ...(history.state || {}), scrollY: window.scrollY }, ""); } catch (_) { }
-                    // Keep every store view on the clean URL. The current view and
-                    // its parameter live in history.state so Back/Forward still work.
+                    const encodedParam = param == null ? '' : encodeURIComponent(String(param));
                     history.pushState(
                         { viewId, param, scrollY: 0 },
                         "",
-                        location.pathname + location.search
+                        encodedParam ? `#${viewId}?item=${encodedParam}` : `#${viewId}`
                     );
                 }
                 const mainWasActive = !!document.getElementById('view-main')?.classList.contains('active');
@@ -1603,7 +1582,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (viewId !== 'product') document.body.classList.remove('show-mobile-bar');
             };
 
-            // ترتيب مهم: doNav الأول عشان يحدّث سجل التصفح، ثم نسجل حدث الصفحة.
+            // ترتيب مهم: doNav الأول لأنه يحدّث الـ hash (pushState) وtrackStoreEvent
+            // بيسجّل location.hash في الحدث.
             const viewReady = doNav();
             trackStoreEvent('page_view', { metadata: { view: viewId, item: param } });
             // بيرجّع Promise دايماً (حتى لو القسم اترسم على طول) عشان
