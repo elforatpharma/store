@@ -81,7 +81,7 @@
                 try {
                     var sc = JSON.parse(localStorage.getItem('elforat_store_settings_cache_v1') || 'null');
                     var hu = sc && sc.data && sc.data.hero_image_url;
-                    hu = hu ? ('https://wsrv.nl/?url=' + encodeURIComponent(hu) + '&w=900&q=75&output=webp') : 'hero-products.webp';
+                    hu = hu ? ('https://wsrv.nl/?url=' + encodeURIComponent(hu) + '&w=900&q=75&output=webp&we&maxage=1y') : 'hero-products.webp';
                     var pl = document.createElement('link');
                     pl.rel = 'preload'; pl.as = 'image'; pl.href = hu; pl.media = '(min-width:1024px)'; pl.setAttribute('fetchpriority', 'high');
                     document.head.appendChild(pl);
