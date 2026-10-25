@@ -262,7 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // نثبّت سجلّ الصفحة الرئيسية كبداية لتاريخ التصفح من غير إضافة #home للرابط.
     // استخدام المسار الحالي يحافظ على الدومين النظيف، مع بقاء زر الرجوع قادرًا على
     // العودة للرئيسية من أي قسم آخر.
-    if (!parseHash()) {
+    if (!location.hash || location.hash === '#home') {
         try {
             history.replaceState(
                 { viewId: 'home', param: null, scrollY: 0 },
