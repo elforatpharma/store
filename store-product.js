@@ -96,11 +96,25 @@
         const container = document.getElementById('product-details-container');
         if (!container || !p) return;
         lastRenderedId = p.id;
-        if (!(opts && opts.silent)) trackStoreEvent('product_view', {
-            product_id: String(p.id),
-            product_name: p.name,
-            metadata: { category: p.category, price: p.price, stock: p.stock }
-        });
+        if (!(opts && opts.silent)) {
+            trackStoreEvent('product_view', {
+                product_id: String(p.id),
+                product_name: p.name,
+                metadata: { category: p.category, price: p.price, stock: p.stock }
+            });
+            if (typeof window.fbq === 'function') {
+                const pixelPrice = Math.max(0, Number(p.price) || 0);
+                window.fbq('track', 'ViewContent', {
+                    content_ids: [String(p.id)],
+                    content_type: 'product',
+                    content_name: String(p.name || ''),
+                    content_category: String(p.category || ''),
+                    value: pixelPrice,
+                    currency: 'EGP',
+                    contents: [{ id: String(p.id), quantity: 1, item_price: pixelPrice }]
+                });
+            }
+        }
 
         // صور المعرض تُقرأ من بيانات المنتج الفعلية فقط.
         // لا نستخدم مسارات صور ثابتة قديمة؛ لأنها لو كانت غير موجودة كانت
