@@ -160,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // الطريقة بسيطة: نفس الـ Promise بيرجّع لكل نداءات لنفس الملف، والـ prefetch
     // بيحط <link rel="prefetch"> عشان المتصفح يجيبه في الخلفية قبل الضغط.
     const STORE_CHUNKS = {
-        product: 'store-product.js?v=41',
+        product: 'store-product.js?v=42',
         checkout: 'store-checkout.js?v=41'
     };
     const __storeChunkPromises = Object.create(null);
@@ -1589,6 +1589,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // بيسجّل location.hash في الحدث.
             const viewReady = doNav();
             trackStoreEvent('page_view', { metadata: { view: viewId, item: param } });
+            if (viewId === 'cart') trackMetaInitiateCheckout();
             // بيرجّع Promise دايماً (حتى لو القسم اترسم على طول) عشان
             // restoreViewFromHash يقدر يستنى لحد ما المحتوى يبقى جاهز.
             return Promise.resolve(viewReady);
@@ -1697,6 +1698,21 @@ document.addEventListener("DOMContentLoaded", () => {
             renderCart();
 
             updateBadge();
+            // Any cart change starts a fresh checkout intent fingerprint.
+            try { sessionStorage.removeItem('elforat_meta_initiate_checkout'); } catch (_) {}
+            if (!product.isGift && typeof window.fbq === 'function') {
+                const pixelQty = Math.max(1, Number(qty) || 1);
+                const pixelPrice = Math.max(0, Number(product.price) || 0);
+                window.fbq('track', 'AddToCart', {
+                    content_ids: [String(product.id)],
+                    content_type: 'product',
+                    content_name: String(product.name || ''),
+                    value: pixelPrice * pixelQty,
+                    currency: 'EGP',
+                    contents: [{ id: String(product.id), quantity: pixelQty, item_price: pixelPrice }],
+                    num_items: pixelQty
+                });
+            }
             trackStoreEvent('add_to_cart', {
                 product_id: String(product.id),
                 product_name: product.name,
@@ -2898,6 +2914,41 @@ document.addEventListener("DOMContentLoaded", () => {
         let value = String(phone || '').replace(/\D/g, '');
         if (value.startsWith('20') && value.length === 12) value = '0' + value.slice(2);
         return value;
+    }
+
+    // Meta Pixel: InitiateCheckout is sent when a non-empty cart is opened.
+    // The cart fingerprint avoids repeat events on simple re-renders/navigation.
+    function trackMetaInitiateCheckout() {
+        const pixelItems = (Array.isArray(cart) ? cart : []).filter(function (item) {
+            return item && !item.isGift;
+        }).map(function (item) {
+            return {
+                id: String(item.id),
+                quantity: Math.max(1, Number(item.qty) || 1),
+                item_price: Math.max(0, Number(item.price) || 0)
+            };
+        });
+        if (!pixelItems.length) {
+            try { sessionStorage.removeItem('elforat_meta_initiate_checkout'); } catch (_) {}
+            return;
+        }
+        if (typeof window.fbq !== 'function') return;
+        const fingerprint = JSON.stringify(pixelItems.map(function (item) {
+            return [item.id, item.quantity, item.item_price];
+        }));
+        try {
+            if (sessionStorage.getItem('elforat_meta_initiate_checkout') === fingerprint) return;
+        } catch (_) {}
+        const params = {
+            content_ids: pixelItems.map(function (item) { return item.id; }),
+            content_type: 'product',
+            contents: pixelItems,
+            num_items: pixelItems.reduce(function (sum, item) { return sum + item.quantity; }, 0),
+            value: Math.max(0, Number(getCartSubtotal()) || 0),
+            currency: 'EGP'
+        };
+        window.fbq('track', 'InitiateCheckout', params);
+        try { sessionStorage.setItem('elforat_meta_initiate_checkout', fingerprint); } catch (_) {}
     }
 
     async function trackStoreEvent(eventName, payload = {}) {
