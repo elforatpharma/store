@@ -1748,13 +1748,14 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!product.isGift && typeof window.fbq === 'function') {
                 const pixelQty = Math.max(1, Number(qty) || 1);
                 const pixelPrice = Math.max(0, Number(product.price) || 0);
+                const pixelBundleTotal = bundleTotal(product.id, pixelQty, pixelPrice);
                 window.fbq('track', 'AddToCart', {
                     content_ids: [String(product.id)],
                     content_type: 'product',
                     content_name: String(product.name || ''),
-                    value: pixelPrice * pixelQty,
+                    value: pixelBundleTotal,
                     currency: 'EGP',
-                    contents: [{ id: String(product.id), quantity: pixelQty, item_price: pixelPrice }],
+                    contents: [{ id: String(product.id), quantity: pixelQty, item_price: pixelQty ? pixelBundleTotal / pixelQty : pixelPrice }],
                     num_items: pixelQty
                 });
             }
