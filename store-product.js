@@ -95,14 +95,22 @@
     window.pdpChooseBundle = function (qty, stock, unitPrice) {
         const q = Math.max(1, Math.min(Number(stock) || 1, Number(qty) || 1));
         const input = document.getElementById('product-qty'); if (input) input.value = q;
-        const totals = { 1: Number(unitPrice) || 240, 2: 440, 3: 630 };
-        const totalEl = document.getElementById('pdp-cta-total'); if (totalEl) totalEl.textContent = pdpMoney(totals[q] != null ? totals[q] : q * (Number(unitPrice) || 240));
+        const totalEl = document.getElementById('pdp-cta-total'); if (totalEl) totalEl.textContent = pdpMoney(serumBundleTotalForQty(q, Number(unitPrice) || 240));
         document.querySelectorAll('[data-serum-bundle-qty]').forEach(function (b) {
             const selected = Number(b.getAttribute('data-serum-bundle-qty')) === q;
             b.setAttribute('aria-pressed', selected ? 'true' : 'false');
             b.classList.toggle('is-selected', selected); b.classList.toggle('border-purple-600', selected); b.classList.toggle('ring-2', selected);
         });
     };
+    function serumBundleTotalForQty(qty, unitPrice) {
+        const offers = [{ quantity: 2, bundle_price: 440 }, { quantity: 3, bundle_price: 630 }];
+        const dp = Array(Math.max(0, Number(qty) || 0) + 1).fill(Infinity); dp[0] = 0;
+        for (let n = 1; n < dp.length; n++) {
+            dp[n] = dp[n - 1] + (Number(unitPrice) || 240);
+            offers.forEach(function (o) { if (o.quantity <= n) dp[n] = Math.min(dp[n], dp[n - o.quantity] + o.bundle_price); });
+        }
+        return Math.round(dp[dp.length - 1] * 100) / 100;
+    }
     function serumBundleChoices(productId, stock, unitPrice) {
         if (String(productId) !== '384b541c-6050-4c0a-814e-e8fcc56aea75' || Number(stock) < 1) return '';
         const options = [
@@ -304,7 +312,7 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
                     <div class="space-y-3 pt-4 border-t border-gray-100">
                         <div class="flex items-center gap-4">
                             <div class="flex border-2 border-gray-200 rounded-full" dir="ltr">
-                                <button onclick="const qtyInput = document.getElementById('product-qty'); const newVal = Math.max(1, parseInt(qtyInput.value) - 1); qtyInput.value = newVal;" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-l-full active:scale-95">-</button>
+                                <button onclick="pdpQty(-1, undefined, undefined)" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-l-full active:scale-95">-</button>
                                 <input id="product-qty" type="number" value="1" min="1" max="${p.stock}" class="w-12 text-center font-bold border-x-2 border-gray-200 focus:outline-none" readonly>
                                 <button onclick="const qtyInput = document.getElementById('product-qty'); const newVal = Math.min(${p.stock}, parseInt(qtyInput.value) + 1); qtyInput.value = newVal;" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-r-full active:scale-95">+</button>
                             </div>
@@ -817,8 +825,12 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
         if (!input) return;
         var v = Math.min(Math.max(1, stock || 1), Math.max(1, (parseInt(input.value, 10) || 1) + delta));
         input.value = v;
-        var t = document.getElementById('pdp-cta-total');
-        if (t) t.textContent = pdpMoney(v * price);
+        if (String(lastRenderedId) === '384b541c-6050-4c0a-814e-e8fcc56aea75') {
+            if (window.pdpChooseBundle) window.pdpChooseBundle(v, stock, price);
+        } else {
+            var t = document.getElementById('pdp-cta-total');
+            if (t) t.textContent = pdpMoney(v * price);
+        }
     };
 
     window.pdpCopyCoupon = function (btn, code) {
