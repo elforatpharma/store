@@ -375,8 +375,14 @@
             });
 
             // السعر الحقيقي اختلف عن اللي كانت شايفاه: منكملش الطلب بسعر مفاجئ
-            if (Math.abs(shownSubtotal - subtotal) > 0.001) {
-                S.cart.forEach(i => { if (!isRealGift(i)) i.price = dbPriceMap.get(String(i.id)); });
+            if (Math.abs(shownSubtotal - subtotal) > 0.01) {
+                S.cart.forEach(i => {
+                    if (!isRealGift(i)) {
+                        i.basePrice = dbPriceMap.get(String(i.id));
+                        const qty = Math.max(1, parseInt(i.qty) || 1);
+                        i.price = Math.round((verifiedBundleTotal(i.id, qty, i.basePrice) / qty) * 10000) / 10000;
+                    }
+                });
                 saveCart();
                 renderCart();
                 abortCheckout('أسعار بعض المنتجات اتحدّثت. راجعي الإجمالي الجديد وأكدي الطلب.');
