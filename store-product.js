@@ -312,7 +312,7 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
                     <div class="space-y-3 pt-4 border-t border-gray-100">
                         <div class="flex items-center gap-4">
                             <div class="flex border-2 border-gray-200 rounded-full" dir="ltr">
-                                <button onclick="pdpQty(-1, undefined, undefined)" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-l-full active:scale-95">-</button>
+                                <button onclick="pdpQty(-1, ${p.stock}, ${p.price})" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-l-full active:scale-95">-</button>
                                 <input id="product-qty" type="number" value="1" min="1" max="${p.stock}" class="w-12 text-center font-bold border-x-2 border-gray-200 focus:outline-none" readonly>
                                 <button onclick="pdpQty(1, ${p.stock}, ${p.price})" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-r-full active:scale-95">+</button>
                             </div>
