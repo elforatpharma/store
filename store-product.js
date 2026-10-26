@@ -282,7 +282,7 @@
                                 <input id="product-qty" type="number" value="1" min="1" max="${p.stock}" class="w-12 text-center font-bold border-x-2 border-gray-200 focus:outline-none" readonly>
                                 <button onclick="const qtyInput = document.getElementById('product-qty'); const newVal = Math.min(${p.stock}, parseInt(qtyInput.value) + 1); qtyInput.value = newVal;" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-r-full active:scale-95">+</button>
                             </div>
-                            <button onclick="app.addToCart('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">أضف للحقيبة</button>
+                            <button onclick="app.addToCart('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">إضافة الى السلة</button>
                         </div>
                         <button onclick="app.buyNow('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="btn-dark w-full text-white font-bold uppercase text-sm tracking-widest py-4 active:scale-95">اشتري الآن</button>
                     </div>
@@ -296,7 +296,7 @@
                         <span class="text-base font-extrabold text-primary leading-tight">${sanitize(p.price)} <span class="text-[11px] font-bold text-slate-500">ج.م</span></span>
                         ${p.oldPrice ? `<span class="text-[11px] text-slate-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
                     </div>
-                    <button onclick="app.addToCart('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold text-xs uppercase tracking-widest py-3.5 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">أضف للحقيبة</button>
+                    <button onclick="app.addToCart('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold text-xs uppercase tracking-widest py-3.5 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">إضافة الى السلة</button>
                     <button onclick="app.buyNow('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="btn-dark text-white font-bold text-xs uppercase tracking-widest py-3.5 px-5 active:scale-95">اشتري الآن</button>
                 </div>
             </div>
@@ -526,7 +526,7 @@
                     <button onclick="event.stopPropagation(); app.buyNow('${jsArg(p.id)}')" class="btn-dark py-2.5 text-xs font-bold shadow-sm">اشتري الآن</button>
                     <button onclick="event.stopPropagation(); app.addToCart('${jsArg(p.id)}', 1)" class="btn-add-cart py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 hover:gap-2 transition-all">
                         <i class="fa-solid fa-cart-plus text-xs"></i>
-                        <span>أضف للحقيبة</span>
+                        <span>إضافة الى السلة</span>
                     </button>
                 </div>
             ` : ''}
