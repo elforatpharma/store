@@ -160,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // الطريقة بسيطة: نفس الـ Promise بيرجّع لكل نداءات لنفس الملف، والـ prefetch
     // بيحط <link rel="prefetch"> عشان المتصفح يجيبه في الخلفية قبل الضغط.
     const STORE_CHUNKS = {
-        product: 'store-product.js?v=43',
+        product: 'store-product.js?v=44',
         checkout: 'store-checkout.js?v=41'
     };
     const __storeChunkPromises = Object.create(null);
