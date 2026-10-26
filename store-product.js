@@ -201,6 +201,7 @@
                         <div class="flex items-center gap-4 pt-2 flex-wrap">
                             <span class="text-2xl sm:text-3xl font-bold text-primary">${sanitize(p.price)} ج.م</span>
                             ${p.oldPrice ? `<span class="text-lg text-gray-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
+                            ${p.oldPrice && Number(p.oldPrice) > Number(p.price) ? `<span class="inline-flex items-center rounded-full bg-rose-100 text-rose-700 px-3 py-1 text-xs font-extrabold">خصم ${Math.round((Number(p.oldPrice) - Number(p.price)) / Number(p.oldPrice) * 100)}٪</span>` : ''}
                             ${p.stock <= LOW_STOCK_THRESHOLD && p.stock > 0 ? `<span class="text-xs bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full font-bold low-stock-alert shadow-sm">⚠️ متبقي ${p.stock} فقط!</span>` : ''}
                             ${p.stock === 0 ? `<span class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-full font-bold shadow-sm">❌ نفذ من المخزون</span>` : ''}
                         </div>
