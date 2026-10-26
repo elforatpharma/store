@@ -118,8 +118,9 @@
             { qty: 2, title: 'عبوتان', price: 440, note: 'وفّري 40 جنيه' },
             { qty: 3, title: '3 عبوات', price: 630, note: 'وفّري 90 جنيه' }
         ].filter(function (o) { return o.qty <= Number(stock); });
-        return '<div class="my-4 rounded-2xl border border-purple-100 bg-purple-50 p-3 text-right" dir="rtl"><p class="mb-2 font-bold text-slate-800">اختاري عرض السيروم</p><div class="grid grid-cols-3 gap-2">' + options.map(function (o) {
-            return '<button class="rounded-xl border border-purple-200 bg-white p-2 text-xs shadow-sm" type="button" data-serum-bundle-qty="' + o.qty + '" aria-pressed="' + (o.qty === 1 ? 'true' : 'false') + '" onclick="pdpChooseBundle(' + o.qty + ',' + Number(stock) + ',' + (Number(unitPrice) || 240) + ')"><strong class="block">' + o.title + '</strong><span class="block font-extrabold text-purple-700">' + pdpMoney(o.price) + ' ج.م</span><small class="block text-slate-500">' + o.note + '</small></button>';
+        return '<div class="my-4 rounded-2xl border border-purple-100 bg-purple-50 p-3 text-right" dir="rtl"><div class="mb-3 flex flex-wrap items-center justify-between gap-2"><p class="font-bold text-slate-800">اختاري عرض السيروم</p><span class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3 py-1 text-xs font-extrabold text-white shadow-sm"><span aria-hidden="true">⚡</span> عروض الجمعة البيضاء</span></div><div class="grid grid-cols-3 gap-2">' + options.map(function (o) {
+            const isDiscount = o.qty > 1;
+            return '<button class="relative rounded-xl border ' + (isDiscount ? 'border-amber-300' : 'border-purple-200') + ' bg-white p-2 pt-7 text-xs shadow-sm transition hover:shadow-md" type="button" data-serum-bundle-qty="' + o.qty + '" aria-pressed="' + (o.qty === 1 ? 'true' : 'false') + '" onclick="pdpChooseBundle(' + o.qty + ',' + Number(stock) + ',' + (Number(unitPrice) || 240) + ')">' + (isDiscount ? '<span class="absolute right-1 top-1 rounded-full bg-amber-100 px-2 py-1 text-[10px] font-extrabold text-amber-900">الجمعة البيضاء</span>' : '') + '<strong class="block">' + o.title + '</strong><span class="block font-extrabold text-purple-700">' + pdpMoney(o.price) + ' ج.م</span><small class="block text-slate-500">' + o.note + '</small></button>';
         }).join('') + '</div></div>';
     }
 
