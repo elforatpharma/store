@@ -314,7 +314,7 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
                             <div class="flex border-2 border-gray-200 rounded-full" dir="ltr">
                                 <button onclick="pdpQty(-1, undefined, undefined)" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-l-full active:scale-95">-</button>
                                 <input id="product-qty" type="number" value="1" min="1" max="${p.stock}" class="w-12 text-center font-bold border-x-2 border-gray-200 focus:outline-none" readonly>
-                                <button onclick="const qtyInput = document.getElementById('product-qty'); const newVal = Math.min(${p.stock}, parseInt(qtyInput.value) + 1); qtyInput.value = newVal;" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-r-full active:scale-95">+</button>
+                                <button onclick="pdpQty(1, ${p.stock}, ${p.price})" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-r-full active:scale-95">+</button>
                             </div>
                             <button onclick="app.addToCart('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">إضافة الى السلة</button>
                         </div>
