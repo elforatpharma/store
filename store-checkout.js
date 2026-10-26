@@ -332,6 +332,27 @@
                 }
             }
 
+
+            const bundleOffers = new Map();
+            let bundleQuery;
+            try { bundleQuery = await _supabase.from('product_bundle_offers').select('product_id,quantity,bundle_price,is_active').eq('is_active', true); }
+            catch (e) { bundleQuery = { error: e }; }
+            if (!bundleQuery || bundleQuery.error || !Array.isArray(bundleQuery.data)) {
+                reportCheckoutError(new Error('bundle offer verification failed: ' + String(bundleQuery && bundleQuery.error && bundleQuery.error.message || 'unknown error')), 'checkout:verify_bundles');
+                abortCheckout('تعذر التحقق من عروض الباندل الآن، لم يتم تسجيل طلبك. سلتك محفوظة، حاولي مرة أخرى.'); return;
+            }
+            bundleQuery.data.forEach(function (o) {
+                const key = String(o.product_id); if (!bundleOffers.has(key)) bundleOffers.set(key, []);
+                bundleOffers.get(key).push({ quantity: Number(o.quantity), bundle_price: Number(o.bundle_price) });
+            });
+            function verifiedBundleTotal(id, qty, unitPrice) {
+                const offers = bundleOffers.get(String(id)) || [], dp = Array(qty + 1).fill(Infinity); dp[0] = 0;
+                for (let n = 1; n <= qty; n++) {
+                    dp[n] = dp[n-1] + unitPrice;
+                    offers.forEach(function (o) { const q=Number(o.quantity), price=Number(o.bundle_price); if(Number.isInteger(q)&&q>0&&q<=n&&Number.isFinite(price)&&price>=0) dp[n]=Math.min(dp[n],dp[n-q]+price); });
+                }
+                return Math.round(dp[qty]*100)/100;
+            }
             let subtotal = 0;
             let shownSubtotal = 0; // اللي كان ظاهر للعميلة (من السلة المحفوظة) - للمقارنة بس
             const orderItems = [];
@@ -340,20 +361,28 @@
                 const gift = isRealGift(item);
                 const qty = Math.max(1, Math.min(parseInt(item.qty) || 1, 99));
                 const verifiedPrice = gift ? 0 : dbPriceMap.get(String(item.id));
-                subtotal += verifiedPrice * qty;
+                const lineTotal = gift ? 0 : verifiedBundleTotal(item.id, qty, verifiedPrice);
+                const effectiveUnitPrice = gift ? 0 : Math.round((lineTotal / qty) * 10000) / 10000;
+                subtotal += lineTotal;
                 if (!gift) shownSubtotal += (Number(item.price) || 0) * qty;
                 orderItems.push({
                     id: item.id,
                     name: gift ? String(item.name || '').slice(0, 120) : dbNameMap.get(String(item.id)),
                     qty: qty,
-                    price: verifiedPrice,
+                    price: effectiveUnitPrice,
                     isGift: gift
                 });
             });
 
             // السعر الحقيقي اختلف عن اللي كانت شايفاه: منكملش الطلب بسعر مفاجئ
-            if (Math.abs(shownSubtotal - subtotal) > 0.001) {
-                S.cart.forEach(i => { if (!isRealGift(i)) i.price = dbPriceMap.get(String(i.id)); });
+            if (Math.abs(shownSubtotal - subtotal) > 0.01) {
+                S.cart.forEach(i => {
+                    if (!isRealGift(i)) {
+                        i.basePrice = dbPriceMap.get(String(i.id));
+                        const qty = Math.max(1, parseInt(i.qty) || 1);
+                        i.price = Math.round((verifiedBundleTotal(i.id, qty, i.basePrice) / qty) * 10000) / 10000;
+                    }
+                });
                 saveCart();
                 renderCart();
                 abortCheckout('أسعار بعض المنتجات اتحدّثت. راجعي الإجمالي الجديد وأكدي الطلب.');

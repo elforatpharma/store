@@ -91,6 +91,39 @@
         return 42 + (seed % 190); // عدد تقييمات متفاوت بين المنتجات
     }
 
+
+    window.pdpChooseBundle = function (qty, stock, unitPrice) {
+        const q = Math.max(1, Math.min(Number(stock) || 1, Number(qty) || 1));
+        const input = document.getElementById('product-qty'); if (input) input.value = q;
+        const totalEl = document.getElementById('pdp-cta-total'); if (totalEl) totalEl.textContent = pdpMoney(serumBundleTotalForQty(q, Number(unitPrice) || 240));
+        document.querySelectorAll('[data-serum-bundle-qty]').forEach(function (b) {
+            const selected = Number(b.getAttribute('data-serum-bundle-qty')) === q;
+            b.setAttribute('aria-pressed', selected ? 'true' : 'false');
+            b.classList.toggle('is-selected', selected); b.classList.toggle('border-purple-600', selected); b.classList.toggle('ring-2', selected);
+        });
+    };
+    function serumBundleTotalForQty(qty, unitPrice) {
+        const offers = [{ quantity: 2, bundle_price: 440 }, { quantity: 3, bundle_price: 630 }];
+        const dp = Array(Math.max(0, Number(qty) || 0) + 1).fill(Infinity); dp[0] = 0;
+        for (let n = 1; n < dp.length; n++) {
+            dp[n] = dp[n - 1] + (Number(unitPrice) || 240);
+            offers.forEach(function (o) { if (o.quantity <= n) dp[n] = Math.min(dp[n], dp[n - o.quantity] + o.bundle_price); });
+        }
+        return Math.round(dp[dp.length - 1] * 100) / 100;
+    }
+    function serumBundleChoices(productId, stock, unitPrice) {
+        if (String(productId) !== '384b541c-6050-4c0a-814e-e8fcc56aea75' || Number(stock) < 1) return '';
+        const options = [
+            { qty: 1, title: 'عبوة واحدة', price: Number(unitPrice) || 240, note: 'السعر العادي' },
+            { qty: 2, title: 'عبوتان', price: 440, note: 'وفّري 40 جنيه' },
+            { qty: 3, title: '3 عبوات', price: 630, note: 'وفّري 90 جنيه' }
+        ].filter(function (o) { return o.qty <= Number(stock); });
+        return '<div class="my-4 rounded-2xl border border-purple-100 bg-purple-50 p-3 text-right" dir="rtl"><div class="mb-3 flex flex-wrap items-center justify-between gap-2"><p class="font-bold text-slate-800">اختاري عرض السيروم</p><span class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3 py-1 text-xs font-extrabold text-white shadow-sm"><span aria-hidden="true">⚡</span> عروض الجمعة البيضاء</span></div><div class="grid grid-cols-3 gap-2">' + options.map(function (o) {
+            const isDiscount = o.qty > 1;
+            return '<button class="relative rounded-xl border ' + (isDiscount ? 'border-amber-300' : 'border-purple-200') + ' bg-white p-2 pt-7 text-xs shadow-sm transition hover:shadow-md" type="button" data-serum-bundle-qty="' + o.qty + '" aria-pressed="' + (o.qty === 1 ? 'true' : 'false') + '" onclick="pdpChooseBundle(' + o.qty + ',' + Number(stock) + ',' + (Number(unitPrice) || 240) + ')">' + (isDiscount ? '<span class="absolute right-1 top-1 rounded-full bg-amber-100 px-2 py-1 text-[10px] font-extrabold text-amber-900">الجمعة البيضاء</span>' : '') + '<strong class="block">' + o.title + '</strong><span class="block font-extrabold text-purple-700">' + pdpMoney(o.price) + ' ج.م</span><small class="block text-slate-500">' + o.note + '</small></button>';
+        }).join('') + '</div></div>';
+    }
+
     function renderProductDetails(id, opts) {
         const p = S.productsDB.find(prod => prod.id == id);
         const container = document.getElementById('product-details-container');
@@ -275,13 +308,14 @@
                         <button onclick="app.openAddReviewModal('${jsArg(p.id)}', '${jsArg(p.name)}')" class="mt-4 w-full py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-all text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-star text-amber-400"></i> إضافة تقييمك وتجربتك</button>
                     </div>
                     
+${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p.id, p.stock, p.price) : ''}
                     <!-- أزرار الإجراء -->
                     <div class="space-y-3 pt-4 border-t border-gray-100">
                         <div class="flex items-center gap-4">
                             <div class="flex border-2 border-gray-200 rounded-full" dir="ltr">
-                                <button onclick="const qtyInput = document.getElementById('product-qty'); const newVal = Math.max(1, parseInt(qtyInput.value) - 1); qtyInput.value = newVal;" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-l-full active:scale-95">-</button>
+                                <button onclick="pdpQty(-1, ${p.stock}, ${p.price})" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-l-full active:scale-95">-</button>
                                 <input id="product-qty" type="number" value="1" min="1" max="${p.stock}" class="w-12 text-center font-bold border-x-2 border-gray-200 focus:outline-none" readonly>
-                                <button onclick="const qtyInput = document.getElementById('product-qty'); const newVal = Math.min(${p.stock}, parseInt(qtyInput.value) + 1); qtyInput.value = newVal;" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-r-full active:scale-95">+</button>
+                                <button onclick="pdpQty(1, ${p.stock}, ${p.price})" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-r-full active:scale-95">+</button>
                             </div>
                             <button onclick="app.addToCart('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">إضافة الى السلة</button>
                         </div>
@@ -696,6 +730,7 @@
                     </div>
                     <button type="button" onclick="pdpCopyCoupon(this, '${jsArg(couponCode)}')">نسخ الكود</button>
                 </div>` : ''}
+${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p.id, p.stock, price) : ''}
                 ${!outOfStock ? `<button type="button" class="pdp-buynow" onclick="app.buyNow('${idArg}', document.getElementById('product-qty').value)">اشتري الآن</button>` : ''}
             </div>
 
@@ -791,8 +826,12 @@
         if (!input) return;
         var v = Math.min(Math.max(1, stock || 1), Math.max(1, (parseInt(input.value, 10) || 1) + delta));
         input.value = v;
-        var t = document.getElementById('pdp-cta-total');
-        if (t) t.textContent = pdpMoney(v * price);
+        if (String(lastRenderedId) === '384b541c-6050-4c0a-814e-e8fcc56aea75') {
+            if (window.pdpChooseBundle) window.pdpChooseBundle(v, stock, price);
+        } else {
+            var t = document.getElementById('pdp-cta-total');
+            if (t) t.textContent = pdpMoney(v * price);
+        }
     };
 
     window.pdpCopyCoupon = function (btn, code) {
