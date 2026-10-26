@@ -103,7 +103,7 @@
         });
     };
     function serumBundleTotalForQty(qty, unitPrice) {
-        const offers = [{ quantity: 2, bundle_price: 440 }, { quantity: 3, bundle_price: 630 }];
+        const offers = [{ quantity: 2, bundle_price: 430 }, { quantity: 3, bundle_price: 600 }];
         const dp = Array(Math.max(0, Number(qty) || 0) + 1).fill(Infinity); dp[0] = 0;
         for (let n = 1; n < dp.length; n++) {
             dp[n] = dp[n - 1] + (Number(unitPrice) || 240);
@@ -115,8 +115,8 @@
         if (String(productId) !== '384b541c-6050-4c0a-814e-e8fcc56aea75' || Number(stock) < 1) return '';
         const options = [
             { qty: 1, title: 'عبوة واحدة', price: Number(unitPrice) || 240, note: 'السعر العادي' },
-            { qty: 2, title: 'عبوتان', price: 440, note: 'وفّري 40 جنيه' },
-            { qty: 3, title: '3 عبوات', price: 630, note: 'وفّري 90 جنيه' }
+            { qty: 2, title: 'عبوتان', price: 430, note: 'وفّري 50 جنيه' },
+            { qty: 3, title: '3 عبوات', price: 600, note: 'وفّري 120 جنيه' }
         ].filter(function (o) { return o.qty <= Number(stock); });
         return '<div class="my-4 rounded-2xl border border-purple-100 bg-purple-50 p-3 text-right" dir="rtl"><div class="mb-3 flex flex-wrap items-center justify-between gap-2"><p class="font-bold text-slate-800">اختاري عرض السيروم</p><span class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3 py-1 text-xs font-extrabold text-white shadow-sm"><span aria-hidden="true">⚡</span> عروض الجمعة البيضاء</span></div><div class="grid grid-cols-3 gap-2">' + options.map(function (o) {
             const isDiscount = o.qty > 1;
