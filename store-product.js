@@ -91,6 +91,30 @@
         return 42 + (seed % 190); // عدد تقييمات متفاوت بين المنتجات
     }
 
+
+    window.pdpChooseBundle = function (qty, stock, unitPrice) {
+        const q = Math.max(1, Math.min(Number(stock) || 1, Number(qty) || 1));
+        const input = document.getElementById('product-qty'); if (input) input.value = q;
+        const totals = { 1: Number(unitPrice) || 240, 2: 440, 3: 630 };
+        const totalEl = document.getElementById('pdp-cta-total'); if (totalEl) totalEl.textContent = pdpMoney(totals[q] != null ? totals[q] : q * (Number(unitPrice) || 240));
+        document.querySelectorAll('[data-serum-bundle-qty]').forEach(function (b) {
+            const selected = Number(b.getAttribute('data-serum-bundle-qty')) === q;
+            b.setAttribute('aria-pressed', selected ? 'true' : 'false');
+            b.classList.toggle('is-selected', selected); b.classList.toggle('border-purple-600', selected); b.classList.toggle('ring-2', selected);
+        });
+    };
+    function serumBundleChoices(productId, stock, unitPrice) {
+        if (String(productId) !== '384b541c-6050-4c0a-814e-e8fcc56aea75' || Number(stock) < 1) return '';
+        const options = [
+            { qty: 1, title: 'عبوة واحدة', price: Number(unitPrice) || 240, note: 'السعر العادي' },
+            { qty: 2, title: 'عبوتان', price: 440, note: 'وفّري 40 جنيه' },
+            { qty: 3, title: '3 عبوات', price: 630, note: 'وفّري 90 جنيه' }
+        ].filter(function (o) { return o.qty <= Number(stock); });
+        return '<div class="my-4 rounded-2xl border border-purple-100 bg-purple-50 p-3 text-right" dir="rtl"><p class="mb-2 font-bold text-slate-800">اختاري عرض السيروم</p><div class="grid grid-cols-3 gap-2">' + options.map(function (o) {
+            return '<button class="rounded-xl border border-purple-200 bg-white p-2 text-xs shadow-sm" type="button" data-serum-bundle-qty="' + o.qty + '" aria-pressed="' + (o.qty === 1 ? 'true' : 'false') + '" onclick="pdpChooseBundle(' + o.qty + ',' + Number(stock) + ',' + (Number(unitPrice) || 240) + ')"><strong class="block">' + o.title + '</strong><span class="block font-extrabold text-purple-700">' + pdpMoney(o.price) + ' ج.م</span><small class="block text-slate-500">' + o.note + '</small></button>';
+        }).join('') + '</div></div>';
+    }
+
     function renderProductDetails(id, opts) {
         const p = S.productsDB.find(prod => prod.id == id);
         const container = document.getElementById('product-details-container');
@@ -275,6 +299,7 @@
                         <button onclick="app.openAddReviewModal('${jsArg(p.id)}', '${jsArg(p.name)}')" class="mt-4 w-full py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-all text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-star text-amber-400"></i> إضافة تقييمك وتجربتك</button>
                     </div>
                     
+${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p.id, p.stock, p.price) : ''}
                     <!-- أزرار الإجراء -->
                     <div class="space-y-3 pt-4 border-t border-gray-100">
                         <div class="flex items-center gap-4">
@@ -696,6 +721,7 @@
                     </div>
                     <button type="button" onclick="pdpCopyCoupon(this, '${jsArg(couponCode)}')">نسخ الكود</button>
                 </div>` : ''}
+${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p.id, p.stock, price) : ''}
                 ${!outOfStock ? `<button type="button" class="pdp-buynow" onclick="app.buyNow('${idArg}', document.getElementById('product-qty').value)">اشتري الآن</button>` : ''}
             </div>
 
