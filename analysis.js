@@ -692,9 +692,52 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { }
     }
 
-    function getCartSubtotal() {
-        return cart.reduce((s, i) => s + (i.price * i.qty), 0);
+
+    // تسعير عروض الباندل من قاعدة البيانات؛ أقل إجمالي ممكن لتجميع العبوات.
+    const bundleOffersByProduct = new Map();
+    function bundleTotal(productId, qty, unitPrice) {
+        qty = Math.max(0, Math.min(100, Math.floor(Number(qty) || 0)));
+        unitPrice = Math.max(0, Number(unitPrice) || 0);
+        if (!qty) return 0;
+        const offers = bundleOffersByProduct.get(String(productId)) || [];
+        const dp = Array(qty + 1).fill(Infinity); dp[0] = 0;
+        for (let n = 1; n <= qty; n++) {
+            dp[n] = dp[n - 1] + unitPrice;
+            offers.forEach(function (o) {
+                const q = Number(o.quantity), price = Number(o.bundle_price);
+                if (Number.isInteger(q) && q > 0 && q <= n && Number.isFinite(price) && price >= 0) dp[n] = Math.min(dp[n], dp[n-q] + price);
+            });
+        }
+        return Math.round(dp[qty] * 100) / 100;
     }
+    function cartItemBasePrice(item) {
+        if (!item || item.isGift) return 0;
+        const product = productsDB.find(function (p) { return String(p.id) === String(item.id); });
+        return Math.max(0, Number(item.basePrice != null ? item.basePrice : (product ? product.price : item.price)) || 0);
+    }
+    function cartItemTotal(item) { return !item || item.isGift ? 0 : bundleTotal(item.id, item.qty, cartItemBasePrice(item)); }
+    async function loadBundleOffers() {
+        try {
+            const result = await _supabase.from('product_bundle_offers').select('product_id,quantity,bundle_price,is_active').eq('is_active', true);
+            if (result.error || !Array.isArray(result.data)) throw result.error || new Error('Bundle offers unavailable');
+            bundleOffersByProduct.clear();
+            result.data.forEach(function (o) {
+                const key = String(o.product_id);
+                if (!bundleOffersByProduct.has(key)) bundleOffersByProduct.set(key, []);
+                bundleOffersByProduct.get(key).push({ quantity: Number(o.quantity), bundle_price: Number(o.bundle_price) });
+            });
+            cart.forEach(function (item) {
+                if (!item.isGift) {
+                    if (item.basePrice == null) item.basePrice = Number(item.price) || 0;
+                    item.price = item.qty > 0 ? Math.round((cartItemTotal(item) / item.qty) * 10000) / 10000 : item.basePrice;
+                }
+            });
+            saveCart(); if (cart.length) renderCart();
+        } catch (err) { console.error('Could not load bundle offers:', err); }
+    }
+
+    function getCartSubtotal() { return cart.reduce((s, i) => s + (i.isGift ? 0 : cartItemTotal(i)), 0); }
+    loadBundleOffers();
 
     // يرجع قيمة الخصم بالجنيه بناءً على الكوبون المطبّق حالياً
     function getCartDiscount(subtotal) {
@@ -1687,7 +1730,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!product) return;
 
             const existing = cart.find(item => item.id === id);
-            if (existing) existing.qty += parseInt(qty); else cart.push({ ...product, qty: parseInt(qty) });
+            if (existing) { if (existing.basePrice == null) existing.basePrice = Number(product.price) || 0; existing.qty += parseInt(qty); }
+            else cart.push({ ...product, basePrice: Number(product.price) || 0, qty: parseInt(qty) });
+            cart.forEach(function (item) { if (!item.isGift) item.price = item.qty > 0 ? Math.round((cartItemTotal(item) / item.qty) * 10000) / 10000 : cartItemBasePrice(item); });
 
             checkOffers();
             saveCart(); // [جديد] حفظ التحديث
@@ -1847,11 +1892,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const item = cart.find(item => item.id === id);
             if (item) {
                 item.qty += change;
+                if (item.basePrice == null) item.basePrice = cartItemBasePrice(item);
                 if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
                 checkOffers();
-                saveCart(); // [جديد] حفظ التحديث
-                renderCart();
-                updateBadge();
+                cart.forEach(function (ci) { if (!ci.isGift) ci.price = ci.qty > 0 ? Math.round((cartItemTotal(ci) / ci.qty) * 10000) / 10000 : cartItemBasePrice(ci); });
+                saveCart(); renderCart(); updateBadge();
             }
         },
         // تفريغ السلة (زر موبايل): بيشيل المنتجات والهدايا المرتبطة بيها
@@ -2292,7 +2337,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="m-only cart-card__tags"><span class="cart-card__cat">${sanitize(item.category || '')}</span>${item.badge ? `<span class="cart-card__badge">${sanitize(item.badge)}</span>` : ''}</div>
                     <h3 class="text-sm font-extrabold uppercase text-black">${sanitize(item.name)}</h3>
                     <div class="cart-card__row flex flex-row-reverse justify-between items-center pt-4">
-                        <span class="text-base font-bold text-primary">${sanitize(item.price * item.qty)} ج.م</span>
+                        <span class="text-base font-bold text-primary">${sanitize(cartItemTotal(item))} ج.م</span>
                         <div class="flex border border-gray-100 rounded-full" dir="ltr">
                             <button onclick="app.updateQty('${jsArg(item.id)}', 1)" class="px-3 py-1 text-primary font-bold">+</button>
                             <span class="px-4 py-1 text-xs font-bold">${item.qty}</span>
