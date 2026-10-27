@@ -430,13 +430,15 @@
             const discountAmount = verifiedDiscountAmount;
             const couponCode = verifiedCouponCode;
 
-            // الشحن: السعر من جدول shipping_rates، ومجاني لو الإجمالي الفرعي وصل لحد الشحن المجاني
+            // الشحن: لا نسمح بتأكيد الطلب بسعر ناقص إذا لم تُسجل رسوم فعلية للمحافظة؛ الشحن المجاني للطلبات المؤهلة فقط.
             const shipping = getShipping(subtotal, governorate);
             if (!shipping.ok) {
                 showCustomAlert(
                     shipping.reason === 'unavailable'
                         ? 'عفواً، الشحن لهذه المحافظة غير متاح حالياً. تواصلي معنا على واتساب.'
-                        : 'تعذر تحميل أسعار الشحن، برجاء إعادة المحاولة.',
+                        : shipping.reason === 'price_pending'
+                            ? 'لم يتم تحديد سعر الشحن لهذه المحافظة بعد، لذلك لم يتم تأكيد الطلب. لن نعرض الشحن مجانياً أو نسجل إجمالياً ناقصاً. تواصلي معنا لتأكيد رسوم الشحن.'
+                            : 'تعذر تحميل أسعار الشحن، برجاء إعادة المحاولة.',
                     'error'
                 );
                 submitBtn.innerText = originalBtnText;
