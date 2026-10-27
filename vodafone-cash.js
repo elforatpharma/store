@@ -239,6 +239,16 @@ window.VodafoneCashCheckout = (() => {
 .vcx-tcard p{margin:0;font-size:12px;color:#5a6d64;line-height:1.5}
 
 /* Toast */
+
+/* Five-minute reminder timer; it never cancels or expires an order. */
+.vcx-timer{display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 16px;border:1px solid #ead7a7;border-radius:16px;background:linear-gradient(135deg,#fffaf0,#fff4d6);text-align:center;color:#59451a}
+.vcx-timer-copy{display:flex;align-items:center;justify-content:center;gap:7px;font-size:12px;font-weight:800}
+.vcx-timer-copy i{font-size:15px;color:#a66b0b}
+.vcx-countdown-value{font-family:'Plus Jakarta Sans','Cairo',sans-serif;font-size:32px;line-height:1.15;font-weight:900;letter-spacing:.04em;color:#8a4b08;font-variant-numeric:tabular-nums}
+.vcx-countdown-note{margin:0;font-size:11px;line-height:1.65;color:#78643b}
+.vcx-timer.is-expired{border-color:#d8dee6;background:#f3f5f8;color:#475569}
+.vcx-timer.is-expired .vcx-countdown-value,.vcx-timer.is-expired .vcx-timer-copy i{color:#64748b}
+
 .vcx-toast{position:absolute;left:50%;bottom:18px;z-index:4;transform:translate(-50%,16px);display:flex;align-items:center;gap:8px;
   max-width:calc(100% - 32px);padding:10px 18px;border-radius:999px;background:#2d3130;color:#eef2ef;font-size:12px;font-weight:600;
   box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
@@ -326,6 +336,12 @@ window.VodafoneCashCheckout = (() => {
             <button type="button" class="vcx-btn-copyamt"><i class="fa-regular fa-copy"></i><span>نسخ المبلغ (${esc(amountText)} ج.م)</span></button>
           </div>
 
+          <div class="vcx-timer" role="timer" aria-live="polite" aria-label="وقت مقترح لإتمام تحويل فودافون كاش">
+            <div class="vcx-timer-copy"><i class="fa-regular fa-clock" aria-hidden="true"></i><span>وقت مقترح لإتمام تحويل فودافون كاش</span></div>
+            <strong class="vcx-countdown-value" dir="ltr">05:00</strong>
+            <p class="vcx-countdown-note">لتسهيل إتمام الدفع بسرعة. هذا مؤقت تذكيري فقط ولا يؤدي إلى إلغاء الطلب تلقائيًا.</p>
+          </div>
+
           <div class="vcx-card vcx-recipient" role="region" aria-label="بيانات التحويل">
             <div class="vcx-chead">
               <div>
@@ -391,7 +407,30 @@ window.VodafoneCashCheckout = (() => {
     document.body.appendChild(overlay);
     sheet.focus();
 
+    // Five-minute reminder only: payment is manual, so expiry never cancels the order.
+    const timerBox = overlay.querySelector(".vcx-timer");
+    const countdownValue = overlay.querySelector(".vcx-countdown-value");
+    const countdownNote = overlay.querySelector(".vcx-countdown-note");
+    const countdownDeadline = Date.now() + 5 * 60 * 1000;
+    function updatePaymentCountdown() {
+      const remaining = Math.max(0, countdownDeadline - Date.now());
+      const totalSeconds = Math.ceil(remaining / 1000);
+      const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+      const seconds = String(totalSeconds % 60).padStart(2, "0");
+      if (countdownValue) countdownValue.textContent = minutes + ":" + seconds;
+      if (remaining <= 0) {
+        if (paymentCountdownInterval) { clearInterval(paymentCountdownInterval); paymentCountdownInterval = null; }
+        if (timerBox) timerBox.classList.add("is-expired");
+        if (countdownValue) countdownValue.textContent = "00:00";
+        if (countdownNote) countdownNote.textContent = "انتهى الوقت التذكيري المقترح. يمكنك إكمال الدفع الآن؛ طلبك لم يُلغَ تلقائيًا.";
+      }
+    }
+    updatePaymentCountdown();
+    paymentCountdownInterval = setInterval(updatePaymentCountdown, 1000);
+
+    let paymentCountdownInterval = null;
     function close() {
+      if (paymentCountdownInterval) { clearInterval(paymentCountdownInterval); paymentCountdownInterval = null; }
       document.removeEventListener("keydown", onKey, true);
       document.body.style.overflow = prevOverflow;
       overlay.remove();
