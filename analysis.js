@@ -160,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // الطريقة بسيطة: نفس الـ Promise بيرجّع لكل نداءات لنفس الملف، والـ prefetch
     // بيحط <link rel="prefetch"> عشان المتصفح يجيبه في الخلفية قبل الضغط.
     const STORE_CHUNKS = {
-        product: 'store-product.js?v=46',
+        product: 'store-product.js?v=47',
         checkout: 'store-checkout.js?v=42'
     };
     const __storeChunkPromises = Object.create(null);
@@ -1522,7 +1522,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (error) throw error;
                     return true;
                 } catch(err) {
-                    Swal.showValidationMessage('تعذر حفظ التقييم: ' + (err.message || 'حاول مجدداً'));
+                    if (err && err.code === '23505') {
+                        Swal.showValidationMessage('التقييم ده اتسجل بالفعل لنفس المنتج، ومش هنكرر تسجيله.');
+                    } else {
+                        Swal.showValidationMessage('تعذر حفظ التقييم: ' + (err.message || 'حاول مجدداً'));
+                    }
                     return false;
                 }
             }
@@ -1531,7 +1535,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 Swal.fire({
                     icon: 'success',
                     title: 'شكراً لمشاركتك تجربتك! 🌸',
-                    text: 'تم نشر تقييمك بنجاح وسيفيد العملاء الآخرين.',
+                    text: 'تم استلام تقييمك، وسيظهر للعملاء بعد مراجعته واعتماده.',
                     confirmButtonText: 'حسناً',
                     confirmButtonColor: '#3312d5'
                 });
