@@ -116,10 +116,40 @@ window.OrderStatus = (() => {
     }
 
     if (await isDuplicateOrderError(error) && orderData.merchant_order_id) {
-      // نفس merchant_order_id يعني أن محاولة الشراء نفسها وصلت للسيرفر بالفعل.
-      // لا نعمل نسخة ثانية، ونعتبرها نجاحاً من ناحية الـcheckout.
-      console.warn('الطلب ده اتسجل قبل كده بنفس merchant_order_id - مش هنضيف نسخة تانية.');
-      return { data: { id: null }, error: null, wasDuplicate: true };
+      // تعارض المفتاح وحده لا يكفي: نتحقق من تطابق بيانات الطلب عبر RPC آمن.
+      // لا نعتبر الطلب نجاحاً ولا نمسح السلة إذا تعذر التحقق أو اختلفت البيانات.
+      let verification;
+      try {
+        verification = await supabaseClient.rpc('verify_duplicate_order', {
+          p_merchant_order_id: orderData.merchant_order_id,
+          p_order_data: orderData
+        });
+      } catch (verificationError) {
+        return {
+          data: null,
+          error: Object.assign(new Error('ORDER_DUPLICATE_VERIFY_FAILED'), { code: 'ORDER_DUPLICATE_VERIFY_FAILED', cause: verificationError }),
+          wasDuplicate: false
+        };
+      }
+
+      if (verification && !verification.error && verification.data) {
+        console.info('تم التحقق من تطابق الطلب الموجود؛ لن يتم إنشاء طلب أو إشعار جديد.');
+        return { data: { id: verification.data }, error: null, wasDuplicate: true };
+      }
+
+      if (verification && verification.error) {
+        return {
+          data: null,
+          error: Object.assign(new Error('ORDER_DUPLICATE_VERIFY_FAILED'), { code: 'ORDER_DUPLICATE_VERIFY_FAILED', cause: verification.error }),
+          wasDuplicate: false
+        };
+      }
+
+      return {
+        data: null,
+        error: Object.assign(new Error('ORDER_DUPLICATE_MISMATCH'), { code: 'ORDER_DUPLICATE_MISMATCH' }),
+        wasDuplicate: false
+      };
     }
 
     return { data: null, error, wasDuplicate: false };
