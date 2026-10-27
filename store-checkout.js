@@ -33,43 +33,8 @@
         return String(merchantId || '').slice(-8).toUpperCase();
     }
 
-    // Meta Pixel Purchase: يُرسل فقط بعد تأكيد حفظ الطلب في قاعدة البيانات.
-    // مفتاح الطلب الثابت يمنع إعادة إرسال نفس التحويل عند إعادة المحاولة أو تحديث الصفحة.
-    var __metaPurchaseSentInMemory = Object.create(null);
-    function trackMetaPurchaseOnce(merchantId, total, items, paymentMethod) {
-        if (!merchantId || typeof window.fbq !== 'function') return;
-        var eventKey = 'elforat_meta_purchase_' + String(merchantId);
-        try {
-            if (localStorage.getItem(eventKey) === '1' || __metaPurchaseSentInMemory[eventKey]) return;
-        } catch (_) {
-            if (__metaPurchaseSentInMemory[eventKey]) return;
-        }
-
-        var validItems = (Array.isArray(items) ? items : []).map(function (item) {
-            return {
-                id: String(item && item.id != null ? item.id : (item && item.name || 'product')),
-                quantity: Math.max(1, Number(item && item.qty) || 1),
-                item_price: Math.max(0, Number(item && item.price) || 0)
-            };
-        });
-        var params = {
-            value: Math.max(0, Number(total) || 0),
-            currency: 'EGP',
-            content_type: 'product',
-            content_ids: validItems.map(function (item) { return item.id; }),
-            contents: validItems,
-            num_items: validItems.reduce(function (sum, item) { return sum + item.quantity; }, 0),
-            payment_method: String(paymentMethod || '')
-        };
-
-        try {
-            window.fbq('track', 'Purchase', params, { eventID: 'elforat-purchase-' + String(merchantId) });
-            __metaPurchaseSentInMemory[eventKey] = true;
-            try { localStorage.setItem(eventKey, '1'); } catch (_) { }
-        } catch (err) {
-            console.warn('Meta Pixel Purchase event could not be queued:', err);
-        }
-    }
+    // Meta Purchase is intentionally NOT fired at checkout/order creation.
+    // The admin dashboard triggers server-side Conversions API only after payment_status becomes "paid".
     var ErrorHandler = S.ErrorHandler;
     var app = window.app;
 
@@ -677,13 +642,9 @@
                     return;
                 }
 
-                // Meta Purchase is a completed order event only for Cash on Delivery.
-                // InstaPay/Vodafone Cash remain pending until a human confirms payment;
-                // never count an unpaid pending transfer as a completed purchase.
-                if (payment === 'الدفع عند الاستلام') {
-                    // إعادة المحاولة لطلب موجود لا تُرسل حدث Purchase مرة أخرى.
-                    if (!wasDuplicate) trackMetaPurchaseOnce(merchantId, finalTotal, orderItems, payment);
-                } else {
+                // لا نرسل Meta Purchase عند إنشاء الطلب؛ إنشاء الطلب لا يعني أن الدفع اكتمل.
+                // يُرسل Purchase من الخادم بعد تأكيد الدفع من الداشبورد (payment_status = paid).
+                if (payment !== 'الدفع عند الاستلام') {
                     trackStoreEvent('payment_pending_confirmation', {
                         coupon_code: couponCode,
                         cart_total: finalTotal,
