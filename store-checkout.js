@@ -175,10 +175,11 @@
             const nameEl = document.getElementById('cust-name');
             const phoneEl = document.getElementById('cust-phone');
             const addressEl = document.getElementById('cust-address');
+            const centerEl = document.getElementById('cust-center');
             const paymentEl = document.getElementById('cust-payment');
             const governorateEl = document.getElementById('cust-governorate');
 
-            if (!nameEl || !phoneEl || !addressEl || !paymentEl || !governorateEl) {
+            if (!nameEl || !phoneEl || !addressEl || !centerEl || !paymentEl || !governorateEl) {
                 showCustomAlert('يوجد خطأ في النموذج. يرجى التأكد من الحقول.', 'error');
                 submitBtn.innerText = originalBtnText;
                 submitBtn.disabled = false;
@@ -188,6 +189,7 @@
             const name = nameEl.value.trim();
             const phone = normalizeEgyptPhone(phoneEl.value);
             const address = addressEl.value.trim();
+            const center = centerEl.value.trim();
             const payment = paymentEl.value;
             const governorate = governorateEl.value;
 
@@ -233,8 +235,16 @@
                 return;
             }
 
-            if (address.length < 15 || wordCount(address) < 3) {
-                showCustomAlert('برجاء كتابة العنوان بالتفصيل (المنطقة واسم الشارع ورقم المبنى أو أقرب علامة مميزة).', 'error');
+            if (!center) {
+                showCustomAlert('اختاري المركز أو الحي التابع للمحافظة.', 'error');
+                centerEl.focus();
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+                return;
+            }
+
+            if (address.length < 8 || wordCount(address) < 2) {
+                showCustomAlert('برجاء كتابة عنوان واضح (اسم الشارع ورقم المبنى أو أقرب علامة مميزة).', 'error');
                 addressEl.focus();
                 submitBtn.innerText = originalBtnText;
                 submitBtn.disabled = false;
@@ -448,9 +458,9 @@
             }
             const shippingFee = shipping.fee;
             const finalTotal = Math.round((Math.max(subtotal - discountAmount, 0) + shippingFee) * 100) / 100;
-            // المحافظة بتتكتب في أول العنوان كمان عشان تظهر في الداشبورد وإشعار تليجرام
-            // (اللي بيقروا عمود address بس) حتى قبل ما يتعدّلوا يعرضوا عمود governorate.
-            const fullAddress = governorate + ' - ' + address;
+            // نضم المحافظة والمركز للعنوان المحفوظ حتى يظهر مكان التوصيل واضحاً
+            // في لوحة التحكم وإشعارات الطلبات التي تعرض عمود address فقط.
+            const fullAddress = governorate + ' - ' + center + ' - ' + address;
             const traffic = getTrafficParams();
 
             try {
@@ -774,6 +784,7 @@
             message += `👤 *اسم العميل:* ${name}\n`;
             message += `📞 *رقم الهاتف:* ${phone}\n`;
             message += `📍 *المحافظة:* ${governorate}\n`;
+            message += `🏙️ *المركز / الحي:* ${center}\n`;
             message += `🏠 *العنوان:* ${address}\n`;
             message += `💳 *طريقة الدفع:* ${payment}\n\n`;
             message += `*المنتجات المطلوبة:*\n`;
