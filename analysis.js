@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // بيحط <link rel="prefetch"> عشان المتصفح يجيبه في الخلفية قبل الضغط.
     const STORE_CHUNKS = {
         product: 'store-product.js?v=48',
-        checkout: 'store-checkout.js?v=46'
+        checkout: 'store-checkout.js?v=47'
     };
     const __storeChunkPromises = Object.create(null);
 
@@ -2549,20 +2549,40 @@ document.addEventListener("DOMContentLoaded", () => {
     let __paymentScriptsPromise = null;
     function loadPaymentScripts() {
         if (__paymentScriptsPromise) return __paymentScriptsPromise;
+
         __paymentScriptsPromise = Promise.all(PAYMENT_SCRIPTS.map(function (src) {
             return new Promise(function (resolve) {
                 if ((window.OrderStatus && src.indexOf('order-status') === 0)
                     || (window.InstaPayCheckout && src.indexOf('instapay') === 0)
                     || (window.VodafoneCashCheckout && src.indexOf('vodafone-cash') === 0)) {
-                    resolve(); return;
+                    resolve(true);
+                    return;
                 }
-                const s = document.createElement('script');
-                s.src = src;
-                s.onload = resolve;
-                s.onerror = resolve; // لو فشل ملف، الكود القديم هيطلّع رسالة واضحة للمستخدم
-                document.head.appendChild(s);
+
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = function () { resolve(true); };
+                script.onerror = function () {
+                    console.error('[checkout] Failed to load payment dependency:', src);
+                    resolve(false);
+                };
+                document.head.appendChild(script);
             });
-        }));
+        })).then(function (results) {
+            const ready = results.every(Boolean)
+                && !!window.OrderStatus
+                && !!window.InstaPayCheckout
+                && !!window.VodafoneCashCheckout;
+
+            // Allow a later attempt to retry any missing script instead of caching failure.
+            if (!ready) __paymentScriptsPromise = null;
+            return ready;
+        }).catch(function (error) {
+            __paymentScriptsPromise = null;
+            console.error('[checkout] Payment dependency loading failed:', error);
+            return false;
+        });
+
         return __paymentScriptsPromise;
     }
 
