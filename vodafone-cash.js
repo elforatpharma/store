@@ -104,16 +104,12 @@ window.VodafoneCashCheckout = (() => {
     return "desktop";
   }
 
-  // رابط Vodafone Dynamic Link الرسمي الذي تم اختباره على الهاتف ويفتح تطبيق "أنا فودافون".
-  // نستخدم /home فقط لأنه المسار المؤكد أنه يعمل، ولا نفترض مسارًا داخليًا لشاشة Vodafone Cash.
-  const VODAFONE_DYNAMIC_LINK = "https://web.vodafone.com.eg/LB/DynamicLinks/Business/index.html?url=/home";
+  // رابط التحويل المباشر الذي زوّدنا به المستخدم لفتح مسار Vodafone Cash داخل أنا فودافون.
+  const VODAFONE_DYNAMIC_LINK = "https://vf.eg/vfcash?id=mt&qrId=L8hOMZ";
 
   function getOpenAppTarget(platform) {
-    if (platform === "android") {
-      return { mode: "navigate", url: VODAFONE_DYNAMIC_LINK };
-    }
-    if (platform === "ios") return { mode: "open", url: IOS_URL };
-    return { mode: "open", url: WEB_URL };
+    // على الموبايل افتح الرابط مباشرة؛ وعلى الكمبيوتر افتحه في تبويب جديد.
+    return { mode: platform === "desktop" ? "open" : "navigate", url: VODAFONE_DYNAMIC_LINK };
   }
 
   function openVodafoneCashApp() {
