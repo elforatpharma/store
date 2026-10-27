@@ -1,0 +1,32 @@
+/* Elforat Pharma — shared shimmer loading layer (non-invasive) */
+.efp-shimmer-overlay{position:fixed;inset:0;z-index:2147483000;background:#f8f9fc;color:#172033;display:flex;flex-direction:column;gap:22px;padding:clamp(14px,3vw,32px);overflow:hidden;opacity:1;visibility:visible;transition:opacity .22s ease,visibility .22s ease;font-family:inherit;direction:rtl}
+.efp-shimmer-overlay[hidden]{display:none!important}
+.efp-shimmer-overlay.efp-shimmer-leaving{opacity:0;visibility:hidden;pointer-events:none}
+.efp-shimmer-top{height:54px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-radius:14px;background:#fff;padding:10px 16px;box-shadow:0 2px 12px rgba(25,35,60,.035)}
+.efp-shimmer-brand{width:145px;height:18px;border-radius:8px}
+.efp-shimmer-pill{width:94px;height:28px;border-radius:999px}
+.efp-shimmer-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;flex:1;min-height:0}
+.efp-shimmer-main{display:flex;flex-direction:column;gap:18px;min-width:0}
+.efp-shimmer-heading{width:min(260px,65%);height:26px;border-radius:8px}
+.efp-shimmer-subheading{width:min(360px,80%);height:13px;border-radius:7px}
+.efp-shimmer-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.efp-shimmer-stat{height:94px;border-radius:16px;background:#fff;padding:17px;display:flex;flex-direction:column;justify-content:space-between;gap:12px}
+.efp-shimmer-line{height:12px;border-radius:7px;width:54%}
+.efp-shimmer-value{height:21px;border-radius:7px;width:36%}
+.efp-shimmer-panel{border-radius:16px;background:#fff;padding:18px;display:flex;flex-direction:column;gap:16px;min-height:160px}
+.efp-shimmer-panel-head{height:18px;border-radius:7px;width:30%}
+.efp-shimmer-table-row{height:38px;border-radius:8px}
+.efp-shimmer-products{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.efp-shimmer-product{background:#fff;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.efp-shimmer-product-image{aspect-ratio:1/0.8;border-radius:12px}
+.efp-shimmer-product-line{height:12px;border-radius:7px;width:82%}
+.efp-shimmer-product-line.short{width:48%}
+.efp-shimmer-sidebar{display:none}
+.efp-shimmer-block{background:linear-gradient(100deg,#e9edf5 15%,#f7f9fc 35%,#e9edf5 55%);background-size:220% 100%;animation:efp-shimmer-sweep 1.25s ease-in-out infinite}
+@keyframes efp-shimmer-sweep{0%{background-position:100% 0}100%{background-position:-120% 0}}
+.efp-shimmer-overlay.efp-store-loading .efp-shimmer-hero{height:clamp(130px,25vh,230px);border-radius:18px}
+.efp-shimmer-overlay.efp-store-loading .efp-shimmer-heading{width:min(220px,60%);height:24px}
+.efp-shimmer-overlay.efp-store-loading .efp-shimmer-products{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(min-width:900px){.efp-shimmer-overlay.efp-admin-loading .efp-shimmer-layout{grid-template-columns:210px minmax(0,1fr)}.efp-shimmer-overlay.efp-admin-loading .efp-shimmer-sidebar{display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:16px;background:#fff}.efp-shimmer-overlay.efp-admin-loading .efp-shimmer-side-link{height:38px;border-radius:8px}.efp-shimmer-overlay.efp-admin-loading .efp-shimmer-main{grid-column:2}}
+@media(max-width:700px){.efp-shimmer-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.efp-shimmer-stat{height:78px;padding:12px}.efp-shimmer-products,.efp-shimmer-overlay.efp-store-loading .efp-shimmer-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.efp-shimmer-panel{padding:12px}.efp-shimmer-table-row{height:30px}.efp-shimmer-overlay{gap:14px}.efp-shimmer-top{height:46px}.efp-shimmer-overlay.efp-store-loading .efp-shimmer-hero{height:150px}}
+@media(prefers-reduced-motion:reduce){.efp-shimmer-block{animation:none}.efp-shimmer-overlay{transition:none}}
