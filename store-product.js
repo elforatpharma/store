@@ -42,9 +42,15 @@
         const list = document.getElementById('pdp-review-list') || document.getElementById('pdp-mobile-review-list');
         const countEl = document.getElementById('pdp-review-count');
         const averageEl = document.getElementById('pdp-review-average');
+        const topCountEl = document.getElementById('pdp-review-top-count');
+        const topAverageEl = document.getElementById('pdp-review-top-average');
+        const topStarsEl = document.getElementById('pdp-review-top-stars');
         if (list) list.innerHTML = '<p class="text-sm text-slate-500 py-3">جار تحميل التقييمات...</p>';
         if (countEl) countEl.textContent = 'جار التحميل...';
         if (averageEl) averageEl.textContent = '— / 5';
+        if (topCountEl) topCountEl.textContent = 'جار التحميل...';
+        if (topAverageEl) topAverageEl.textContent = '—';
+        if (topStarsEl) topStarsEl.textContent = '☆☆☆☆☆';
 
         try {
             const supabase = S.supabase;
@@ -92,8 +98,12 @@
             }
             if (countEl) countEl.textContent = count + ' تقييم';
             if (averageEl) averageEl.textContent = average + ' / 5';
+            if (topCountEl) topCountEl.textContent = count + ' تقييم';
+            if (topAverageEl) topAverageEl.textContent = average;
+            const starsText = count ? '★'.repeat(Math.round(Number(average))) + '☆'.repeat(5 - Math.round(Number(average))) : '☆☆☆☆☆';
             const desktopStars = document.getElementById('pdp-review-stars');
-            if (desktopStars) desktopStars.textContent = count ? '★'.repeat(Math.round(Number(average))) + '☆'.repeat(5 - Math.round(Number(average))) : '☆☆☆☆☆';
+            if (desktopStars) desktopStars.textContent = starsText;
+            if (topStarsEl) topStarsEl.textContent = starsText;
         } catch (err) {
             console.warn('تعذّر تحميل تقييمات المنتج:', err);
             if (String(lastRenderedId) !== String(productId)) return;
@@ -101,6 +111,9 @@
             if (currentList) currentList.innerHTML = '<p class="text-sm text-rose-600 py-3">تعذّر تحميل التقييمات حالياً. حاولي تحديث الصفحة.</p>';
             if (countEl) countEl.textContent = 'غير متاح حالياً';
             if (averageEl) averageEl.textContent = '— / 5';
+            if (topCountEl) topCountEl.textContent = 'غير متاح حالياً';
+            if (topAverageEl) topAverageEl.textContent = '—';
+            if (topStarsEl) topStarsEl.textContent = '☆☆☆☆☆';
         }
     }
 
@@ -704,9 +717,9 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
                 <h1>${sanitize(p.name)}</h1>
                 ${sub ? `<p class="pdp-sub">${sanitize(sub)}</p>` : ''}
                 <div class="pdp-rating">
-                    <span class="pdp-stars">★★★★★</span>
-                    <b>${sanitize(p.rating || '4.9')}</b>
-                    <span class="pdp-rating__n">(${computeReviewCountForId(p.id)} تقييم من عميلات الفرات فارما)</span>
+                    <span id="pdp-review-top-stars" class="pdp-stars">☆☆☆☆☆</span>
+                    <b id="pdp-review-top-average">—</b>
+                    <span class="pdp-rating__n">(<span id="pdp-review-top-count">جار التحميل...</span> من عميلات الفرات فارما)</span>
                 </div>
                 <div class="pdp-price">
                     <div>
