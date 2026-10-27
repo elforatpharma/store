@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // بيحط <link rel="prefetch"> عشان المتصفح يجيبه في الخلفية قبل الضغط.
     const STORE_CHUNKS = {
         product: 'store-product.js?v=48',
-        checkout: 'store-checkout.js?v=43'
+        checkout: 'store-checkout.js?v=44'
     };
     const __storeChunkPromises = Object.create(null);
 
