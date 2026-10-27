@@ -482,10 +482,10 @@
                 const cartFingerprint = JSON.stringify({
                     version: 2,
                     phone: String(phone || '').trim(),
-                    customerName: String(name || '').trim().replace(/\\s+/g, ' '),
+                    customerName: String(name || '').trim().replace(/\s+/g, ' '),
                     governorate: String(governorate || '').trim(),
                     center: String(center || '').trim(),
-                    address: String(address || '').trim().replace(/\\s+/g, ' '),
+                    address: String(address || '').trim().replace(/\s+/g, ' '),
                     payment: String(payment || '').trim(),
                     couponCode: String(couponCode || '').trim().toUpperCase(),
                     discountAmount: Number(discountAmount) || 0,
