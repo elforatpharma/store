@@ -1793,9 +1793,13 @@
                         <select id="cust-governorate" required class="w-full p-3 border border-slate-200 rounded-2xl text-right bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
                             <option value="" disabled selected>اختاري المحافظة</option>
                         </select>
-                        <label class="m-only cart-lbl" for="cust-address">4. العنوان بالتفصيل</label>
-                        <textarea id="cust-address" placeholder="العنوان بالتفصيل" required class="w-full p-3 border border-slate-200 rounded-2xl text-right h-24 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"></textarea>
-                        <label class="m-only cart-lbl cart-lbl--pay" for="cust-payment">5. طريقة الدفع المفضلة</label>
+                        <label class="m-only cart-lbl" for="cust-center">4. المركز / الحي</label>
+                        <select id="cust-center" required disabled class="w-full p-3 border border-slate-200 rounded-2xl text-right bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
+                            <option value="" disabled selected>اختاري المحافظة أولاً</option>
+                        </select>
+                        <label class="m-only cart-lbl" for="cust-address">5. العنوان بالتفصيل</label>
+                        <textarea id="cust-address" placeholder="اسم الشارع ورقم المبنى أو أقرب علامة مميزة" required class="w-full p-3 border border-slate-200 rounded-2xl text-right h-24 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"></textarea>
+                        <label class="m-only cart-lbl cart-lbl--pay" for="cust-payment">6. طريقة الدفع المفضلة</label>
                         <select id="cust-payment" required class="w-full p-3 border border-slate-200 rounded-2xl text-right bg-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all">
                             <option value="" disabled selected>اختر طريقة الدفع</option>
                             <option value="الدفع عند الاستلام">الدفع عند الاستلام</option>
@@ -1932,7 +1936,8 @@
          من غير ما حد يستخدمهم). analysis.js بيحمّلهم بالتوازي لما العميل يفتح
          صفحة السلة/الدفع من خلال loadPaymentScripts(). -->
     <script src="welcome-offer.js?v=48" defer></script>
-    <script src="analysis.js?v=62" defer></script>
+    <script src="analysis.js?v=63" defer></script>
+    <script src="address-centers.js?v=1" defer></script>
     <script>
         // Touch/Swipe gesture support for carousel
         (function() {
