@@ -476,7 +476,30 @@
                         : payment;
                 // merchant_order_id ثابت لنفس محاولة الشراء (حتى لو حصل reload/مشكلة شبكة)
                 // بدل توليد رقم جديد كل submit، عشان الحماية من تكرار الطلب تبقى فعلية
-                const cartFingerprint = [phone, finalTotal, orderItems.map(i => (i.id ?? i.name) + 'x' + (i.qty ?? 1)).join(',')].join('|');
+                // بصمة الإصدار 2 تشمل كل الحقول التي تغيّر معنى الطلب؛ لا نعيد استخدام
+                // merchant_order_id إذا غيّر العميل العنوان أو طريقة الدفع أو الكوبون
+                // حتى لو ظل الهاتف والإجمالي والمنتجات كما هي.
+                const cartFingerprint = JSON.stringify({
+                    version: 2,
+                    phone: String(phone || '').trim(),
+                    customerName: String(name || '').trim().replace(/\s+/g, ' '),
+                    governorate: String(governorate || '').trim(),
+                    center: String(center || '').trim(),
+                    address: String(address || '').trim().replace(/\s+/g, ' '),
+                    payment: String(payment || '').trim(),
+                    couponCode: String(couponCode || '').trim().toUpperCase(),
+                    discountAmount: Number(discountAmount) || 0,
+                    shippingFee: Number(shippingFee) || 0,
+                    shippingLater: !!(shipping && shipping.later),
+                    total: Number(finalTotal) || 0,
+                    items: orderItems.map(i => ({
+                        id: String(i && i.id != null ? i.id : ''),
+                        name: String(i && i.name || '').trim(),
+                        qty: Number(i && i.qty) || 1,
+                        price: Number(i && i.price) || 0,
+                        isGift: !!(i && i.isGift)
+                    }))
+                });
                 const merchantId = window.OrderStatus
                     ? window.OrderStatus.getOrCreateMerchantOrderId(cartFingerprint)
                     : ('elforat-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8));
