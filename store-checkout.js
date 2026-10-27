@@ -510,12 +510,17 @@
                     : (data) => _supabase.from('orders').insert([data])
                         .then(r => ({ data: r.error ? null : { id: null }, error: r.error }));
 
-                const { data: insertedOrder, error: orderError } = await insertOnce(orderData);
+                const insertResult = await insertOnce(orderData);
+                const insertedOrder = insertResult.data;
+                const orderError = insertResult.error;
+                const wasDuplicate = !!insertResult.wasDuplicate;
                 let orderSaved = !!(insertedOrder && !orderError);
 
                 if (!orderError && insertedOrder) {
                     orderData.id = insertedOrder.id;
-                    trackStoreEvent('order_created', { coupon_code: couponCode, cart_total: finalTotal, metadata: { payment, items_count: orderItems.length } });
+                    if (!wasDuplicate) {
+                        trackStoreEvent('order_created', { coupon_code: couponCode, cart_total: finalTotal, metadata: { payment, items_count: orderItems.length } });
+                    }
                 } else if (orderError && /WELCOME10_ALREADY_USED/.test(orderError.message || '')) {
                     // السيرفر رفض الطلب: كوبون الترحيب استُخدم قبل كده بنفس رقم الهاتف.
                     // مفيش fallback هنا (كان هيسجّل الطلب بالخصم من غير كود الكوبون).
@@ -595,6 +600,17 @@
                     submitBtn.innerText = originalBtnText;
                     submitBtn.disabled = false;
                     return;
+                } else if (orderError && /ORDER_DUPLICATE_(MISMATCH|VERIFY_FAILED)/.test(orderError.message || '')) {
+                    reportCheckoutError(orderError, 'checkout:duplicate_verification');
+                    submitBtn.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    showCustomAlert(
+                        /ORDER_DUPLICATE_MISMATCH/.test(orderError.message || '')
+                            ? 'تعذر تأكيد أن الطلب السابق مطابق للطلب الحالي. لم يتم إنشاء طلب جديد؛ احتفظي بالسلة وحاولي لاحقًا أو تواصلي معنا.'
+                            : 'تعذر التحقق من الطلب السابق بسبب مشكلة اتصال. لم يتم إنشاء طلب جديد؛ سلتك محفوظة، برجاء المحاولة لاحقًا.',
+                        'error'
+                    );
+                    return;
                 } else if (orderError) {
                     // console.error (مش warn): غالباً عمود ناقص (status_code..) أو صلاحيات RLS - الطلب هيتسجل ناقص بيانات
                     console.error('فشل إدخال الطلب بالحقول الكاملة، جاري المحاولة بالحد الأدنى:', orderError.code, orderError.message);
@@ -665,7 +681,8 @@
                 // InstaPay/Vodafone Cash remain pending until a human confirms payment;
                 // never count an unpaid pending transfer as a completed purchase.
                 if (payment === 'الدفع عند الاستلام') {
-                    trackMetaPurchaseOnce(merchantId, finalTotal, orderItems, payment);
+                    // إعادة المحاولة لطلب موجود لا تُرسل حدث Purchase مرة أخرى.
+                    if (!wasDuplicate) trackMetaPurchaseOnce(merchantId, finalTotal, orderItems, payment);
                 } else {
                     trackStoreEvent('payment_pending_confirmation', {
                         coupon_code: couponCode,
