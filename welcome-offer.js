@@ -291,9 +291,8 @@
     watchCookieBanner();
     if (!isEligible()) return;
     scheduleExpiry();
-    // لا نعرض البانر من التخمين المحلي (ممكن السيرفر يقول إن العرض خلص فيختفي بعد ثواني).
-    // الأساسي: reconcile() بيظهره بعد تأكيد السيرفر. ده مجرد احتياطي لو السيرفر/الـ IP اتأخروا.
-    setTimeout(function () { if (isEligible()) showBanner(); }, 6000);
+    // لا نعرض البانر إلا بعد تأكيد صلاحية العرض من السيرفر عبر reconcile().
+    // لو التحقق فشل أو اتأخر، الأفضل عدم إظهار كوبون قد يكون مستخدماً/منتهياً.
   }
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
