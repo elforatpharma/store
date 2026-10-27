@@ -279,6 +279,16 @@ window.InstaPayCheckout = (() => {
 .ipx-tcard p{margin:0;font-size:12px;color:#5a6d64;line-height:1.5}
 
 /* Toast */
+
+/* Five-minute reminder timer; it never cancels or expires an order. */
+.ipx-timer{display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 16px;border:1px solid #ead7a7;border-radius:16px;background:linear-gradient(135deg,#fffaf0,#fff4d6);text-align:center;color:#59451a}
+.ipx-timer-copy{display:flex;align-items:center;justify-content:center;gap:7px;font-size:12px;font-weight:800}
+.ipx-timer-copy i{font-size:15px;color:#a66b0b}
+.ipx-countdown-value{font-family:'Plus Jakarta Sans','Cairo',sans-serif;font-size:32px;line-height:1.15;font-weight:900;letter-spacing:.04em;color:#8a4b08;font-variant-numeric:tabular-nums}
+.ipx-countdown-note{margin:0;font-size:11px;line-height:1.65;color:#78643b}
+.ipx-timer.is-expired{border-color:#d8dee6;background:#f3f5f8;color:#475569}
+.ipx-timer.is-expired .ipx-countdown-value,.ipx-timer.is-expired .ipx-timer-copy i{color:#64748b}
+
 .ipx-toast{position:absolute;left:50%;bottom:18px;z-index:4;transform:translate(-50%,16px);display:flex;align-items:center;gap:8px;
   max-width:calc(100% - 32px);padding:10px 18px;border-radius:999px;background:#2d3130;color:#eef2ef;font-size:12px;font-weight:600;
   box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
@@ -335,6 +345,12 @@ window.InstaPayCheckout = (() => {
             <div class="ipx-amount-val"><strong>${esc(amountText)}</strong><span>جنيه مصري</span></div>
             ${shippingLater ? '<p role="note" style="margin:0;color:#fff7d6;font-size:12px;line-height:1.7;text-align:center;">مصاريف الشحن غير مشمولة في المبلغ الحالي، وستُحدد لاحقًا حسب شركة الشحن.</p>' : ''}
             <button type="button" class="ipx-btn-copyamt"><i class="fa-regular fa-copy"></i><span>نسخ المبلغ (${esc(amountText)} ج.م)</span></button>
+          </div>
+
+          <div class="ipx-timer" role="timer" aria-live="polite" aria-label="وقت مقترح لإتمام تحويل InstaPay">
+            <div class="ipx-timer-copy"><i class="fa-regular fa-clock" aria-hidden="true"></i><span>وقت مقترح لإتمام تحويل InstaPay</span></div>
+            <strong class="ipx-countdown-value" dir="ltr">05:00</strong>
+            <p class="ipx-countdown-note">لتسهيل إتمام الدفع بسرعة. هذا مؤقت تذكيري فقط ولا يؤدي إلى إلغاء الطلب تلقائيًا.</p>
           </div>
 
           <div role="region" class="ipx-card ipx-recipient" aria-label="بيانات التحويل">
@@ -405,7 +421,30 @@ window.InstaPayCheckout = (() => {
     document.body.appendChild(overlay);
     sheet.focus();
 
+    // Five-minute reminder only: payment is manual, so expiry never cancels the order.
+    const timerBox = overlay.querySelector(".ipx-timer");
+    const countdownValue = overlay.querySelector(".ipx-countdown-value");
+    const countdownNote = overlay.querySelector(".ipx-countdown-note");
+    const countdownDeadline = Date.now() + 5 * 60 * 1000;
+    function updatePaymentCountdown() {
+      const remaining = Math.max(0, countdownDeadline - Date.now());
+      const totalSeconds = Math.ceil(remaining / 1000);
+      const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+      const seconds = String(totalSeconds % 60).padStart(2, "0");
+      if (countdownValue) countdownValue.textContent = minutes + ":" + seconds;
+      if (remaining <= 0) {
+        if (paymentCountdownInterval) { clearInterval(paymentCountdownInterval); paymentCountdownInterval = null; }
+        if (timerBox) timerBox.classList.add("is-expired");
+        if (countdownValue) countdownValue.textContent = "00:00";
+        if (countdownNote) countdownNote.textContent = "انتهى الوقت التذكيري المقترح. يمكنك إكمال الدفع الآن؛ طلبك لم يُلغَ تلقائيًا.";
+      }
+    }
+    updatePaymentCountdown();
+    paymentCountdownInterval = setInterval(updatePaymentCountdown, 1000);
+
+    let paymentCountdownInterval = null;
     function close() {
+      if (paymentCountdownInterval) { clearInterval(paymentCountdownInterval); paymentCountdownInterval = null; }
       document.removeEventListener("keydown", onKey, true);
       document.body.style.overflow = prevOverflow;
       overlay.remove();
