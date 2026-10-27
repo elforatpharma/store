@@ -1,15 +1,18 @@
-/* Shared shimmer loader for all Elforat Pharma pages. No dependencies. */
+/* Elforat Pharma — shared shimmer loading layer. Safe, dependency-free and page-scoped. */
 (function () {
   'use strict';
   if (window.__efpShimmerLoaderInstalled) return;
   window.__efpShimmerLoaderInstalled = true;
-  var startedAt = Date.now();
+
+  // Each repository uses its own explicit mode so page titles/pathnames cannot
+  // accidentally classify an admin page as storefront (or vice versa).
+  var isAdmin = false;
   var MIN_VISIBLE_MS = 420;
+  var MAX_INITIAL_MS = isAdmin ? 1200 : 950;
+  var startedAt = Date.now();
   var overlay = null;
   var hideTimer = null;
-  var isAdmin = /\/admin(?:\/|$)/i.test(location.pathname) ||
-    /لوحة التحكم|إدارة الطلبات|إدارة المخزون|تسجيل الدخول/.test(document.title || '') ||
-    !!document.querySelector('#loginForm, #login-form, .efp-uiverse-ui');
+  var safetyTimer = null;
 
   function block(className, extraClass) {
     var el = document.createElement('div');
@@ -28,6 +31,7 @@
     overlay.className = 'efp-shimmer-overlay ' + (isAdmin ? 'efp-admin-loading' : 'efp-store-loading');
     overlay.setAttribute('aria-hidden', 'true');
     overlay.setAttribute('role', 'presentation');
+    overlay.hidden = true;
 
     var top = add(overlay, 'efp-shimmer-top');
     top.appendChild(block('efp-shimmer-brand'));
@@ -40,7 +44,6 @@
     }
     var main = add(layout, 'efp-shimmer-main');
     if (!isAdmin) main.appendChild(block('efp-shimmer-hero'));
-
     main.appendChild(block('efp-shimmer-heading'));
     main.appendChild(block('efp-shimmer-subheading'));
 
@@ -66,18 +69,23 @@
     }
     return overlay;
   }
-  function show() {
-    if (!document.body) return;
+
+  function show(duration) {
     clearTimeout(hideTimer);
+    clearTimeout(safetyTimer);
     var el = makeOverlay();
     el.classList.remove('efp-shimmer-leaving');
     el.hidden = false;
-    if (!el.isConnected) document.body.appendChild(el);
+    // Attach to <html> so the overlay can appear as early as possible, even
+    // when this script is loaded from <head> before <body> exists.
+    if (!el.isConnected) (document.body || document.documentElement).appendChild(el);
     startedAt = Date.now();
-    hideTimer = setTimeout(hide, isAdmin ? 900 : 700);
+    hideTimer = setTimeout(hide, typeof duration === 'number' ? duration : MAX_INITIAL_MS);
+    safetyTimer = setTimeout(hide, MAX_INITIAL_MS + 1800);
   }
+
   function hide() {
-    if (!overlay) return;
+    if (!overlay || overlay.hidden) return;
     var remaining = MIN_VISIBLE_MS - (Date.now() - startedAt);
     if (remaining > 0) {
       clearTimeout(hideTimer);
@@ -86,6 +94,7 @@
     }
     overlay.classList.add('efp-shimmer-leaving');
     clearTimeout(hideTimer);
+    clearTimeout(safetyTimer);
     hideTimer = setTimeout(function () {
       if (overlay) overlay.hidden = true;
     }, 240);
@@ -93,20 +102,34 @@
 
   function init() {
     show();
-    window.addEventListener('load', hide, { once: true });
-    // The storefront uses hash-based navigation; show the same loader during route changes.
+    if (document.readyState !== 'complete') {
+      window.addEventListener('load', hide, { once: true });
+    } else {
+      hide();
+    }
+
+    // Store navigation is hash-based; show a brief transition for route changes.
     if (!isAdmin) {
-      window.addEventListener('hashchange', function () {
-        show();
-        hideTimer = setTimeout(hide, 320);
-      });
-      window.addEventListener('popstate', function () {
-        show();
-        hideTimer = setTimeout(hide, 320);
-      });
+      function routeChanged() {
+        show(650);
+      }
+      window.addEventListener('hashchange', routeChanged);
+      window.addEventListener('popstate', routeChanged);
     }
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
-  else init();
+  // Start before DOMContentLoaded where possible to avoid a blank initial flash.
+  if (document.readyState === 'loading') {
+    show();
+    document.addEventListener('DOMContentLoaded', function () {
+      if (document.readyState === 'complete') hide();
+    }, { once: true });
+    window.addEventListener('load', hide, { once: true });
+    if (!isAdmin) {
+      window.addEventListener('hashchange', function () { show(650); });
+      window.addEventListener('popstate', function () { show(650); });
+    }
+  } else {
+    init();
+  }
 })();
