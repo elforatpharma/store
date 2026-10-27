@@ -651,8 +651,21 @@
                     return;
                 }
 
-                // Meta Purchase بيتسجل بعد نجاح حفظ الطلب فقط، وليس عند مجرد الضغط على تأكيد.
-                trackMetaPurchaseOnce(merchantId, finalTotal, orderItems, payment);
+                // Meta Purchase is a completed order event only for Cash on Delivery.
+                // InstaPay/Vodafone Cash remain pending until a human confirms payment;
+                // never count an unpaid pending transfer as a completed purchase.
+                if (payment === 'الدفع عند الاستلام') {
+                    trackMetaPurchaseOnce(merchantId, finalTotal, orderItems, payment);
+                } else {
+                    trackStoreEvent('payment_pending_confirmation', {
+                        coupon_code: couponCode,
+                        cart_total: finalTotal,
+                        metadata: {
+                            provider: isInstapay ? 'instapay' : (isVodafoneCash ? 'vodafone_cash' : 'other'),
+                            merchant_order_id: merchantId
+                        }
+                    });
+                }
 
                 // رقم الطلب المعروض للعميل في رسالة InstaPay / فودافون كاش
                 instapayOrderNo = shortOrderNo(merchantId);
