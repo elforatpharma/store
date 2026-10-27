@@ -37,60 +37,72 @@
     // ملاحظة: productsDB بيتقرا من S كل مرة (مش نسخة ثابتة) لأن analysis.js
     // بيعيد تعيينه لما يجيب المنتجات من السيرفر.
 
-    // بنك مراجعات عملاء بالعامية المصرية وتجارب حقيقية موثقة
-    const REVIEW_POOL = [
-        { name: 'نورا أحمد', text: 'المنتج فعلاً روعة، حسيت بالفرق من أول أسبوع، شكراً الفرات فارما 🌸', stars: 5 },
-        { name: 'ياسمين محمد', text: 'بجد ما كنتش متوقعة النتيجة دي، جربت كتير قبل كده ومحدش وصل للنتيجة دي، تسلم إيديكم 🌟', stars: 5 },
-        { name: 'مريم سامي', text: 'حبيته أوي، ريحته حلوة وملمسه خفيف على البشرة، هطلب تاني أكيد 💕', stars: 5 },
-        { name: 'Hagar Nader', text: 'الاسكراب تحفة جداً للبشرة وعجب ماما وأخواتي كلهم، تسلم إيدك بجد ❤️', stars: 5 },
-        { name: 'HeBa Gaber', text: 'الغسول جميل أوي بينضف البشرة وحلو أوي عشان المسام الواسعة والفرشة تحسيها بتعمل مساج للوش كده. تسلم إيدك بجد 🌸', stars: 5 },
-        { name: 'دينا حسن', text: 'من أحسن حاجات جربتها في العناية، حاسة إن بشرتي بقت أنعم بشكل واضح', stars: 5 },
-        { name: 'رنا إبراهيم', text: 'خدمة عملاء محترمة جداً وردوا عليا بسرعة، والمنتج فوق الوصف 👌', stars: 5 },
-        { name: 'Alaa Ashraf', text: 'عايزة أشكرك على لوشن جلد الوزة.. جميل جداً ويفضل مرطب الجسم فترة طويلة، وفعلاً جلد الوزة بدأ يقل عندي الحمدلله وكمية قليلة بترطب جزء كبير 🌸', stars: 5 },
-        { name: 'هبة الله كريم', text: 'تجربتي معاكم كانت جميلة من الأول للآخر، ربنا يبارك في شغلكم 🌸', stars: 5 },
-        { name: 'نهى فؤاد', text: 'حسيت إني لقيت المنتج اللي كنت بدور عليه من زمان، شكراً ليكم ❤️', stars: 5 },
-        { name: 'الأميرة جودي', text: 'بالنسبة لكريم الهالات، ماشاء الله لاحظت إن فيه تفتيح بسيط تحت العين ودي حاجة كويسة جداً في أول أيام.. ربنا يحسن ما بين إيديكي 🌺', stars: 5 },
-        { name: 'آية جمال', text: 'الجودة عالية والسعر مناسب جداً بالنسبالها، هرشحه لكل صحابي', stars: 5 },
-        { name: 'منة الله شعبان', text: 'أول مرة أثق في منتج مصري بالشكل ده، فعلاً بيعمل اللي بيقوله', stars: 5 },
-        { name: 'Amany Abdelrahim', text: 'السيروم كويس ومختلف فعلاً عن أي سيروم استخدمته قبل كده، ملمسه ناعم جميل ومبيلزقش زي الباقي، وبيطري الشعر ورائحته هادية وجميلة 💕', stars: 5 },
-        { name: 'شيماء عبد الله', text: 'استخدمته أسبوعين بس وحاسة بفرق حقيقي، ميرسي لتعبكم معانا 🌸', stars: 5 },
-        { name: 'أسماء رمضان', text: 'كل اللي كتبوه في الوصف حقيقي، مش دعاية وبس. شكراً جداً 🙏', stars: 5 },
-        { name: 'زهرة البنفسجي', text: 'السيرم تحفة بجد كفاية ريحته وسرعة ترطيبه للشعر، الريحة مش مزعجة خالص هادية وجميلة وبيرطب الشعر جداً 🌸', stars: 5 },
-        { name: 'عميلة موثقة', text: 'جل الترطيب والنضارة ده خطير بأمانة.. لمعة كوري ونضارة مش طبيعية، وبيفتح أنسجة البشرة جداً وخلّصني من الهالات السودة ✨', stars: 5 },
-        { name: 'عميلة موثقة', text: 'الليپ بالم بجد عالجلي تشققات الشفاه قسماً بالله، وبقت موردة ولامعة وشكلها جذاب جداً 💄', stars: 5 },
-        { name: 'عميلة موثقة', text: 'استخدمت سيرم Guzel-Gold كذا يوم، بيساعد فعلاً على تقليل الهيشان ومش بيسيب طبقة دهنية، وريحته خفيفة ومقبولة والتركيبة مدروسة جداً 🌿', stars: 5 },
-        { name: 'عميلة موثقة', text: 'جل تقشير الرجل اختراع بجد، بيشيل كل الجلد الميت من الرجل تحفة تحفة 🦶✨', stars: 5 },
-        { name: 'Eman Abdellatif', text: 'السيرم حلو أوي تسلمي، تحسيه كله مواد طبيعية كده وريحته هادية وبيطري الشعر 🌿', stars: 5 },
-        { name: 'جنى وليد', text: 'كنت مترددة أطلب الأول بس بجد يستاهل كل قرش فيه', stars: 5 },
-        { name: 'عميلة موثقة', text: 'جربت كريم النضارة تحفة فنية.. والغسول اختراع عشان الفرشة بتنضف من القلب وتخلي الوش منور 🌸', stars: 5 },
-        { name: 'عميلة موثقة', text: 'قلل تساقط الشعر عندي الحمد لله أخد حوالي أسبوعين وجاب نتيجة ممتازة.. تسلم إيدك ع المنتج القمر ده ❤️', stars: 5 },
-        { name: 'عميلة موثقة', text: 'ملمسه زي اللوشن وخفيف، استخدمته قبل النوم وصحيت شعري طري وناعم ومترطب عن كل يوم 💆‍♀️', stars: 5 }
-    ];
+    // التقييمات المعروضة تُحمّل من Supabase ولا نستخدم أرقامًا أو مراجعات مولّدة.
+    async function loadAndRenderReviews(productId) {
+        const list = document.getElementById('pdp-review-list') || document.getElementById('pdp-mobile-review-list');
+        const countEl = document.getElementById('pdp-review-count');
+        const averageEl = document.getElementById('pdp-review-average');
+        if (list) list.innerHTML = '<p class="text-sm text-slate-500 py-3">جار تحميل التقييمات...</p>';
+        if (countEl) countEl.textContent = 'جار التحميل...';
+        if (averageEl) averageEl.textContent = '— / 5';
 
-    function computeReviewSeed(id) {
-        const str = String(id);
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            hash = (hash * 31 + str.charCodeAt(i)) % 100000;
+        try {
+            const supabase = S.supabase;
+            if (!supabase) throw new Error('قاعدة البيانات غير متاحة');
+            const { data, error } = await supabase
+                .from('reviews')
+                .select('id, product_id, customer_name, rating, comment, created_at')
+                .eq('product_id', String(productId))
+                .eq('is_approved', true)
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            if (String(lastRenderedId) !== String(productId)) return;
+
+            const reviews = Array.isArray(data) ? data : [];
+            const count = reviews.length;
+            const average = count
+                ? (reviews.reduce((sum, review) => sum + (Number(review.rating) || 0), 0) / count).toFixed(1)
+                : '—';
+            const cards = count ? reviews.map(function (review) {
+                const name = String(review.customer_name || 'عميل');
+                const comment = String(review.comment || '');
+                const stars = Math.max(0, Math.min(5, Number(review.rating) || 0));
+                return '<div class="bg-gray-50 p-4 rounded-2xl">' +
+                    '<div class="flex items-center gap-2 mb-2">' +
+                    '<div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-xs">' + sanitize(name.charAt(0)) + '</div>' +
+                    '<span class="font-bold text-sm">' + sanitize(name) + '</span>' +
+                    '<div class="flex text-yellow-400 text-xs mr-auto">' + '★'.repeat(stars) + '☆'.repeat(5 - stars) + '</div>' +
+                    '</div><p class="text-sm text-gray-600">' + sanitize(comment) + '</p></div>';
+            }).join('') : '<p class="text-sm text-slate-500 py-3">لا توجد تقييمات معتمدة لهذا المنتج حتى الآن. كوني أول من يشارك تجربته.</p>';
+
+            const mobileCards = count ? reviews.map(function (review) {
+                const name = String(review.customer_name || 'عميل');
+                const comment = String(review.comment || '');
+                const stars = Math.max(0, Math.min(5, Number(review.rating) || 0));
+                return '<article class="pdp-review"><div class="pdp-review__top">' +
+                    '<span class="pdp-avatar">' + sanitize(name.charAt(0)) + '</span>' +
+                    '<h4>' + sanitize(name) + '</h4>' +
+                    '<span class="pdp-stars pdp-stars--sm">' + '★'.repeat(stars) + '☆'.repeat(5 - stars) + '</span>' +
+                    '</div><p>' + sanitize(comment) + '</p></article>';
+            }).join('') : '<p class="text-sm text-slate-500 py-3">لا توجد تقييمات معتمدة لهذا المنتج حتى الآن. كوني أول من يشارك تجربته.</p>';
+
+            const currentList = document.getElementById('pdp-review-list') || document.getElementById('pdp-mobile-review-list');
+            if (currentList) {
+                currentList.innerHTML = currentList.id === 'pdp-mobile-review-list' ? mobileCards : cards;
+            }
+            if (countEl) countEl.textContent = count + ' تقييم';
+            if (averageEl) averageEl.textContent = average + ' / 5';
+            const desktopStars = document.getElementById('pdp-review-stars');
+            if (desktopStars) desktopStars.textContent = count ? '★'.repeat(Math.round(Number(average))) + '☆'.repeat(5 - Math.round(Number(average))) : '☆☆☆☆☆';
+        } catch (err) {
+            console.warn('تعذّر تحميل تقييمات المنتج:', err);
+            if (String(lastRenderedId) !== String(productId)) return;
+            const currentList = document.getElementById('pdp-review-list') || document.getElementById('pdp-mobile-review-list');
+            if (currentList) currentList.innerHTML = '<p class="text-sm text-rose-600 py-3">تعذّر تحميل التقييمات حالياً. حاولي تحديث الصفحة.</p>';
+            if (countEl) countEl.textContent = 'غير متاح حالياً';
+            if (averageEl) averageEl.textContent = '— / 5';
         }
-        return hash;
     }
-
-    function getReviewsForProduct(id, count = 4) {
-        const seed = computeReviewSeed(id);
-        const start = seed % REVIEW_POOL.length;
-        const selected = [];
-        for (let i = 0; i < count; i++) {
-            selected.push(REVIEW_POOL[(start + i) % REVIEW_POOL.length]);
-        }
-        return selected;
-    }
-
-    function computeReviewCountForId(id) {
-        const seed = computeReviewSeed(id);
-        return 42 + (seed % 190); // عدد تقييمات متفاوت بين المنتجات
-    }
-
 
     window.pdpChooseBundle = function (qty, stock, unitPrice) {
         const q = Math.max(1, Math.min(Number(stock) || 1, Number(qty) || 1));
@@ -291,19 +303,11 @@
                     
                     <div id="tab-reviews" class="tab-content hidden text-gray-600 leading-relaxed">
                         <div class="flex items-center gap-2 mb-4">
-                            <div class="flex text-yellow-400 text-lg">★★★★★</div>
-                            <span class="text-sm font-bold">(${p.rating || '4.9'}/5 من ${computeReviewCountForId(p.id)} تقييم)</span>
+                            <div id="pdp-review-stars" class="flex text-yellow-400 text-lg">☆☆☆☆☆</div>
+                            <span class="text-sm font-bold">(<span id="pdp-review-average">—</span> من <span id="pdp-review-count">جار التحميل...</span>)</span>
                         </div>
-                        <div class="space-y-4">
-                            ${getReviewsForProduct(p.id, 4).map(r => `
-                            <div class="bg-gray-50 p-4 rounded-2xl">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-xs">${sanitize(r.name.charAt(0))}</div>
-                                    <span class="font-bold text-sm">${sanitize(r.name)}</span>
-                                    <div class="flex text-yellow-400 text-xs mr-auto">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
-                                </div>
-                                <p class="text-sm text-gray-600">${sanitize(r.text)}</p>
-                            </div>`).join('')}
+                        <div id="pdp-review-list" class="space-y-4">
+                            <p class="text-sm text-slate-500 py-3">جار تحميل التقييمات...</p>
                         </div>
                         <button onclick="app.openAddReviewModal('${jsArg(p.id)}', '${jsArg(p.name)}')" class="mt-4 w-full py-3 border-2 border-primary text-primary font-bold rounded-full hover:bg-primary hover:text-white transition-all text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-star text-amber-400"></i> إضافة تقييمك وتجربتك</button>
                     </div>
@@ -352,6 +356,9 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
                     <span id="zoom-counter">1 / 3</span>
                 </div>
             </div>`;
+
+        // تحميل التقييمات المعتمدة لهذا المنتج فقط من Supabase.
+        loadAndRenderReviews(p.id);
 
         // تحديث Breadcrumb
         const breadcrumbCategory = document.getElementById('breadcrumb-category');
@@ -600,7 +607,6 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
         var sub = pdpSubtitle(p.desc);
         var couponOn = !!(window.WelcomeOffer && window.WelcomeOffer.isEligible && window.WelcomeOffer.isEligible());
         var couponCode = (window.WelcomeOffer && window.WelcomeOffer.code) || 'WELCOME10';
-        var reviews = getReviewsForProduct(p.id, 4);
         var waText = encodeURIComponent('مرحباً شركة الفرات فارما، أريد طلب ' + p.name);
         var idArg = jsArg(p.id);
 
@@ -651,15 +657,7 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
                 </div>
             </details>`;
 
-        var reviewCards = reviews.map(function (r) { return `
-            <article class="pdp-review">
-                <div class="pdp-review__top">
-                    <span class="pdp-avatar">${sanitize(r.name.charAt(0))}</span>
-                    <h4>${sanitize(r.name)}</h4>
-                    <span class="pdp-stars pdp-stars--sm">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</span>
-                </div>
-                <p>${sanitize(r.text)}</p>
-            </article>`; }).join('');
+        var reviewCards = '<p class="text-sm text-slate-500 py-3">جار تحميل التقييمات...</p>';
 
         var bundle = mate ? `
             <div class="pdp-card pdp-bundle">
@@ -751,11 +749,11 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
                 <div class="pdp-rev-head">
                     <div>
                         <h2>آراء وتجارب العميلات</h2>
-                        <p>${computeReviewCountForId(p.id)} تقييم</p>
+                        <p id="pdp-review-count">جار التحميل...</p>
                     </div>
-                    <div class="pdp-rev-score"><b>${sanitize(p.rating || '4.9')} / 5</b><span class="pdp-stars pdp-stars--sm">★★★★★</span></div>
+                    <div class="pdp-rev-score"><b id="pdp-review-average">— / 5</b><span class="pdp-stars pdp-stars--sm">☆☆☆☆☆</span></div>
                 </div>
-                <div class="pdp-reviews">${reviewCards}</div>
+                <div id="pdp-mobile-review-list" class="pdp-reviews">${reviewCards}</div>
                 <button type="button" class="pdp-addrev" onclick="app.openAddReviewModal('${idArg}', '${jsArg(p.name)}')">⭐ إضافة تقييمك وتجربتك</button>
             </div>
 
