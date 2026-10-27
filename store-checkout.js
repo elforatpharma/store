@@ -430,14 +430,15 @@
             const discountAmount = verifiedDiscountAmount;
             const couponCode = verifiedCouponCode;
 
-            // الشحن: لا نسمح بتأكيد الطلب بسعر ناقص إذا لم تُسجل رسوم فعلية للمحافظة؛ الشحن المجاني للطلبات المؤهلة فقط.
+            // الطلبات الأقل من 1000 ج.م تُسجّل بشكل طبيعي، ورسوم الشحن تُحسب لاحقًا مع المتجر.
+            // لا نعرضها مجانية؛ ويظل الإجمالي المسجل هو المنتجات بعد الخصم قبل إضافة الشحن.
             const shipping = getShipping(subtotal, governorate);
             if (!shipping.ok) {
                 showCustomAlert(
                     shipping.reason === 'unavailable'
                         ? 'عفواً، الشحن لهذه المحافظة غير متاح حالياً. تواصلي معنا على واتساب.'
                         : shipping.reason === 'price_pending'
-                            ? 'لم يتم تحديد سعر الشحن لهذه المحافظة بعد، لذلك لم يتم تأكيد الطلب. لن نعرض الشحن مجانياً أو نسجل إجمالياً ناقصاً. تواصلي معنا لتأكيد رسوم الشحن.'
+                            ? 'سيتم حساب رسوم الشحن لاحقًا مع المتجر.'
                             : 'تعذر تحميل أسعار الشحن، برجاء إعادة المحاولة.',
                     'error'
                 );
@@ -475,6 +476,7 @@
                     address: fullAddress,
                     governorate: governorate,
                     shipping_fee: shippingFee,
+                    notes: shipping.later ? 'رسوم الشحن: يُحسب لاحقًا مع المتجر. الإجمالي الحالي لا يشمل الشحن.' : null,
                     total: finalTotal,
                     status: orderStatus,
                     status_code: orderStatusCode,
