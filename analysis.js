@@ -797,9 +797,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!governorate) return { ok: false, reason: 'pick', free: free, fee: 0 };
         if (!shippingRates) return { ok: false, reason: 'loading', free: free, fee: 0 };
         if (!shippingRates.has(governorate)) return { ok: false, reason: 'unavailable', free: free, fee: 0 };
-        // لا نعتبر رسوم الصفر في الجدول شحناً مجانياً للطلبات غير المؤهلة.
-        // إلى أن تُسجّل أسعار فعلية، نمنع تأكيد الطلب غير المؤهل كي لا يُسجّل إجمالي ناقص.
-        if (SHIPPING_CALC_LATER && !free) return { ok: false, reason: 'price_pending', free: false, fee: 0, later: true };
+        // رسوم الشحن للطلبات الأقل من الحد الأدنى تُحسب لاحقًا مع المتجر.
+        // نسمح بتسجيل الطلب، مع إبقاء رسوم الشحن 0 كقيمة مؤقتة لا باعتبارها مجانية.
+        if (SHIPPING_CALC_LATER && !free) return { ok: true, reason: 'price_pending', free: false, fee: 0, later: true };
         if (SHIPPING_CALC_LATER && free) return { ok: true, free: true, fee: 0, later: false };
         return { ok: true, free: free, fee: free ? 0 : shippingRates.get(governorate) };
     }
@@ -2359,7 +2359,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const govEl = document.getElementById('cust-governorate');
         const shipping = getShipping(subtotal, govEl ? govEl.value : '');
         const finalTotal = Math.round((Math.max(subtotal - discount, 0) + (shipping.ok ? shipping.fee : 0)) * 100) / 100;
-        const shippingLabel = shipping.free ? 'مجاني 🎉' : (shipping.reason === 'price_pending' ? 'السعر غير محدد بعد' : (shipping.later ? 'يُحسب لاحقاً' : (shipping.ok ? `${sanitize(shipping.fee)} ج.م` : 'اختاري المحافظة')));
+        const shippingLabel = shipping.free ? 'مجاني 🎉' : (shipping.reason === 'price_pending' ? 'يُحسب لاحقًا' : (shipping.later ? 'يُحسب لاحقاً' : (shipping.ok ? `${sanitize(shipping.fee)} ج.م` : 'اختاري المحافظة')));
         const itemsCount = cart.reduce((s, i) => s + i.qty, 0);
         const freeShippingLeft = Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0);
         const freeShippingPct = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
@@ -2398,8 +2398,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
                 <div class="cart-sum__total relative overflow-hidden rounded-2xl bg-gradient-to-l from-primary to-secondary text-white px-4 py-4 flex items-center justify-between mt-1">
                     <div class="absolute -top-6 -left-6 w-20 h-20 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-                    <span class="relative font-bold text-sm">${shipping.ok ? 'الإجمالي النهائي' : 'الإجمالي قبل الشحن'}<small class="cart-sum__note block text-[10px] font-medium text-white/80 mt-0.5">${shipping.free ? 'الشحن مجاني حسب العرض' : (shipping.reason === 'price_pending' ? 'لا يمكن تأكيد الطلب حتى يتحدد سعر الشحن' : 'غير شامل مصاريف الشحن')}</small></span>
-                    <span class="relative text-xl font-black">${shipping.ok ? sanitize(finalTotal) : sanitize(Math.max(subtotal - discount, 0))} <span class="text-xs font-bold">ج.م</span></span>
+                    <span class="relative font-bold text-sm">${shipping.free ? 'الإجمالي النهائي' : 'الإجمالي قبل الشحن'}<small class="cart-sum__note block text-[10px] font-medium text-white/80 mt-0.5">${shipping.free ? 'الشحن مجاني حسب العرض' : (shipping.reason === 'price_pending' ? 'الشحن يُحسب لاحقًا مع المتجر' : 'غير شامل مصاريف الشحن')}</small></span>
+                    <span class="relative text-xl font-black">${sanitize(Math.max(subtotal - discount, 0))} <span class="text-xs font-bold">ج.م</span></span>
                 </div>
             `;
         }
