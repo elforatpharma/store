@@ -751,7 +751,7 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
                         <h2>آراء وتجارب العميلات</h2>
                         <p id="pdp-review-count">جار التحميل...</p>
                     </div>
-                    <div class="pdp-rev-score"><b id="pdp-review-average">— / 5</b><span class="pdp-stars pdp-stars--sm">☆☆☆☆☆</span></div>
+                    <div class="pdp-rev-score"><b id="pdp-review-average">— / 5</b><span id="pdp-review-stars" class="pdp-stars pdp-stars--sm">☆☆☆☆☆</span></div>
                 </div>
                 <div id="pdp-mobile-review-list" class="pdp-reviews">${reviewCards}</div>
                 <button type="button" class="pdp-addrev" onclick="app.openAddReviewModal('${idArg}', '${jsArg(p.name)}')">⭐ إضافة تقييمك وتجربتك</button>
