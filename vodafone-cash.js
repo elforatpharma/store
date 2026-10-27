@@ -362,7 +362,7 @@ window.VodafoneCashCheckout = (() => {
           </div>
 
           <div class="vcx-actions">
-            <button type="button" class="vcx-btn vcx-btn-app"><i class="fa-solid fa-bolt"></i><span>فتح تطبيق أنا فودافون</span></button>
+            <a class="vcx-btn vcx-btn-app" href="https://vf.eg/vfcash?id=mt&amp;qrId=L8hOMZ" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-bolt"></i><span>فتح تطبيق أنا فودافون</span></a>
             <a class="vcx-btn vcx-btn-wa" href="${waUrl}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i><span>إرسال إيصال الدفع على واتساب</span></a>
           </div>
 
@@ -412,7 +412,6 @@ window.VodafoneCashCheckout = (() => {
 
     // مقصود: الضغط على الخلفية مبيقفلش الـ Popup، عشان العميل ميضيعش بيانات التحويل بالغلط.
     overlay.querySelector(".vcx-close").onclick = close;
-    overlay.querySelector(".vcx-btn-app").onclick = () => openVodafoneCashApp();
 
     const toast = overlay.querySelector(".vcx-toast");
     const toastMsg = overlay.querySelector(".vcx-toast-msg");
