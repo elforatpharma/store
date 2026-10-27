@@ -132,10 +132,24 @@
                 return;
             }
 
-            // ملفات الدفع بتتحمّل مع أول فتح لصفحة السلة، بس لو العميلة فتحت
-            // السلة ريفيتش أو ضغطت تأكيد بسرعة بنستناها هنا قبل ما نقرأ منها.
-            await loadPaymentScripts();
-            await loadShippingRates();
+            // تأكد من تحميل جميع ملفات الدفع قبل متابعة التحقق أو تسجيل الطلب.
+            // عند فشل أي ملف، أعد تفعيل الزر ولا تنشئ طلبًا ناقصًا.
+            try {
+                const paymentScriptsReady = await loadPaymentScripts();
+                if (!paymentScriptsReady
+                    || !window.OrderStatus
+                    || !window.InstaPayCheckout
+                    || !window.VodafoneCashCheckout) {
+                    throw new Error('Required checkout payment scripts are unavailable.');
+                }
+                await loadShippingRates();
+            } catch (error) {
+                reportCheckoutError(error, 'checkout_preflight');
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+                showCustomAlert('تعذر تحميل مكونات إتمام الطلب. لم يتم تسجيل الطلب. حاول مرة أخرى بعد قليل أو حدّث الصفحة.', 'error');
+                return;
+            }
 
             const nameEl = document.getElementById('cust-name');
             const phoneEl = document.getElementById('cust-phone');
