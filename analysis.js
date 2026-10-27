@@ -2545,7 +2545,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // صفحة السلة/الدفع (أو لحظة التأكيد كشبكة أمان)، والتلاتة بالتوازي.
     // ترتيب التحميل مش مهم لأن instapay/vodafone-cash بقوا يقرأوا حالة الطلب
     // وقت الطلب (getters) مش وقت تحميل الملف.
-    const PAYMENT_SCRIPTS = ['order-status.js?v=39', 'instapay.js?v=38', 'vodafone-cash.js?v=39'];
+    const PAYMENT_SCRIPTS = ['order-status.js?v=39', 'instapay.js?v=38', 'vodafone-cash.js?v=40'];
     let __paymentScriptsPromise = null;
     function loadPaymentScripts() {
         if (__paymentScriptsPromise) return __paymentScriptsPromise;
