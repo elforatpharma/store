@@ -280,7 +280,7 @@ window.InstaPayCheckout = (() => {
 
 /* Toast */
 
-/* Five-minute reminder timer; it never cancels or expires an order. */
+/* Eight-minute payment deadline; unpaid pending transfer orders are cancelled server-side. */
 .ipx-timer{display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 16px;border:1px solid #ead7a7;border-radius:16px;background:linear-gradient(135deg,#fffaf0,#fff4d6);text-align:center;color:#59451a}
 .ipx-timer-copy{display:flex;align-items:center;justify-content:center;gap:7px;font-size:12px;font-weight:800}
 .ipx-timer-copy i{font-size:15px;color:#a66b0b}
@@ -347,10 +347,10 @@ window.InstaPayCheckout = (() => {
             <button type="button" class="ipx-btn-copyamt"><i class="fa-regular fa-copy"></i><span>نسخ المبلغ (${esc(amountText)} ج.م)</span></button>
           </div>
 
-          <div class="ipx-timer" role="timer" aria-live="polite" aria-label="وقت مقترح لإتمام تحويل InstaPay">
-            <div class="ipx-timer-copy"><i class="fa-regular fa-clock" aria-hidden="true"></i><span>وقت مقترح لإتمام تحويل InstaPay</span></div>
-            <strong class="ipx-countdown-value" dir="ltr">05:00</strong>
-            <p class="ipx-countdown-note">لتسهيل إتمام الدفع بسرعة. هذا مؤقت تذكيري فقط ولا يؤدي إلى إلغاء الطلب تلقائيًا.</p>
+          <div class="ipx-timer" role="timer" aria-live="polite" aria-label="المهلة المتبقية لتأكيد دفع InstaPay">
+            <div class="ipx-timer-copy"><i class="fa-regular fa-clock" aria-hidden="true"></i><span>المهلة المتبقية لتأكيد الدفع</span></div>
+            <strong class="ipx-countdown-value" dir="ltr">08:00</strong>
+            <p class="ipx-countdown-note">سيُلغى الطلب تلقائيًا إذا لم يتم تأكيد الدفع خلال 8 دقائق.</p>
           </div>
 
           <div role="region" class="ipx-card ipx-recipient" aria-label="بيانات التحويل">
@@ -425,7 +425,7 @@ window.InstaPayCheckout = (() => {
     const timerBox = overlay.querySelector(".ipx-timer");
     const countdownValue = overlay.querySelector(".ipx-countdown-value");
     const countdownNote = overlay.querySelector(".ipx-countdown-note");
-    const countdownDeadline = Date.now() + 5 * 60 * 1000;
+    const countdownDeadline = Date.now() + 8 * 60 * 1000;
     function updatePaymentCountdown() {
       const remaining = Math.max(0, countdownDeadline - Date.now());
       const totalSeconds = Math.ceil(remaining / 1000);
@@ -436,7 +436,7 @@ window.InstaPayCheckout = (() => {
         if (paymentCountdownInterval) { clearInterval(paymentCountdownInterval); paymentCountdownInterval = null; }
         if (timerBox) timerBox.classList.add("is-expired");
         if (countdownValue) countdownValue.textContent = "00:00";
-        if (countdownNote) countdownNote.textContent = "انتهى الوقت التذكيري المقترح. يمكنك إكمال الدفع الآن؛ طلبك لم يُلغَ تلقائيًا.";
+        if (countdownNote) countdownNote.textContent = "انتهت مهلة الدفع. إذا لم يُسجّل تأكيد الدفع، فسيُلغى الطلب تلقائيًا خلال لحظات. إذا كنت قد حوّلت بالفعل، تواصل مع المتجر فورًا لإثبات الدفع.";
       }
     }
     updatePaymentCountdown();
