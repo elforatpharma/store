@@ -3044,15 +3044,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     device_type: getDeviceType(),
                     user_agent: navigator.userAgent || null
                 };
-                // visitor_id / visitor_type أعمدة اختيارية: لو مش متضافة في الجدول لسه، نعيد الإدخال من غيرها
-                // بدل ما نخسر تسجيل الزيارة كله (خطأ عمود ناقص = 42703 أو PGRST204).
-                const vi = getVisitorInfo();
-                let { error: eventError } = await _supabase.from('visitor_events')
-                    .insert([Object.assign({}, eventPayload, { visitor_id: vi.id, visitor_type: vi.type })]);
-                if (eventError && (eventError.code === '42703' || eventError.code === 'PGRST204' || /visitor_(id|type)/.test(eventError.message || ''))) {
-                    ({ error: eventError } = await _supabase.from('visitor_events').insert([eventPayload]));
+                // أرسل الأعمدة الموجودة فعليًا في public.visitor_events فقط لتجنب طلب INSERT فاشل.
+                const { error: eventError } = await _supabase
+                    .from('visitor_events')
+                    .insert([eventPayload]);
+                if (!eventError) {
+                    sessionStorage.setItem('elforat_visitor_event_tracked', 'true');
+                } else {
+                    console.warn('visitor event insert failed:', eventError.message || eventError);
                 }
-                if (!eventError) sessionStorage.setItem('elforat_visitor_event_tracked', 'true');
             }
 
             // [تعديل أداء]: بدل ما نجيب العدد ونزوده يدوي (read-then-write بيعمل
