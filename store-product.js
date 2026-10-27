@@ -139,9 +139,9 @@
     function serumBundleChoices(productId, stock, unitPrice) {
         if (String(productId) !== '384b541c-6050-4c0a-814e-e8fcc56aea75' || Number(stock) < 1) return '';
         const options = [
-            { qty: 1, title: 'عبوة واحدة', price: Number(unitPrice) || 240, note: 'السعر العادي' },
-            { qty: 2, title: 'عبوتان', price: 430, note: 'وفّري 50 جنيه' },
-            { qty: 3, title: '3 عبوات', price: 600, note: 'وفّري 120 جنيه' }
+            { qty: 1, title: 'عبوة واحدة', price: Number(unitPrice) || 240, note: 'سعر العبوة' },
+            { qty: 2, title: 'عبوتان', price: 430, note: 'بدل 480 • وفّري 50 ج.م' },
+            { qty: 3, title: '3 عبوات', price: 600, note: 'بدل 720 • وفّري 120 ج.م' }
         ].filter(function (o) { return o.qty <= Number(stock); });
         return '<div class="my-4 rounded-2xl border border-purple-100 bg-purple-50 p-3 text-right" dir="rtl"><div class="mb-3 flex flex-wrap items-center justify-between gap-2"><p class="font-bold text-slate-800">اختاري عرض السيروم</p><span class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3 py-1 text-xs font-extrabold text-white shadow-sm"><span aria-hidden="true">⚡</span> عروض الجمعة البيضاء</span></div><div class="grid grid-cols-3 gap-2">' + options.map(function (o) {
             const isDiscount = o.qty > 1;
@@ -257,9 +257,9 @@
                         <p class="text-primary font-bold text-[10px] uppercase tracking-[0.3em]">${sanitize(p.category)}</p>
                         <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-black leading-tight tracking-tight">${sanitize(p.name)}</h1>
                         <div class="flex items-center gap-4 pt-2 flex-wrap">
-                            <span class="text-2xl sm:text-3xl font-bold text-primary">${sanitize(p.price)} ج.م</span>
-                            ${p.oldPrice ? `<span class="text-lg text-gray-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
-                            ${p.oldPrice && Number(p.oldPrice) > Number(p.price) ? `<span class="inline-flex items-center rounded-full bg-rose-100 text-rose-700 px-3 py-1 text-xs font-extrabold">خصم ${Math.round((Number(p.oldPrice) - Number(p.price)) / Number(p.oldPrice) * 100)}٪</span>` : ''}
+                            <span class="text-2xl sm:text-3xl font-bold text-primary">${sanitize(pdpMoney(pdpCurrentPrice(p)))} ج.م</span>
+                            ${pdpOldPrice(p) > pdpCurrentPrice(p) ? `<span class="text-lg text-gray-400 line-through">${sanitize(pdpMoney(pdpOldPrice(p)))} ج.م</span>` : ''}
+                            ${pdpOldPrice(p) > pdpCurrentPrice(p) ? `<span class="inline-flex items-center rounded-full bg-rose-100 text-rose-700 px-3 py-1 text-xs font-extrabold">خصم ${Math.round((pdpOldPrice(p) - pdpCurrentPrice(p)) / pdpOldPrice(p) * 100)}٪ • وفّري ${sanitize(pdpMoney(pdpOldPrice(p) - pdpCurrentPrice(p)))} ج.م</span>` : ''}
                             ${p.stock <= LOW_STOCK_THRESHOLD && p.stock > 0 ? `<span class="text-xs bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full font-bold low-stock-alert shadow-sm">⚠️ متبقي ${p.stock} فقط!</span>` : ''}
                             ${p.stock === 0 ? `<span class="text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-full font-bold shadow-sm">❌ نفذ من المخزون</span>` : ''}
                         </div>
@@ -334,7 +334,7 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
                                 <input id="product-qty" type="number" value="1" min="1" max="${p.stock}" class="w-12 text-center font-bold border-x-2 border-gray-200 focus:outline-none" readonly>
                                 <button onclick="pdpQty(1, ${p.stock}, ${p.price})" class="px-4 py-3 text-primary font-bold hover:bg-primary/10 transition-colors rounded-r-full active:scale-95">+</button>
                             </div>
-                            <button onclick="app.addToCart('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold uppercase text-sm tracking-widest py-4 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">إضافة الى السلة</button>
+                            <button onclick="app.addToCart('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold text-sm py-4 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">إضافة إلى السلة</button>
                         </div>
                         <button onclick="app.buyNow('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="btn-dark w-full text-white font-bold uppercase text-sm tracking-widest py-4 active:scale-95">اشتري الآن</button>
                     </div>
@@ -345,10 +345,10 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
             <div id="mobile-buy-bar" class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-purple-100 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] px-4 py-3">
                 <div class="flex items-center gap-3">
                     <div class="flex flex-col shrink-0 pl-1">
-                        <span class="text-base font-extrabold text-primary leading-tight">${sanitize(p.price)} <span class="text-[11px] font-bold text-slate-500">ج.م</span></span>
-                        ${p.oldPrice ? `<span class="text-[11px] text-slate-400 line-through">${sanitize(p.oldPrice)} ج.م</span>` : ''}
+                        <span class="text-base font-extrabold text-primary leading-tight">${sanitize(pdpMoney(pdpCurrentPrice(p)))} <span class="text-[11px] font-bold text-slate-500">ج.م</span></span>
+                        ${pdpOldPrice(p) > pdpCurrentPrice(p) ? `<span class="text-[11px] text-slate-400 line-through">${sanitize(pdpMoney(pdpOldPrice(p)))} ج.م</span><span class="text-[10px] font-extrabold text-rose-600">خصم ${Math.round((pdpOldPrice(p) - pdpCurrentPrice(p)) / pdpOldPrice(p) * 100)}٪</span>` : ''}
                     </div>
-                    <button onclick="app.addToCart('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold text-xs uppercase tracking-widest py-3.5 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">إضافة الى السلة</button>
+                    <button onclick="app.addToCart('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="flex-1 bg-secondary text-white font-bold text-xs py-3.5 rounded-full hover:opacity-90 transition-all shadow-lg shadow-secondary/30 active:scale-95">إضافة إلى السلة</button>
                     <button onclick="app.buyNow('${jsArg(p.id)}', document.getElementById('product-qty').value)" class="btn-dark text-white font-bold text-xs uppercase tracking-widest py-3.5 px-5 active:scale-95">اشتري الآن</button>
                 </div>
             </div>
@@ -608,9 +608,21 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
         return String(Math.round(Number(n) * 100) / 100);
     }
 
+    // السعر المعروض المعتمد لسيروم Guzel Gold، مع إبقاء سعر الشراء الفعلي 240 ج.م.
+    function pdpCurrentPrice(product) {
+        return String(product && product.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75'
+            ? 240
+            : (Number(product && product.price) || 0);
+    }
+    function pdpOldPrice(product) {
+        return String(product && product.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75'
+            ? 340
+            : (Number(product && product.oldPrice) || 0);
+    }
+
     function buildMobileProductHtml(p, images) {
-        var price = Number(p.price) || 0;
-        var old = Number(p.oldPrice) || 0;
+        var price = pdpCurrentPrice(p);
+        var old = pdpOldPrice(p);
         var hasDisc = old > price;
         var saved = hasDisc ? old - price : 0;
         var pct = hasDisc ? Math.round(saved / old * 100) : 0;
@@ -729,7 +741,7 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
                         </div>
                         <p class="pdp-price__note">شامل القيمة المضافة${p.size ? ' • عبوة ' + sanitize(p.size) : ''}</p>
                     </div>
-                    ${hasDisc ? `<span class="pdp-save">وفر ${sanitize(pdpMoney(saved))} ج.م (-${pct}%)</span>` : ''}
+                    ${hasDisc ? `<span class="pdp-save">وفّري ${sanitize(pdpMoney(saved))} ج.م (خصم ${pct}٪)</span>` : ''}
                 </div>
                 ${lowStock ? `<div class="pdp-alert"><span class="pdp-alert__dot"></span><span>متبقي ${p.stock} قطع فقط في المخزون الحالي!</span></div>` : ''}
                 ${outOfStock ? `<div class="pdp-alert pdp-alert--out"><span>❌ نفذ من المخزون</span></div>` : ''}
@@ -785,7 +797,7 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
                 <button type="button" class="pdp-cta" ${outOfStock ? 'disabled' : ''} onclick="app.addToCart('${idArg}', document.getElementById('product-qty').value)">
                     ${outOfStock ? '<span>نفذ من المخزون</span>' : `
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-                    <span>أضيفي للسلة • <span id="pdp-cta-total">${sanitize(pdpMoney(price))}</span> ج.م</span>`}
+                    <span class="pdp-cta__label">إضافة إلى السلة</span><small class="pdp-cta__total">الإجمالي: <span id="pdp-cta-total">${sanitize(pdpMoney(price))}</span> ج.م</small>`}
                 </button>
                 <a class="pdp-wa" aria-label="طلب عبر واتساب واستشارة صيدلانية" href="https://wa.me/201146809133?text=${waText}" rel="noopener noreferrer" target="_blank">
                     <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 2C6.496 2 2 6.497 2 12.032c0 1.767.461 3.49 1.336 5.006L2 22l5.105-1.338a9.99 9.99 0 004.926 1.37h.004c5.534 0 10.03-4.498 10.03-10.032A10.007 10.007 0 0012.031 2zm0 18.232h-.003a8.196 8.196 0 01-4.184-1.144l-.3-.178-3.111.816.83-3.033-.195-.311a8.204 8.204 0 01-1.258-4.35c0-4.536 3.69-8.225 8.225-8.225a8.18 8.18 0 015.82 2.41 8.18 8.18 0 012.41 5.82c-.004 4.538-3.693 8.225-8.224 8.225zm4.512-6.16c-.247-.124-1.464-.723-1.691-.806-.228-.083-.393-.124-.559.124-.165.248-.64.806-.784.97-.145.166-.29.186-.537.062-.247-.124-1.045-.386-1.99-1.229-.737-.658-1.234-1.47-1.379-1.718-.145-.248-.016-.382.108-.506.112-.111.248-.289.372-.434.124-.145.166-.248.248-.414.083-.166.042-.311-.02-.434-.063-.125-.559-1.347-.766-1.846-.201-.486-.407-.42-.559-.428l-.476-.008c-.166 0-.434.062-.662.311-.228.248-.869.85-.869 2.073 0 1.223.89 2.405 1.014 2.571.124.165 1.752 2.675 4.244 3.75.593.256 1.056.409 1.417.524.596.189 1.138.163 1.567.098.478-.071 1.464-.599 1.671-1.178.207-.579.207-1.074.145-1.178-.062-.104-.227-.166-.475-.29z"></path></svg>
