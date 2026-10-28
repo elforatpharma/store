@@ -898,4 +898,17 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
         render: renderProductDetails,
         renderRelatedProducts: renderRelatedProducts
     };
+
+    // لو المخزون/السعر/حالة المنتج اتغيرت والعميل فاتح صفحة المنتج، حدّث التفاصيل فوراً.
+    window.addEventListener('elforat:products-updated', function () {
+        var view = document.getElementById('view-product');
+        if (lastRenderedId !== null && view && view.classList.contains('active')) {
+            var latest = S.productsDB.find(function (prod) { return String(prod.id) === String(lastRenderedId); });
+            if (latest) renderProductDetails(latest.id, { silent: true });
+            else {
+                var container = document.getElementById('product-details-container');
+                if (container) container.innerHTML = '<div class="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-center font-bold">هذا المنتج لم يعد متاحاً حالياً. ارجع إلى المتجر لاختيار منتج آخر.</div>';
+            }
+        }
+    });
 })();
