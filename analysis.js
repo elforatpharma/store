@@ -1030,7 +1030,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    async function fetchProducts() {
+    async function fetchProducts(forceRefresh = false) {
         AppState.setState({ status: 'loading' });
         const cachedProducts = readProductsCache();
         const hadCache = !!cachedProducts;
@@ -1046,7 +1046,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // لو عندنا كاش وسنّه لسه تحت حد التحديث (5 دقايق)، منعملش أي طلب
         // شبكة لسوبابيز خالص - نكتفي باللي اتعرض بالفعل من الكاش فوق.
         const cacheAge = hadCache ? getProductsCacheAge() : Infinity;
-        const shouldSkipNetworkRefresh = hadCache && cacheAge < PRODUCTS_REFRESH_THROTTLE;
+        const shouldSkipNetworkRefresh = !forceRefresh && hadCache && cacheAge < PRODUCTS_REFRESH_THROTTLE;
 
         const refresh = shouldSkipNetworkRefresh ? (async () => {
             AppState.setState({ status: 'success' });
@@ -1142,7 +1142,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // لو فيه نسخة محفوظة: نعرضها فوراً ونكمّل التحديث في الخلفية بدون ما نأخّر باقي الصفحة.
         // لو مفيش (أول زيارة): نستنى الجلب من السيرفر زي الأول.
-        return hadCache ? undefined : refresh;
+        return hadCache && !forceRefresh ? undefined : refresh;
     }
 
     optimizePageImages(); // مرة واحدة فقط (الكروت بتتولّد بـ loading=lazy/decoding=async جاهزين)
@@ -3129,6 +3129,48 @@ document.addEventListener("DOMContentLoaded", () => {
     }).catch(() => {
         hideGlobalLoader();
     });
+
+    // مزامنة كتالوج المتجر مع قاعدة البيانات لحظياً، مع fallback فقط عند انقطاع القناة.
+    let storeProductsChannel=null;
+    let storeProductsFallbackTimer=null;
+    let storeProductsRefreshTimer=null;
+    const refreshStoreProductsLive=()=>{
+        if(storeProductsRefreshTimer)clearTimeout(storeProductsRefreshTimer);
+        storeProductsRefreshTimer=setTimeout(async()=>{
+            storeProductsRefreshTimer=null;
+            try{
+                await fetchProducts(true);
+                syncCartWithCatalog();
+                if(document.getElementById('view-favorites')?.classList.contains('active'))renderFavorites();
+                updateBadge();
+                window.dispatchEvent(new CustomEvent('elforat:products-updated'));
+            }catch(e){console.warn('Live product refresh failed:',e);}
+        },180);
+    };
+    const startStoreProductsFallback=()=>{
+        if(storeProductsFallbackTimer)return;
+        storeProductsFallbackTimer=setInterval(()=>{if(!document.hidden)refreshStoreProductsLive();},25000);
+    };
+    const stopStoreProductsFallback=()=>{
+        if(storeProductsFallbackTimer){clearInterval(storeProductsFallbackTimer);storeProductsFallbackTimer=null;}
+    };
+    const connectStoreProductsRealtime=()=>{
+        try{
+            if(storeProductsChannel){_supabase.removeChannel(storeProductsChannel);storeProductsChannel=null;}
+            storeProductsChannel=_supabase.channel('store-products-live-v2')
+                .on('postgres_changes',{event:'*',schema:'public',table:'products'},refreshStoreProductsLive)
+                .subscribe((status)=>{
+                    console.log('Store products realtime status:',status);
+                    if(status==='SUBSCRIBED')stopStoreProductsFallback();
+                    else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED')startStoreProductsFallback();
+                });
+        }catch(e){
+            console.warn('Store products realtime unavailable:',e);
+            startStoreProductsFallback();
+        }
+    };
+    connectStoreProductsRealtime();
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshStoreProductsLive();});
 
     // (استعادة الصفحة عند التحديث + دعم أزرار الرجوع/التقدم: بقت مسجّلة فوق
     // في أول السكريبت عشان تشتغل مهما حصل أي خطأ في باقي الكود تحت)
