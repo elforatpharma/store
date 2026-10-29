@@ -370,6 +370,9 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
                 </div>
             </div>`;
 
+        // تحميل الصورة التالية والسابقة بمجرد فتح صفحة المنتج حتى لا ينتظر العميل أول ضغطة.
+        preloadAdjacentGalleryImages(0);
+
         // تحميل التقييمات المعتمدة لهذا المنتج فقط من Supabase.
         loadAndRenderReviews(p.id);
 
