@@ -3147,12 +3147,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }catch(e){console.warn('Live product refresh failed:',e);}
         },180);
     };
+    // Keep a safety-net refresh even when Realtime reports SUBSCRIBED.
+    // The lightweight storefront client does not implement channel()/postgres_changes.
     const startStoreProductsFallback=()=>{
         if(storeProductsFallbackTimer)return;
-        storeProductsFallbackTimer=setInterval(()=>{if(!document.hidden)refreshStoreProductsLive();},25000);
-    };
-    const stopStoreProductsFallback=()=>{
-        if(storeProductsFallbackTimer){clearInterval(storeProductsFallbackTimer);storeProductsFallbackTimer=null;}
+        storeProductsFallbackTimer=setInterval(()=>{if(!document.hidden)refreshStoreProductsLive();},20000);
     };
     const connectStoreProductsRealtime=()=>{
         try{
@@ -3161,7 +3160,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 .on('postgres_changes',{event:'*',schema:'public',table:'products'},refreshStoreProductsLive)
                 .subscribe((status)=>{
                     console.log('Store products realtime status:',status);
-                    if(status==='SUBSCRIBED')stopStoreProductsFallback();
+                    if(status==='SUBSCRIBED')console.log('Store Realtime connected; polling safety net remains enabled.');
                     else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED')startStoreProductsFallback();
                 });
         }catch(e){
@@ -3170,7 +3169,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
     connectStoreProductsRealtime();
+    // Always poll as a safety net; do not rely solely on Realtime events.
+    startStoreProductsFallback();
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshStoreProductsLive();});
+    window.addEventListener('focus',refreshStoreProductsLive);
+    window.addEventListener('pageshow',refreshStoreProductsLive);
 
     // (استعادة الصفحة عند التحديث + دعم أزرار الرجوع/التقدم: بقت مسجّلة فوق
     // في أول السكريبت عشان تشتغل مهما حصل أي خطأ في باقي الكود تحت)
