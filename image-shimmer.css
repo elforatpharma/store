@@ -1,0 +1,23 @@
+/* Store-wide image loading placeholder: subtle shimmer without changing layout. */
+img.efp-image-shimmer {
+  background-color: #f1f3f0;
+  background-image: linear-gradient(100deg, #f1f3f0 20%, #e4e9e5 38%, #f1f3f0 56%);
+  background-size: 220% 100%;
+  animation: efp-image-shimmer 1.25s ease-in-out infinite;
+}
+img.efp-image-shimmer-loaded {
+  background: transparent;
+  animation: none;
+}
+img.efp-image-shimmer-error {
+  background-color: #f1f3f0;
+  background-image: linear-gradient(135deg, #f7f8f6, #e9ede9);
+  animation: none;
+}
+@keyframes efp-image-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -120% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  img.efp-image-shimmer { animation: none; }
+}
