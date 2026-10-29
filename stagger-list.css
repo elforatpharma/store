@@ -1,0 +1,20 @@
+/* Elforat Pharma — staggered entrance animation for product/list items. */
+.efp-stagger-item {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  animation: efp-stagger-enter 420ms cubic-bezier(.2,.7,.25,1) both;
+  animation-delay: var(--efp-stagger-delay, 0ms);
+  will-change: opacity, transform;
+}
+@keyframes efp-stagger-enter {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .efp-stagger-item {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+}
