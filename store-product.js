@@ -391,6 +391,27 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
     // ==========================================
     // دوال معرض منتج واحدة (Global scope) لتجنب مشاكل السكربتات المضمّنة
     // ==========================================
+    // تجهيز الصور المجاورة مسبقاً لتكون جاهزة عند التبديل، مع عدم تحميل معرض كامل بلا داعٍ.
+    function preloadGalleryImage(index) {
+        const imgs = Array.isArray(window.productImages) ? window.productImages : [];
+        if (!imgs.length || index < 0 || index >= imgs.length) return;
+        const url = optimizeDisplayImage(imgs[index], window.innerWidth <= 767 ? 480 : 700, 78);
+        window.__efpGalleryPreloads = window.__efpGalleryPreloads || Object.create(null);
+        if (window.__efpGalleryPreloads[url]) return;
+        const preloader = new Image();
+        preloader.decoding = 'async';
+        preloader.fetchPriority = 'low';
+        window.__efpGalleryPreloads[url] = preloader;
+        preloader.src = url;
+    }
+
+    function preloadAdjacentGalleryImages(index) {
+        const imgs = Array.isArray(window.productImages) ? window.productImages : [];
+        if (imgs.length < 2) return;
+        preloadGalleryImage((index + 1) % imgs.length);
+        preloadGalleryImage((index - 1 + imgs.length) % imgs.length);
+    }
+
     function changeProductImage(arg) {
         const imgs = Array.isArray(window.productImages) ? window.productImages : [];
         if (imgs.length === 0) return;
@@ -400,24 +421,27 @@ ${String(p.id) === '384b541c-6050-4c0a-814e-e8fcc56aea75' ? serumBundleChoices(p
         } else if (arg === 'next') {
             window.currentImageIndex = (window.currentImageIndex + 1) % imgs.length;
         } else {
-            window.currentImageIndex = Number(arg) % imgs.length;
+            const requestedIndex = Number(arg);
+            if (!Number.isFinite(requestedIndex)) return;
+            window.currentImageIndex = ((requestedIndex % imgs.length) + imgs.length) % imgs.length;
         }
 
         const mainImg = document.getElementById('main-product-img');
         if (!mainImg) return;
-        mainImg.style.opacity = '0';
-        mainImg.style.transform = 'scale(0.95)';
 
-        setTimeout(() => {
-            mainImg.src = optimizeDisplayImage(window.productImages[window.currentImageIndex], window.innerWidth <= 767 ? 480 : 700, 78);
-            mainImg.setAttribute('fetchpriority', 'high');
-            mainImg.style.opacity = '1';
-            mainImg.style.transform = 'scale(1)';
-        }, 200);
+        // لا نضيف تأخيراً مصطنعاً قبل تغيير المصدر؛ المتصفح يعرض الصورة فور اكتمالها.
+        mainImg.style.transform = 'scale(1)';
+        mainImg.style.opacity = '1';
+        mainImg.setAttribute('fetchpriority', 'high');
+        mainImg.decoding = 'async';
+        const nextUrl = optimizeDisplayImage(imgs[window.currentImageIndex], window.innerWidth <= 767 ? 480 : 700, 78);
+        if (mainImg.getAttribute('src') !== nextUrl) mainImg.src = nextUrl;
 
-        // تحديث الثمبنيلز والعداد
+        // سخّن الصورة التالية والسابقة في الخلفية حتى يكون التبديل أسرع.
+        preloadAdjacentGalleryImages(window.currentImageIndex);
+
         const counter = document.getElementById('gallery-current-idx');
-        if (counter) counter.textContent = (window.currentImageIndex % window.productImages.length) + 1;
+        if (counter) counter.textContent = (window.currentImageIndex + 1) + ' / ' + imgs.length;
 
         document.querySelectorAll('.thumbnail-btn').forEach((btn, idx) => {
             btn.classList.toggle('is-active', idx === window.currentImageIndex);
