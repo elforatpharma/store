@@ -1,5 +1,5 @@
 // Service Worker - Elforat Pharma PWA
-const CACHE_NAME = 'elforat-cache-v54';
+const CACHE_NAME = 'elforat-cache-v55';
 const STATIC_ASSETS = ['./','./index.html','./style.min.css?v=47','./tailwind-built.css?v=47','./mobile.css?v=47','./fa-subset.css?v=47','./supabase-lite.js?v=47','./welcome-offer.js?v=48','./address-centers.js?v=1','./analysis.js?v=63','./image-performance.js?v=1','./instapay-logo.webp','./vodafone-cash-logo.webp','./manifest.json?v=5','./icon-192.png?v=5','./icon-512.png?v=5','./icon-512.png?v=5','./logo.png','./logo-96.png','./logo-96.webp','./favicon-32.png','./hero-products.webp','./shimmer-loading.css?v=1','./shimmer-loading.js?v=1'];
 
 self.addEventListener('install', (event) => {
@@ -60,11 +60,23 @@ self.addEventListener('fetch', (event) => {
 
   if (url.hostname.includes('telegram.org') || url.pathname.includes('/rest/v1/') || url.pathname.includes('/functions/v1/') || url.hostname === 'api.ipify.org') return;
 
-  // Images in product cards, product galleries, logos, and banners use a cache-first
-  // strategy so repeat views are instant and cached images remain available offline.
+  // Supabase Storage product images: network-first keeps replaced images fresh,
+  // while the cached copy remains available when the visitor is offline.
   if (isCacheableImageRequest(req, url)) {
     event.respondWith((async () => {
       const cache = await caches.open(CACHE_NAME);
+      const isSupabaseStorageImage = url.hostname.endsWith('.supabase.co') &&
+        url.pathname.startsWith('/storage/v1/object/public/');
+      if (isSupabaseStorageImage) {
+        try {
+          const response = await fetch(req, { cache: 'no-cache' });
+          await cacheImageResponse(req, response);
+          return response;
+        } catch (_) {
+          const cached = await cache.match(req);
+          return cached || Response.error();
+        }
+      }
       const cached = await cache.match(req);
       if (cached) return cached;
       try {
