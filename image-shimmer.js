@@ -48,8 +48,8 @@
   var observer = new MutationObserver(function (records) {
     records.forEach(function (record) {
       if (record.type === 'attributes' && record.target.tagName === 'IMG') {
+        // Keep the placeholder visible while a replacement src/srcset is loading.
         clearState(record.target);
-        prepare(record.target);
         return;
       }
       record.addedNodes.forEach(function (node) {
