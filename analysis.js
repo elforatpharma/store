@@ -1472,7 +1472,93 @@ document.addEventListener("DOMContentLoaded", () => {
     // نظام تقييمات المنتجات المتصل بقاعدة البيانات (reviews)
     // ==========================================
     function openAddReviewModal(productId, productName) {
-        return ensureSwal().then(() => _openAddReviewModal(productId, productName));
+        return ensureSwal().then(loaded => {
+            if (loaded && typeof Swal !== 'undefined') {
+                _openAddReviewModal(productId, productName);
+            } else {
+                _openAddReviewModalFallback(productId, productName);
+            }
+        }).catch(() => _openAddReviewModalFallback(productId, productName));
+    }
+
+    // بديل داخلي لا يعتمد على تحميل SweetAlert من CDN حتى لا يتعطل زر التقييم عند فشل الشبكة.
+    function _openAddReviewModalFallback(productId, productName) {
+        const existing = document.getElementById('review-fallback-modal');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'review-fallback-modal';
+        overlay.dir = 'rtl';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:16px;';
+        overlay.innerHTML = `
+            <section role="dialog" aria-modal="true" aria-labelledby="review-fallback-title" style="background:#fff;width:min(100%,460px);max-height:90vh;overflow:auto;border-radius:20px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.25);font-family:inherit;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;">
+                    <h2 id="review-fallback-title" style="font-size:18px;font-weight:800;color:#1e1b4b;margin:0;">إضافة تقييم للمنتج</h2>
+                    <button type="button" data-review-close aria-label="إغلاق" style="border:0;background:#f1f5f9;border-radius:50%;width:36px;height:36px;font-size:22px;cursor:pointer;">×</button>
+                </div>
+                <form id="review-fallback-form" style="display:grid;gap:13px;">
+                    <label style="display:grid;gap:6px;font-size:13px;font-weight:700;">اسمك الكريم *
+                        <input name="customer_name" required maxlength="80" autocomplete="name" placeholder="مثال: ياسمين أحمد" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;box-sizing:border-box;">
+                    </label>
+                    <label style="display:grid;gap:6px;font-size:13px;font-weight:700;">تقييمك للمنتج *
+                        <select name="rating" required style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;background:white;">
+                            <option value="5">★★★★★ (5 نجوم - ممتاز جداً)</option>
+                            <option value="4">★★★★☆ (4 نجوم - جيد جداً)</option>
+                            <option value="3">★★★☆☆ (3 نجوم - جيد)</option>
+                        </select>
+                    </label>
+                    <label style="display:grid;gap:6px;font-size:13px;font-weight:700;">اكتبي تجربتك مع المنتج *
+                        <textarea name="comment" required maxlength="1500" rows="4" placeholder="شاركي تجربتك مع المنتج..." style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;resize:vertical;box-sizing:border-box;"></textarea>
+                    </label>
+                    <p data-review-error role="alert" style="display:none;color:#b91c1c;font-size:13px;margin:0;"></p>
+                    <div style="display:flex;gap:10px;">
+                        <button type="submit" style="flex:1;background:#3312d5;color:white;border:0;border-radius:999px;padding:13px;font-weight:800;cursor:pointer;">إرسال التقييم ⭐</button>
+                        <button type="button" data-review-close style="padding:13px 18px;border:1px solid #cbd5e1;border-radius:999px;background:white;cursor:pointer;">إلغاء</button>
+                    </div>
+                </form>
+            </section>`;
+        const title = overlay.querySelector('#review-fallback-title');
+        title.textContent = 'إضافة تقييم لـ ' + (productName || 'المنتج');
+        const close = () => overlay.remove();
+        overlay.querySelectorAll('[data-review-close]').forEach(button => button.addEventListener('click', close));
+        overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
+        const form = overlay.querySelector('#review-fallback-form');
+        const submit = form.querySelector('button[type="submit"]');
+        const errorBox = overlay.querySelector('[data-review-error]');
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            errorBox.style.display = 'none';
+            const formData = new FormData(form);
+            const name = String(formData.get('customer_name') || '').trim();
+            const comment = String(formData.get('comment') || '').trim();
+            const rating = Number(formData.get('rating'));
+            if (!name || !comment || ![3, 4, 5].includes(rating)) {
+                errorBox.textContent = 'يرجى إدخال الاسم والتجربة واختيار تقييم صحيح.';
+                errorBox.style.display = 'block';
+                return;
+            }
+            submit.disabled = true;
+            submit.textContent = 'جارٍ إرسال التقييم...';
+            try {
+                const { error } = await _supabase.from('reviews').insert([{
+                    product_id: String(productId),
+                    customer_name: name,
+                    rating,
+                    comment,
+                    is_approved: false
+                }]);
+                if (error) throw error;
+                form.innerHTML = '<div style="text-align:center;padding:20px 8px;"><div style="font-size:42px;">🌸</div><h3 style="font-size:18px;font-weight:800;color:#166534;margin:10px 0;">شكراً لمشاركة تجربتك!</h3><p style="font-size:14px;color:#475569;">تم استلام تقييمك وسيظهر للعملاء بعد مراجعته واعتماده.</p><button type="button" data-review-done style="margin-top:14px;background:#3312d5;color:white;border:0;border-radius:999px;padding:12px 28px;font-weight:800;">حسناً</button></div>';
+                form.querySelector('[data-review-done]').addEventListener('click', close);
+            } catch (err) {
+                errorBox.textContent = 'تعذر حفظ التقييم: ' + (err && err.message ? err.message : 'يرجى المحاولة مرة أخرى.');
+                errorBox.style.display = 'block';
+                submit.disabled = false;
+                submit.textContent = 'إرسال التقييم ⭐';
+            }
+        });
+        document.body.appendChild(overlay);
+        form.querySelector('input[name="customer_name"]').focus();
     }
 
     function _openAddReviewModal(productId, productName) {
