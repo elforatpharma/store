@@ -37,7 +37,10 @@ function imageList(product) {
     if (item && typeof item === "object") return String(item.url || item.src || item.image || "").trim();
     return "";
   }).filter(Boolean).map((url) => {
-    try { return new URL(url, siteUrl).href; } catch { return ""; }
+    try {
+      const parsed = new URL(url, siteUrl);
+      return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.href : "";
+    } catch { return ""; }
   }).filter(Boolean);
   return [...new Set(urls)].slice(0, 8);
 }
@@ -113,6 +116,7 @@ async function main() {
   if (!Array.isArray(rows)) throw new Error("Products feed did not return an array.");
   const active = rows.filter((p) => p && p.id != null && cleanText(p.name) &&
     p.is_active !== false && Number.isFinite(Number(p.price)) && Number(p.price) > 0);
+  if (!active.length) throw new Error("No active priced products were returned; preserving the existing sitemap.");
   for (const product of active) {
     const directory = path.join(outputDir, "products", String(product.id));
     await fs.mkdir(directory, { recursive: true });
@@ -128,6 +132,5 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("Product SEO page generation failed:", error);
-  process.exitCode = 1;
+  console.error("Product SEO page generation failed; the regular storefront deployment will continue:", error);
 });
