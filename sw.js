@@ -1,11 +1,11 @@
 // Service Worker - Elforat Pharma PWA
 // Cache v56: aligned with the current asset versions referenced by index.html.
-const CACHE_NAME = 'elforat-cache-v58';
+const CACHE_NAME = 'elforat-cache-v59';
 const STATIC_ASSETS = [
   './','./index.html',
   './style.min.css?v=47','./tailwind-built.css?v=47','./mobile.css?v=49',
   './fa-subset.css?v=47','./supabase-lite.js?v=47','./welcome-offer.js?v=48',
-  './address-centers.js?v=1','./analysis.js?v=67','./image-performance.js?v=1',
+  './address-centers.js?v=1','./analysis.js?v=68','./image-performance.js?v=1',
   './shimmer-loading.css?v=2','./shimmer-loading.js?v=2',
   './image-shimmer.css?v=1','./image-shimmer.js?v=1',
   './stagger-list.css?v=1','./stagger-list.js?v=1',
