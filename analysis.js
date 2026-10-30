@@ -1472,13 +1472,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // نظام تقييمات المنتجات المتصل بقاعدة البيانات (reviews)
     // ==========================================
     function openAddReviewModal(productId, productName) {
-        return ensureSwal().then(loaded => {
-            if (loaded && typeof Swal !== 'undefined') {
-                _openAddReviewModal(productId, productName);
-            } else {
-                _openAddReviewModalFallback(productId, productName);
-            }
-        }).catch(() => _openAddReviewModalFallback(productId, productName));
+        // Use the same branded, fully opaque review dialog on every device.
+        // Do not switch to SweetAlert, whose appearance may vary with CDN/theme styles.
+        return _openAddReviewModalFallback(productId, productName);
     }
 
     // بديل داخلي لا يعتمد على تحميل SweetAlert من CDN حتى لا يتعطل زر التقييم عند فشل الشبكة.
