@@ -35,6 +35,8 @@ jobs:
         with:
           source: ./
           destination: ./_site
+      - name: Generate product SEO landing pages and sitemap
+        run: node scripts/generate-seo-pages.mjs
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
 
