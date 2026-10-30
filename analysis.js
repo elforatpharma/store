@@ -956,16 +956,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // تقييمات متفاوتة وثابتة لكل منتج (بدل ما تبقى كلها 4.9)
-    function computeRatingForId(id) {
-        const ratings = [4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9];
-        const str = String(id);
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            hash = (hash * 31 + str.charCodeAt(i)) % 100000;
-        }
-        return ratings[hash % ratings.length];
-    }
+    // لا نعرض متوسطات أو تقييمات افتراضية؛ التقييمات الحقيقية تأتي من جدول reviews فقط.
 
     function normalizeProducts(data) {
         return (data || []).filter(p => p.is_active !== false).map(p => ({
@@ -982,7 +973,9 @@ document.addEventListener("DOMContentLoaded", () => {
             size: p.size || '',
             // NaN/null (مفيش قيمة) = 100 احتياطي، لكن 0 لازم يفضل 0 (كان `|| 100` بيحوّل "نفذ" لـ 100)
             stock: Number.isFinite(parseInt(p.stock)) ? Math.max(parseInt(p.stock), 0) : 100,
-            rating: p.rating || computeRatingForId(p.id),
+            rating: null,
+            soldQuantity: 0,
+            priority: Number(p.priority) || 0,
             images: p.images || []
         }));
     }
@@ -1030,13 +1023,26 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    async function refreshProductSales() {
+        if (!_supabase || typeof _supabase.rpc !== 'function') return;
+        const result = await _supabase.rpc('get_public_product_sales');
+        if (result.error) throw result.error;
+        const counts = new Map((Array.isArray(result.data) ? result.data : []).map(row => [String(row.product_id), Number(row.sold_quantity) || 0]));
+        productsDB = productsDB.map(product => Object.assign({}, product, {
+            soldQuantity: counts.get(String(product.id)) || 0
+        }));
+        try { writeProductsCache(productsDB); } catch (_) {}
+        const current = Array.isArray(lastCatalogArgs) ? lastCatalogArgs : [null, ''];
+        renderCatalog(current[0] || null, current[1] || '', { keepPage: true });
+    }
+
     async function fetchProducts(forceRefresh = false) {
         AppState.setState({ status: 'loading' });
         const cachedProducts = readProductsCache();
         const hadCache = !!cachedProducts;
         let dataChanged = false;
         if (hadCache) {
-            productsDB = cachedProducts;
+            productsDB = cachedProducts.map(p => Object.assign({}, p, { rating: null, soldQuantity: 0 }));
             renderCatalog(null, '');
             updateCategoryCounts();
         } else {
@@ -1105,6 +1111,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const freshProducts = normalizeProducts(data);
             dataChanged = !hadCache || JSON.stringify(freshProducts) !== JSON.stringify(cachedProducts);
             productsDB = freshProducts;
+            refreshProductSales().catch(err => console.warn('تعذر تحديث ترتيب الأكثر مبيعاً:', err));
             writeProductsCache(productsDB);
 
             AppState.setState({ status: 'success' });
@@ -1115,10 +1122,10 @@ document.addEventListener("DOMContentLoaded", () => {
             // وبالتالي أي محاولة شراء منها هتترفض من الـ trigger الأمني على السيرفر.
             // دي بيانات احتياطية للعرض فقط في حالة انقطاع الاتصال بالكامل بقاعدة البيانات.
             if (!hadCache) productsDB = [
-                { id: 'p1', name: 'Guzel Gold Serum', category: 'العناية بالشعر', price: 250, oldPrice: 350, img: getFullImg('guzel_gold.png'), badge: 'خصم 28%', rating: 4.8 },
-                { id: 'b1', name: 'مجموعة الديتوكس والترطيب', category: 'مجموعات متكاملة', price: 125, oldPrice: 175, img: getFullImg('group1.png'), badge: 'توفير', rating: 4.5 },
-                { id: 'b2', name: 'مجموعة العناية الفائقة بالمناطق الحساسة', category: 'مجموعات متكاملة', price: 280, oldPrice: 380, img: getFullImg('group2.png'), badge: 'عرض خاص', rating: 4.7 },
-                { id: 'b3', name: 'مجموعة النعومة وعلاج جلد الوزة', category: 'مجموعات متكاملة', price: 350, oldPrice: 470, img: getFullImg('group3.png'), badge: 'الأكثر طلباً', rating: 4.9 }
+                { id: 'p1', name: 'Guzel Gold Serum', category: 'العناية بالشعر', price: 250, oldPrice: 350, img: getFullImg('guzel_gold.png'), badge: 'خصم 28%' },
+                { id: 'b1', name: 'مجموعة الديتوكس والترطيب', category: 'مجموعات متكاملة', price: 125, oldPrice: 175, img: getFullImg('group1.png'), badge: 'توفير' },
+                { id: 'b2', name: 'مجموعة العناية الفائقة بالمناطق الحساسة', category: 'مجموعات متكاملة', price: 280, oldPrice: 380, img: getFullImg('group2.png'), badge: 'عرض خاص' },
+                { id: 'b3', name: 'مجموعة النعومة وعلاج جلد الوزة', category: 'مجموعات متكاملة', price: 350, oldPrice: 470, img: getFullImg('group3.png'), badge: 'الأكثر طلباً' }
             ];
         } finally {
 
@@ -1493,6 +1500,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     <button type="button" data-review-close aria-label="إغلاق" style="border:0;background:#f1f5f9;border-radius:50%;width:36px;height:36px;font-size:22px;cursor:pointer;">×</button>
                 </div>
                 <form id="review-fallback-form" style="display:grid;gap:13px;">
+                    <label style="display:grid;gap:6px;font-size:13px;font-weight:700;">رقم الطلب *
+                        <input name="order_ref" required maxlength="40" autocomplete="off" placeholder="اكتبي رقم الطلب الظاهر بعد الشراء" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;box-sizing:border-box;">
+                    </label>
+                    <label style="display:grid;gap:6px;font-size:13px;font-weight:700;">رقم الهاتف المستخدم في الطلب *
+                        <input name="phone" required inputmode="tel" maxlength="20" autocomplete="tel" placeholder="01xxxxxxxxx" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;box-sizing:border-box;">
+                    </label>
                     <label style="display:grid;gap:6px;font-size:13px;font-weight:700;">اسمك الكريم *
                         <input name="customer_name" required maxlength="80" autocomplete="name" placeholder="مثال: ياسمين أحمد" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;box-sizing:border-box;">
                     </label>
@@ -1541,29 +1554,37 @@ document.addEventListener("DOMContentLoaded", () => {
             event.preventDefault();
             errorBox.style.display = 'none';
             const formData = new FormData(form);
+            const orderRef = String(formData.get('order_ref') || '').trim();
+            const phone = String(formData.get('phone') || '').trim();
             const name = String(formData.get('customer_name') || '').trim();
             const comment = String(formData.get('comment') || '').trim();
             const rating = Number(formData.get('rating'));
-            if (!name || !comment || ![3, 4, 5].includes(rating)) {
-                errorBox.textContent = 'يرجى إدخال الاسم والتجربة واختيار تقييم صحيح.';
+            if (!orderRef || !phone || !name || !comment || ![3, 4, 5].includes(rating)) {
+                errorBox.textContent = 'يرجى إدخال رقم الطلب ورقم الهاتف والاسم والتجربة واختيار تقييم صحيح.';
                 errorBox.style.display = 'block';
                 return;
             }
             submit.disabled = true;
             submit.textContent = 'جارٍ إرسال التقييم...';
             try {
-                const { error } = await _supabase.from('reviews').insert([{
-                    product_id: String(productId),
-                    customer_name: name,
-                    rating,
-                    comment,
-                    is_approved: false
-                }]);
+                const { data, error } = await _supabase.rpc('submit_verified_review', {
+                    p_order_ref: orderRef,
+                    p_phone: phone,
+                    p_product_id: String(productId),
+                    p_customer_name: name,
+                    p_rating: rating,
+                    p_comment: comment
+                });
                 if (error) throw error;
                 form.innerHTML = '<div style="text-align:center;padding:20px 8px;"><div style="font-size:42px;">🌸</div><h3 style="font-size:18px;font-weight:800;color:#166534;margin:10px 0;">شكراً لمشاركة تجربتك!</h3><p style="font-size:14px;color:#475569;">تم استلام تقييمك وسيظهر للعملاء بعد مراجعته واعتماده.</p><button type="button" data-review-done style="margin-top:14px;background:#3312d5;color:white;border:0;border-radius:999px;padding:12px 28px;font-weight:800;">حسناً</button></div>';
                 form.querySelector('[data-review-done]').addEventListener('click', close);
             } catch (err) {
-                errorBox.textContent = 'تعذر حفظ التقييم: ' + (err && err.message ? err.message : 'يرجى المحاولة مرة أخرى.');
+                const reason = String(err && err.message || '');
+                errorBox.textContent = /REVIEW_PURCHASE_NOT_VERIFIED/.test(reason)
+                    ? 'لم نتمكن من تأكيد شراء هذا المنتج. راجعي رقم الطلب ورقم الهاتف، وتأكدي أن الطلب مدفوع أو تم توصيله.'
+                    : /REVIEW_ALREADY_SUBMITTED/.test(reason)
+                        ? 'تم إرسال تقييم لهذا المنتج من نفس الطلب من قبل.'
+                        : 'تعذر حفظ التقييم. راجعي البيانات وحاولي مرة أخرى.';
                 errorBox.style.display = 'block';
                 submit.disabled = false;
                 submit.textContent = 'إرسال التقييم ⭐';
@@ -2204,10 +2225,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <div class="flex flex-col flex-1">
         <div class="flex items-center justify-between mb-1">
             <span class="text-[11px] font-bold text-primary">${sanitize(p.category || 'العناية')}</span>
-            <div class="flex items-center gap-1 text-amber-400 text-xs">
-                <i class="fa-solid fa-star"></i>
-                <span class="text-xs font-bold text-slate-700">${p.rating || '4.9'}</span>
-            </div>
+            ${Number(p.soldQuantity) > 0 ? `<span class="text-[10px] font-bold text-emerald-700">${Number(p.soldQuantity)} مباع</span>` : ''}
         </div>
         <h3 class="font-extrabold text-darkNavy text-sm line-clamp-2 leading-snug mb-2 group-hover:text-primary transition-colors">
             ${sanitize(p.name)}
@@ -2244,7 +2262,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <article class="bundle-card col-span-full" onclick="app.navigate('product', '${jsArg(p.id)}')">
     <div class="bundle-card__top">
         ${badge}
-        <div class="bundle-card__rating"><i class="fa-solid fa-star"></i><span>${p.rating || '4.9'}</span></div>
+        ${Number(p.soldQuantity) > 0 ? `<div class="bundle-card__rating">${Number(p.soldQuantity)} مباع</div>` : ''}
     </div>
     <div class="bundle-card__body">
         <div class="bundle-card__img skeleton-img" data-image-skeleton>
@@ -2302,6 +2320,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const bundlesSection = document.getElementById('bundles-section');
         const bundlesGrid = document.getElementById('bundles-grid');
         let products = productsDB.filter(p => !p.isGift);
+
+        // ترتيب تلقائي حسب الكميات المباعة فعلياً (المدفوع أو الذي تم توصيله فقط).
+        products.sort((a, b) => (Number(b.soldQuantity) || 0) - (Number(a.soldQuantity) || 0) || (Number(b.priority) || 0) - (Number(a.priority) || 0));
 
         // تطبيق فلتر الفئة
         if (filter) {
