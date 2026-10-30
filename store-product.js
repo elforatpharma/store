@@ -57,7 +57,7 @@
             if (!supabase) throw new Error('قاعدة البيانات غير متاحة');
             const { data, error } = await supabase
                 .from('reviews')
-                .select('id, product_id, customer_name, rating, comment, created_at')
+                .select('id, product_id, customer_name, rating, comment, created_at, verified_purchase')
                 .eq('product_id', String(productId))
                 .eq('is_approved', true)
                 .order('created_at', { ascending: false });
@@ -77,6 +77,7 @@
                     '<div class="flex items-center gap-2 mb-2">' +
                     '<div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-xs">' + sanitize(name.charAt(0)) + '</div>' +
                     '<span class="font-bold text-sm">' + sanitize(name) + '</span>' +
+                    (review.verified_purchase ? '<span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">عملية شراء مؤكدة</span>' : '') +
                     '<div class="flex text-yellow-400 text-xs mr-auto">' + '★'.repeat(stars) + '☆'.repeat(5 - stars) + '</div>' +
                     '</div><p class="text-sm text-gray-600">' + sanitize(comment) + '</p></div>';
             }).join('') : '<p class="text-sm text-slate-500 py-3">لا توجد تقييمات معتمدة لهذا المنتج حتى الآن. كوني أول من يشارك تجربته.</p>';
