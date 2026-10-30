@@ -37,6 +37,7 @@ jobs:
           destination: ./_site
       - name: Generate product SEO landing pages and sitemap
         run: node scripts/generate-seo-pages.mjs
+        continue-on-error: true
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
 
