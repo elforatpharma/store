@@ -1517,6 +1517,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 </form>
             </section>`;
+        overlay.insertAdjacentHTML('afterbegin', '<style>' +
+            '#review-fallback-modal{background:rgba(13,20,43,.70)!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}' +
+            '#review-fallback-modal section{width:min(100%,470px)!important;padding:28px!important;border:1px solid #eeeaff!important;border-radius:25px!important;box-shadow:0 28px 90px rgba(10,20,50,.30)!important;animation:reviewModalIn .24s ease-out}' +
+            '#review-fallback-modal h2{font-size:21px!important;line-height:1.45!important;color:#172044!important;letter-spacing:-.3px}' +
+            '#review-fallback-modal label{color:#303a59!important;font-size:13px!important;font-weight:750!important;gap:8px!important}' +
+            '#review-fallback-modal input,#review-fallback-modal select,#review-fallback-modal textarea{font:inherit!important;font-size:14px!important;color:#202944!important;border:1px solid #e0e4ed!important;border-radius:13px!important;background:#fff!important;padding:13px 14px!important;outline:none!important;box-shadow:none!important;transition:border-color .18s,box-shadow .18s!important}' +
+            '#review-fallback-modal input:focus,#review-fallback-modal select:focus,#review-fallback-modal textarea:focus{border-color:#7866dc!important;box-shadow:0 0 0 4px rgba(99,80,205,.10)!important}' +
+            '#review-fallback-modal textarea{min-height:112px;line-height:1.7}' +
+            '#review-fallback-modal button[type=submit]{background:linear-gradient(135deg,#4934c6,#6b56df)!important;border:0!important;border-radius:14px!important;min-height:48px;padding:12px 20px!important;color:#fff!important;font-size:14px!important;font-weight:800!important;box-shadow:0 8px 18px rgba(78,57,194,.20)!important;transition:transform .18s,box-shadow .18s!important}' +
+            '#review-fallback-modal button[type=submit]:hover{transform:translateY(-1px);box-shadow:0 11px 22px rgba(78,57,194,.27)!important}' +
+            '#review-fallback-modal button[data-review-close]{border-radius:13px!important;background:#f4f5f9!important;color:#59627a!important;border:1px solid #e8eaf1!important;padding:10px 17px!important}' +
+            '#review-fallback-modal [data-review-error]{padding:10px 12px;border-radius:11px;background:#fff1f1}' +
+            '@keyframes reviewModalIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}' +
+            '@media(max-width:480px){#review-fallback-modal section{padding:21px 18px!important;border-radius:21px!important}#review-fallback-modal h2{font-size:18px!important}}' +
+            '</style>');
         const title = overlay.querySelector('#review-fallback-title');
         title.textContent = 'إضافة تقييم لـ ' + (productName || 'المنتج');
         const close = () => overlay.remove();
