@@ -160,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // الطريقة بسيطة: نفس الـ Promise بيرجّع لكل نداءات لنفس الملف، والـ prefetch
     // بيحط <link rel="prefetch"> عشان المتصفح يجيبه في الخلفية قبل الضغط.
     const STORE_CHUNKS = {
-        product: 'store-product.js?v=49',
+        product: 'store-product.js?v=50',
         checkout: 'store-checkout.js?v=47'
     };
     const __storeChunkPromises = Object.create(null);
@@ -1085,7 +1085,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         // بدل select('*') اللي كان بيجيب كل عمود في الجدول (لو فيه
                         // عمود نص طويل زي created_at أو أي حقل إداري مش مستخدم هنا،
                         // كان بيتنقل مع كل منتج من غير داعي ويبطّئ الاستعلام والتحميل).
-                        .select('id,name,category,price,oldPrice,img,badge,desc,ingredients,size,stock,images,gallery,is_active')
+                        .select('id,name,category,price,oldPrice,img,badge,desc,ingredients,size,stock,images,gallery,is_active,priority')
                         .order('priority', { ascending: false })
                         // ترتيب ثانوي ثابت: لو كذا منتج ليهم نفس الـ priority، من غيره الترتيب
                         // بين الصفحات مش مضمون وممكن منتج يتكرر أو يتفوّت. (بيطابق index: idx_products_priority_id)
@@ -1111,7 +1111,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const freshProducts = normalizeProducts(data);
             dataChanged = !hadCache || JSON.stringify(freshProducts) !== JSON.stringify(cachedProducts);
             productsDB = freshProducts;
-            refreshProductSales().catch(err => console.warn('تعذر تحديث ترتيب الأكثر مبيعاً:', err));
             writeProductsCache(productsDB);
 
             AppState.setState({ status: 'success' });
@@ -1144,6 +1143,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     window.restoreViewFromHash();
                 }
             }
+            refreshProductSales().catch(err => console.warn('تعذر تحديث ترتيب الأكثر مبيعاً:', err));
         }
         })();
 
