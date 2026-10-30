@@ -35,6 +35,8 @@ jobs:
         with:
           source: ./
           destination: ./_site
+      - name: Restore write access to the generated Pages directory
+        run: sudo chown -R "$(id -u):$(id -g)" _site
       - name: Generate product SEO landing pages and sitemap
         run: node scripts/generate-seo-pages.mjs
         continue-on-error: true
