@@ -209,6 +209,32 @@
   <script src="shimmer-loading.js?v=2"></script>
   <script src="image-shimmer.js?v=1" defer></script>
   <script src="stagger-list.js?v=1" defer></script>
+
+    <!-- Structured data for the official store identity. Individual product pages are generated at deployment from active public products. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://elforatpharma.com/#organization",
+          "name": "الفرات فارما",
+          "alternateName": "ELFORAT PHARMA",
+          "url": "https://elforatpharma.com/",
+          "logo": { "@type": "ImageObject", "url": "https://elforatpharma.com/logo.png" }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://elforatpharma.com/#website",
+          "url": "https://elforatpharma.com/",
+          "name": "متجر الفرات فارما الإلكتروني",
+          "inLanguage": "ar-EG",
+          "publisher": { "@id": "https://elforatpharma.com/#organization" }
+        }
+      ]
+    }
+    </script>
+
 </head>
 
 <body class="font-sans text-gray-900 antialiased overflow-x-hidden">
