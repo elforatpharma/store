@@ -66,11 +66,67 @@
         style.textContent = '@keyframes codSuccessPop{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}@media(prefers-reduced-motion:reduce){#cod-order-success-modal>div{animation:none!important}}';
         overlay.appendChild(style);
 
+        // Lottie success animation: load the player only when the COD success modal is shown.
+        // If the CDN is unavailable or motion is reduced, show a lightweight accessible fallback.
         const icon = document.createElement('div');
         icon.setAttribute('aria-hidden', 'true');
-        icon.textContent = '✓';
-        icon.style.cssText = 'display:flex;align-items:center;justify-content:center;width:76px;height:76px;margin:0 auto 18px;border-radius:50%;background:#dcfce7;border:3px solid #22c55e;color:#15803d;font-size:46px;font-weight:900;line-height:1;box-shadow:0 0 0 8px #f0fdf4;';
+        icon.style.cssText = 'width:92px;height:92px;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#f0fdf4;';
+        const fallback = document.createElement('div');
+        fallback.innerHTML = '<svg viewBox="0 0 100 100" width="84" height="84" focusable="false"><circle cx="50" cy="50" r="39" fill="#dcfce7" stroke="#22c55e" stroke-width="4"/><path d="M29 51 L43 65 L72 35" fill="none" stroke="#15803d" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        icon.appendChild(fallback);
         dialog.appendChild(icon);
+
+        const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!reducedMotion) {
+            const loadLottie = () => new Promise((resolve, reject) => {
+                if (window.lottie && typeof window.lottie.loadAnimation === 'function') return resolve(window.lottie);
+                const existingScript = document.querySelector('script[data-elforat-lottie]');
+                if (existingScript) {
+                    existingScript.addEventListener('load', () => resolve(window.lottie), { once: true });
+                    existingScript.addEventListener('error', reject, { once: true });
+                    if (window.lottie) resolve(window.lottie);
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js';
+                script.async = true;
+                script.dataset.elforatLottie = 'true';
+                script.onload = () => window.lottie ? resolve(window.lottie) : reject(new Error('Lottie player unavailable'));
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+
+            const animationData = {
+                v: '5.7.4', fr: 60, ip: 0, op: 78, w: 100, h: 100, nm: 'Elforat Order Success', ddd: 0, assets: [],
+                layers: [
+                    { ddd: 0, ind: 1, ty: 4, nm: 'Circle draw', sr: 1, ks: { o: { a: 0, k: 100 }, r: { a: 0, k: 0 }, p: { a: 0, k: [50, 50, 0] }, a: { a: 0, k: [0, 0, 0] }, s: { a: 0, k: [100, 100, 100] } }, ao: 0, shapes: [
+                        { ty: 'el', d: 1, s: { a: 0, k: [76, 76] }, p: { a: 0, k: [0, 0] }, nm: 'Circle' },
+                        { ty: 'st', c: { a: 0, k: [0.133, 0.773, 0.369, 1] }, o: { a: 0, k: 100 }, w: 4, lc: 2, lj: 2, nm: 'Green stroke' },
+                        { ty: 'tm', s: { a: 0, k: 0 }, e: { a: 1, k: [{ t: 0, s: [0], e: [100], i: { x: [0.4], y: [1] }, o: { x: [0.6], y: [0] } }, { t: 38, s: [100] }] }, o: { a: 0, k: -90 }, m: 1, nm: 'Draw circle' }
+                    ], ip: 0, op: 78, st: 0, bm: 0 },
+                    { ddd: 0, ind: 2, ty: 4, nm: 'Check draw', sr: 1, ks: { o: { a: 0, k: 100 }, r: { a: 0, k: 0 }, p: { a: 0, k: [50, 50, 0] }, a: { a: 0, k: [0, 0, 0] }, s: { a: 0, k: [100, 100, 100] } }, ao: 0, shapes: [
+                        { ty: 'sh', ks: { a: 0, k: { i: [[0, 0], [0, 0], [0, 0]], o: [[0, 0], [0, 0], [0, 0]], v: [[-20, 0], [-6, 14], [22, -17]], c: false } }, nm: 'Check path' },
+                        { ty: 'st', c: { a: 0, k: [0.082, 0.502, 0.204, 1] }, o: { a: 0, k: 100 }, w: 7, lc: 2, lj: 2, nm: 'Check stroke' },
+                        { ty: 'tm', s: { a: 0, k: 0 }, e: { a: 1, k: [{ t: 25, s: [0], e: [100], i: { x: [0.4], y: [1] }, o: { x: [0.6], y: [0] } }, { t: 58, s: [100] }] }, o: { a: 0, k: 0 }, m: 1, nm: 'Draw check' }
+                    ], ip: 0, op: 78, st: 0, bm: 0 }
+                ]
+            };
+
+            loadLottie().then((player) => {
+                if (!overlay.isConnected || !icon.isConnected) return;
+                fallback.style.display = 'none';
+                const animation = player.loadAnimation({
+                    container: icon, renderer: 'svg', loop: false, autoplay: true, animationData
+                });
+                animation.addEventListener('DOMLoaded', () => {
+                    animation.goToAndPlay(0, true);
+                });
+                overlay.addEventListener('remove', () => animation.destroy(), { once: true });
+                closeButton.addEventListener('click', () => animation.destroy(), { once: true });
+            }).catch(() => {
+                // Keep the static SVG fallback; the order flow must never depend on animation assets.
+            });
+        }
 
         const title = document.createElement('h2');
         title.id = 'cod-order-success-title';
