@@ -72,8 +72,11 @@
         icon.setAttribute('aria-hidden', 'true');
         icon.style.cssText = 'width:92px;height:92px;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#f0fdf4;';
         const fallback = document.createElement('div');
-        fallback.innerHTML = '<svg viewBox="0 0 100 100" width="84" height="84" focusable="false"><circle cx="50" cy="50" r="39" fill="#dcfce7" stroke="#22c55e" stroke-width="4"/><path d="M29 51 L43 65 L72 35" fill="none" stroke="#15803d" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        fallback.innerHTML = '<svg viewBox="0 0 100 100" width="84" height="84" focusable="false" style="overflow:visible"><circle class="elforat-success-ring" cx="50" cy="50" r="39" fill="none" stroke="#22c55e" stroke-width="4" stroke-linecap="round"/><path class="elforat-success-check" d="M29 51 L43 65 L72 35" fill="none" stroke="#15803d" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         icon.appendChild(fallback);
+        const fallbackSvgStyle = document.createElement('style');
+        fallbackSvgStyle.textContent = '.elforat-success-ring{stroke-dasharray:246;stroke-dashoffset:246;animation:elforatRingDraw .8s ease-out forwards}.elforat-success-check{stroke-dasharray:65;stroke-dashoffset:65;animation:elforatCheckDraw .42s ease-out .72s forwards}@keyframes elforatRingDraw{to{stroke-dashoffset:0}}@keyframes elforatCheckDraw{to{stroke-dashoffset:0}}@media(prefers-reduced-motion:reduce){.elforat-success-ring,.elforat-success-check{animation:none!important;stroke-dashoffset:0!important}}';
+        icon.appendChild(fallbackSvgStyle);
         dialog.appendChild(icon);
 
         let successAnimation = null;
@@ -115,15 +118,26 @@
 
             loadLottie().then((player) => {
                 if (!overlay.isConnected || !icon.isConnected) return;
-                fallback.style.display = 'none';
-                successAnimation = player.loadAnimation({
-                    container: icon, renderer: 'svg', loop: false, autoplay: true, animationData
-                });
-                successAnimation.addEventListener('DOMLoaded', () => {
-                    successAnimation.goToAndPlay(0, true);
-                });
+                try {
+                    successAnimation = player.loadAnimation({
+                        container: icon, renderer: 'svg', loop: false, autoplay: false, animationData
+                    });
+                    successAnimation.addEventListener('DOMLoaded', () => {
+                        if (!overlay.isConnected || !successAnimation) return;
+                        fallback.style.display = 'none';
+                        successAnimation.goToAndPlay(0, true);
+                    });
+                    successAnimation.addEventListener('data_failed', () => {
+                        if (successAnimation) { successAnimation.destroy(); successAnimation = null; }
+                        fallback.style.display = '';
+                    });
+                } catch (error) {
+                    if (successAnimation) { successAnimation.destroy(); successAnimation = null; }
+                    fallback.style.display = '';
+                }
             }).catch(() => {
-                // Keep the static SVG fallback; the order flow must never depend on animation assets.
+                // The animated SVG fallback remains visible if the Lottie CDN/player fails.
+                fallback.style.display = '';
             });
         }
 
