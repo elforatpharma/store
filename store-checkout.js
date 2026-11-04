@@ -76,6 +76,7 @@
         icon.appendChild(fallback);
         dialog.appendChild(icon);
 
+        let successAnimation = null;
         const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (!reducedMotion) {
             const loadLottie = () => new Promise((resolve, reject) => {
@@ -115,14 +116,12 @@
             loadLottie().then((player) => {
                 if (!overlay.isConnected || !icon.isConnected) return;
                 fallback.style.display = 'none';
-                const animation = player.loadAnimation({
+                successAnimation = player.loadAnimation({
                     container: icon, renderer: 'svg', loop: false, autoplay: true, animationData
                 });
-                animation.addEventListener('DOMLoaded', () => {
-                    animation.goToAndPlay(0, true);
+                successAnimation.addEventListener('DOMLoaded', () => {
+                    successAnimation.goToAndPlay(0, true);
                 });
-                overlay.addEventListener('remove', () => animation.destroy(), { once: true });
-                closeButton.addEventListener('click', () => animation.destroy(), { once: true });
             }).catch(() => {
                 // Keep the static SVG fallback; the order flow must never depend on animation assets.
             });
@@ -159,6 +158,7 @@
         };
         const close = () => {
             document.removeEventListener('keydown', onKeyDown);
+            if (successAnimation) { successAnimation.destroy(); successAnimation = null; }
             overlay.remove();
             if (app && typeof app.navigate === 'function') app.navigate('home');
         };
